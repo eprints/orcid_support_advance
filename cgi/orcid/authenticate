@@ -1,0 +1,76 @@
+use EPrints;
+
+use strict;
+
+use LWP::UserAgent;
+use JSON;
+use Data::Dumper;
+
+my $session = new EPrints::Session;
+exit( 0 ) unless( defined $session );
+
+my $authcode = $session->param( "code" );
+my $state = $session->param( "state" );
+my $error = $session->param("error");
+my $error_desc = $session->param("error_description");
+
+#get db
+my $db = $session->database;
+
+#get current user record
+my $current_user = $session->current_user();
+
+if( defined( $error ) && $error eq "access_denied" )
+{
+	$db->save_user_message($current_user->get_value( "userid" ),
+		"warning",
+		$session->html_phrase("Plugin/Screen/ManageOrcid:denied_creating_orcid_link",
+			("message"=>$session->xml->create_text_node("'" . $error_desc . "'"))
+		)
+	);
+}
+
+if( defined( $authcode ) )
+{
+
+	my $uri = $session->config( "plugins" )->{"Screen::ManageOrcid"}->{"params"}->{"orcid_org_exch_uri"};
+	my $ua = LWP::UserAgent->new;
+	my $params = {
+		"client_id"	=> $session->config( "plugins" )->{"Screen::ManageOrcid"}->{"params"}->{"client_id"},
+		"client_secret"	=> $session->config( "plugins" )->{"Screen::ManageOrcid"}->{"params"}->{"client_secret"},
+		"grant_type"	=> "authorization_code",
+		"code"		=> $authcode,
+		"redirect_uri"	=> $session->config( "plugins" )->{"Screen::ManageOrcid"}->{"params"}->{"redirect_uri"},
+	};
+
+	my $response = $ua->post( $uri, $params );
+	if( $response->is_success )
+	{
+		my $json = new JSON;
+		my $json_text = $json->utf8->decode($response->content);
+		$current_user->set_value( "orcid", $json_text->{"orcid"});
+		$current_user->commit();
+
+		#Flag a message to the user to indicate the success of linking to ORCID
+		$db->save_user_message($current_user->get_value( "userid" ),
+			"message", 
+			$session->html_phrase("Plugin/Screen/ManageOrcid:created_orcid_link",
+				("name"=>$current_user->render_value( "name" ))
+			)
+		);		
+	}
+	else
+	{
+		$db->save_user_message($current_user->get_value( "userid" ),
+			"error",
+			$session->html_phrase("Plugin/Screen/ManageOrcid:failed_creating_orcid_link",
+				("message"=>$session->xml->create_text_node("Could not find matching unprocessed request sent to ORCID"))
+			)
+		);
+	}
+}
+
+$session->redirect( $session->config( 'userhome' ) );
+exit;
+
+

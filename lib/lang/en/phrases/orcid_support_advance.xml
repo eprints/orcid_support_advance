@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE phrases SYSTEM "entities.dtd">
+<epp:phrases xmlns="http://www.w3.org/1999/xhtml" xmlns:epp="http://eprints.org/ep3/phrase" xmlns:epc="http://eprints.org/ep3/control">
+
+<epp:phrase id="Plugin/Screen/ManageOrcid:action:authenticate:title">Authenticate ORCID</epp:phrase>
+<epp:phrase id="Plugin/Screen/ManageOrcid:created_orcid_link">Profile successfully linked to ORCID for user: <epc:pin name="name" /></epp:phrase>
+<epp:phrase id="Plugin/Screen/ManageOrcid:failed_creating_orcid_link">ORCID AUTHENTICATION ERROR<br />We have been unable to connect your <epc:phrase ref="archive_name" /> account with your ORCID account for the following reason: <br /><strong><epc:pin name="message" /></strong><br />Please contact <a href="mailto:{$config{ORCID_contact_email}}"><epc:print expr="$config{ORCID_contact_email}"/></a> for assistance.</epp:phrase>
+<epp:phrase id="Plugin/Screen/ManageOrcid:denied_creating_orcid_link">ORCID AUTHENTICATION DENIED<br />We have been unable to link your <epc:phrase ref="archive_name" /> account with your ORCID account as the request was denied with the following message: <br /><strong><epc:pin name="message" /></strong><br />Without this connection we are unable to link your ORCID id to your publications in <epc:phrase ref="archive_name" /> or automatically maintain your publication details here or in the ORCID system. You are strongly encouraged to authorise the link by completing the steps below.<br />If you are having problems making the connection please contact <a href="mailto:{$config{ORCID_contact_email}}"><epc:print expr="$config{ORCID_contact_email}"/></a></epp:phrase>
+</epp:phrases>
+

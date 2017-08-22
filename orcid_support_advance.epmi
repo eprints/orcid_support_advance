@@ -8,30 +8,30 @@
         <file>
           <filename>epm/orcid_support_advance/cfg/cfg.d/z_orcid_support_advance.pl</filename>
           <mime_type>text/plain</mime_type>
-          <hash>9ce4d08eab12793c79af679ed2e588f3</hash>
+          <hash>75eda9b47df306b4a3fe19db7590086b</hash>
           <hash_type>MD5</hash_type>
-          <filesize>72</filesize>
+          <filesize>568</filesize>
         </file>
         <file>
           <filename>epm/orcid_support_advance/cgi/orcid/authenticate</filename>
           <mime_type>text/plain</mime_type>
-          <hash>87120242141669832842318ef182d3ee</hash>
+          <hash>ceb2c2631e3c9924df6ee3a0de24049d</hash>
           <hash_type>MD5</hash_type>
-          <filesize>2185</filesize>
+          <filesize>2164</filesize>
         </file>
         <file>
           <filename>lang/en/phrases/orcid_support_advance.xml</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>28e2b4bc7aba910f2d8ab9bd515ed43b</hash>
+          <hash>3c1bbb740b8c5ea0c7461fe623fce2fa</hash>
           <hash_type>MD5</hash_type>
-          <filesize>1699</filesize>
+          <filesize>1775</filesize>
         </file>
         <file>
-          <filename>plugins/EPrints/Plugin/Screen/ManageOrcid.pm</filename>
+          <filename>plugins/EPrints/Plugin/Screen/AuthenticateOrcid.pm</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>06a0a23d9017b3e8cf9a14579f4163e1</hash>
+          <hash>235020e78fd5a5cafc7a421a3740d407</hash>
           <hash_type>MD5</hash_type>
-          <filesize>1861</filesize>
+          <filesize>1518</filesize>
         </file>
         <file>
           <filename>static/images/epm/orcid_support_advance.png</filename>
@@ -40,10 +40,24 @@
           <hash_type>MD5</hash_type>
           <filesize>12579</filesize>
         </file>
+        <file>
+          <filename>static/images/orcid_16x16.png</filename>
+          <mime_type>inode/symlink</mime_type>
+          <hash>2dddb203aa38ec94870d3ef2b43921c4</hash>
+          <hash_type>MD5</hash_type>
+          <filesize>1261</filesize>
+        </file>
+        <file>
+          <filename>static/style/auto/orcid_support_advance.css</filename>
+          <mime_type>inode/symlink</mime_type>
+          <hash>0412cb7d59fc5cef21a50dfca1f6361e</hash>
+          <hash_type>MD5</hash_type>
+          <filesize>61</filesize>
+        </file>
       </files>
       <mime_type>inode/symlink</mime_type>
       <format>other</format>
-      <main>static/images/epm/orcid_support_advance.png</main>
+      <main>static/style/auto/orcid_support_advance.css</main>
       <content>install</content>
     </document>
     <document>

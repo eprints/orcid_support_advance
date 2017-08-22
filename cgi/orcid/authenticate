@@ -24,7 +24,7 @@ if( defined( $error ) && $error eq "access_denied" )
 {
 	$db->save_user_message($current_user->get_value( "userid" ),
 		"warning",
-		$session->html_phrase("Plugin/Screen/ManageOrcid:denied_creating_orcid_link",
+		$session->html_phrase("Plugin/Screen/AuthenticateOrcid:denied_creating_orcid_link",
 			("message"=>$session->xml->create_text_node("'" . $error_desc . "'"))
 		)
 	);
@@ -33,16 +33,15 @@ if( defined( $error ) && $error eq "access_denied" )
 if( defined( $authcode ) )
 {
 
-	my $uri = $session->config( "plugins" )->{"Screen::ManageOrcid"}->{"params"}->{"orcid_org_exch_uri"};
+	my $uri = $session->config( "plugins" )->{"Screen::AuthenticateOrcid"}->{"params"}->{"orcid_org_exch_uri"};
 	my $ua = LWP::UserAgent->new;
 	my $params = {
-		"client_id"	=> $session->config( "plugins" )->{"Screen::ManageOrcid"}->{"params"}->{"client_id"},
-		"client_secret"	=> $session->config( "plugins" )->{"Screen::ManageOrcid"}->{"params"}->{"client_secret"},
+		"client_id"	=> $session->config( "orcid_support_advance", "client_id" ),
+		"client_secret"	=> $session->config( "orcid_support_advance", "client_secret" ),
 		"grant_type"	=> "authorization_code",
 		"code"		=> $authcode,
-		"redirect_uri"	=> $session->config( "plugins" )->{"Screen::ManageOrcid"}->{"params"}->{"redirect_uri"},
+		"redirect_uri"	=> $session->config( "plugins" )->{"Screen::AuthenticateOrcid"}->{"params"}->{"redirect_uri"},
 	};
-
 	my $response = $ua->post( $uri, $params );
 	if( $response->is_success )
 	{
@@ -54,7 +53,7 @@ if( defined( $authcode ) )
 		#Flag a message to the user to indicate the success of linking to ORCID
 		$db->save_user_message($current_user->get_value( "userid" ),
 			"message", 
-			$session->html_phrase("Plugin/Screen/ManageOrcid:created_orcid_link",
+			$session->html_phrase("Plugin/Screen/AuthenticateOrcid:created_orcid_link",
 				("name"=>$current_user->render_value( "name" ))
 			)
 		);		
@@ -63,7 +62,7 @@ if( defined( $authcode ) )
 	{
 		$db->save_user_message($current_user->get_value( "userid" ),
 			"error",
-			$session->html_phrase("Plugin/Screen/ManageOrcid:failed_creating_orcid_link",
+			$session->html_phrase("Plugin/Screen/AuthenticateOrcid:failed_creating_orcid_link",
 				("message"=>$session->xml->create_text_node("Could not find matching unprocessed request sent to ORCID"))
 			)
 		);

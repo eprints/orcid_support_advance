@@ -37,7 +37,7 @@ sub allow_authenticate
 {
 	my( $self ) = @_;
 	
-	my $user = $self->{session}->current_user;
+	my $user = $self->{repository}->current_user;
 	if( defined $user && !EPrints::Utils::is_set( $user->value( "orcid" ) ) )
 	{
 		return 1;
@@ -55,23 +55,11 @@ sub render
 {
 	my( $self ) = @_;
 
-        my $session = $self->{session};
+        my $repo = $self->{repository};
+	
+	my $uri = EPrints::ORCID::AdvanceUtils::build_auth_uri( $repo, ("/authenticate") );
 
-	my $action = $self->{processor}->{action};
-
-        my $user = $session->current_user;
-
-	#if user does not have an ORCID, ask them to autenticate one
-	my $uri =  $session->config( "plugins" )->{"Screen::AuthenticateOrcid"}->{"params"}->{"orcid_org_auth_uri"} . "?";
-	$uri .= "client_id=" . uri_escape( $session->config( "orcid_support_advance", "client_id" ) ) . "&";
-	$uri .= "response_type=code&scope=/authenticate&";
-	$uri .= "redirect_uri=" . $session->config( "plugins" )->{"Screen::AuthenticateOrcid"}->{"params"}->{"redirect_uri"};
-
-	$session->redirect( $uri );
-        $session->terminate();
+	$repo->redirect( $uri );
+        $repo->terminate();
         exit(0);
-
-
-#       my $chunk = $session->make_doc_fragment;
-#	return $chunk;
 }

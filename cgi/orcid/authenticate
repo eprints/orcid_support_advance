@@ -72,6 +72,16 @@ if( defined( $authcode ) )
 			)
 		);	
 
+		#Create an Event to update user employment details to ORCID, if we have the granted permission
+		if( $json_text->{"scope"} =~ m#/activities/update# )
+		{
+			$repo->dataset( "event_queue" )->create_dataobj({
+				pluginid => "Event::OrcidSync",
+				action => "update_employment",
+				params => ["/id/user/".$current_user->get_value( "userid" )],
+			});
+		}
+
 		#we have an authorized orcid - now manage permissions
 		$repo->redirect( $repo->config( 'userhome' )."?screen=ManageOrcid" );
 	}

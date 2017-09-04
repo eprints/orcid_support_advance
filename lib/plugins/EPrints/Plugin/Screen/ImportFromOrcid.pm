@@ -7,8 +7,9 @@ EPrints::Plugin::Screen::ImportFromOrcid
 package EPrints::Plugin::Screen::ImportFromOrcid;
 
 use EPrints::Plugin::Screen;
-
 use EPrints::ORCID::AdvanceUtils;
+use JSON;
+
 
 @ISA = ( 'EPrints::Plugin::Screen' );
 
@@ -72,7 +73,7 @@ sub render
 	$frag->appendChild( $div );
 
 	#display records that might be imported
-	my $response = EPrints::ORCID::AdvanceUtils::read_works( $repo, $user );
+	my $response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/works" );
 
 	if( $response->is_success )
 	{

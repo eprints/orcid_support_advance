@@ -6,3 +6,45 @@
 .ep_tm_pagetitle .orcid-icon{
 	vertical-align: text-top;
 }
+
+/*Import from ORCID*/
+ul.orcid_imports{
+	list-style: none;
+	font-size: 14px;
+	width: 60%;
+}
+
+li.orcid_item{
+	display: block;
+	padding: 5px 5px 5px 5px;
+
+	border: 1px solid #C9CACB;
+	border-bottom: 1px solid #C9CACB;
+	box-shadow: 3px 4px 5px #C9CACB;
+
+	margin-bottom: 10px;
+}
+
+li.orcid_item .orcid_summary, li.orcid_item .orcid_import{
+	display: inline-block;
+	width: 50%;
+}
+
+li.orcid_item .title{
+	font-size: 16px;
+	margin-bottom: 5px;
+}
+
+li.orcid_item .date-type{
+	margin-bottom: 5px;
+}	
+
+ul.external_identifiers{
+	list-style: none;
+	padding-left: 0;
+	margin: 10px 0;
+}
+
+li.orcid_item .orcid_import button{
+	float: right;
+}

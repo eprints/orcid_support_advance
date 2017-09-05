@@ -9,7 +9,7 @@ package EPrints::Plugin::Screen::ImportFromOrcid;
 use EPrints::Plugin::Screen;
 use EPrints::ORCID::AdvanceUtils;
 use JSON;
-
+use Data::Dumper;
 
 @ISA = ( 'EPrints::Plugin::Screen' );
 
@@ -95,98 +95,135 @@ sub render_orcid_records
 
 	my $xml = $repo->xml;
 	my $import_count = 0;
-	my $table = $xml->create_element( "table", class => "ep_upload_fields ep_multi" );
+	my $ul = $xml->create_element( "ul", class => "orcid_imports" );
 	foreach my $work ( @{$json->{group}} )
 	{
-		my $work_summary = $work->{'work-summary'}[0];
-		my $date = "";
-                $date .= $work_summary->{'publication-date'}->{'day'}->{'value'} if $work_summary->{'publication-date'}->{'day'}->{'value'};
-                $date .= "/".$work_summary->{'publication-date'}->{'month'}->{'value'} if $work_summary->{'publication-date'}->{'month'}->{'value'};
-                $date .= "/".$work_summary->{'publication-date'}->{'year'}->{'value'} if $work_summary->{'publication-date'}->{'year'}->{'value'};
+		$ul->appendChild( $self->render_orcid_item( $repo, $xml, $work ) );		
 
-		my $title = $work_summary->{'title'}->{'title'}->{'value'};
-
-		$table->appendChild( $self->render_table_row_with_text( $xml, "Title", $title, 1 ) );
-                $table->appendChild( $self->render_table_row_with_text( $xml, "Date", $date ) );
-
-		my $ext_ids = $work->{'external-ids'}->{'external-id'};
-                foreach my $ext_id ( @$ext_ids )
-                {
-                        my $id_type = $ext_id->{'external-id-type'};
-                        my $id = $ext_id->{'external-id-value'};
-                        $table->appendChild( $self->render_table_row_with_import( $xml, $id_type, $id, $id_type, $id, $import_count++ ) );
-                }
-                my $url  = $work->{'url'}->{'value'};
-                $table->appendChild( $self->render_table_row_with_link( $xml, "URL", $url, $url ) );
 	}
-	return $table;
+	return $ul;
 }
 
-sub render_table_row
+sub render_orcid_item
 {
-        my( $self, $xml, $label, $value, $link, $first ) = @_;
-        my $tr = $xml->create_element( "tr", style=>"width: 100%" );
-        my $first_class = "";
-        $first_class = "_first" if $first;
-        my $td1 = $tr->appendChild( $xml->create_element( "td", class=>"ep_orcid_works_label".$first_class ) );
-        my $td2 = $tr->appendChild( $xml->create_element( "td", class=>"ep_orcid_works_value".$first_class ) );
-        my $td3 = $tr->appendChild( $xml->create_element( "td", class=>"ep_orcid_works_link".$first_class ) );
-        $td1->appendChild( $label );
-        $td2->appendChild( $value );
-        $td3->appendChild( $link );
+	my( $self, $repo, $xml, $work ) = @_;
+	
+	my $li = $xml->create_element( "li", class => "orcid_item" );
+	
+	my $summary = $xml->create_element( "div", class => "orcid_summary" );
 
-        return $tr;
+	my $work_summary = $work->{'work-summary'}[0];
+	#render title
+	my $title = $work_summary->{'title'}->{'title'}->{'value'};
+	$summary->appendChild( $self->render_orcid_text( $xml, $title, "title" ) );
+
+	#get date + type
+	my $date = "";
+        $date .= $work_summary->{'publication-date'}->{'day'}->{'value'} if $work_summary->{'publication-date'}->{'day'}->{'value'};
+        $date .= "/".$work_summary->{'publication-date'}->{'month'}->{'value'} if $work_summary->{'publication-date'}->{'month'}->{'value'};
+        $date .= "/".$work_summary->{'publication-date'}->{'year'}->{'value'} if $work_summary->{'publication-date'}->{'year'}->{'value'};
+	
+	#type
+	my $type = $work_summary->{'type'};
+
+	#date|type string
+	my $date_type = "";
+	$date_type .= $date if $date ne "";
+	$date_type .= " | " if $date ne "" && defined $type;
+	$date_type .= $type if defined $type;
+	$summary->appendChild( $self->render_orcid_text( $xml, $date_type, "date-type" ) );
+
+	#ext identifiers
+	my $ext_ids = $work->{'external-ids'}->{'external-id'};
+	my $id_ul = $xml->create_element( "ul", class => "external_identifiers" );
+        foreach my $ext_id ( @$ext_ids )
+        {
+        	my $id_type = $ext_id->{'external-id-type'};
+                my $id = $ext_id->{'external-id-value'};
+		$id_ul->appendChild( $self->render_ext_id( $xml, $id_type, $id ) );
+	}
+	$summary->appendChild( $id_ul );	
+
+	#source
+	my $source = $work_summary->{'source'}->{'source-name'}->{'value'};
+	$summary->appendChild( $self->render_orcid_text( $xml, "Source: $source", "source" ) );
+
+	#import
+	my $import = $xml->create_element( "div", class => "orcid_import" );
+	my $form = $self->render_import_btn( $repo, $xml, $work_summary );
+	$import->appendChild( $form ) if $form;
+
+
+	$li->appendChild( $summary );
+	$li->appendChild( $import );
+
+	return $li;
 }
 
-sub render_table_row_with_text
+sub render_orcid_text
 {
-        my( $self, $xml, $label_val, $value_val, $first ) = @_;
-
-        my $label = $xml->create_text_node( $label_val );
-        my $value = $xml->create_text_node( $value_val );
-        my $link = $xml->create_text_node( "" );
-        return $self->render_table_row( $xml, $label, $value, $link, $first );
+	my( $self, $xml, $data, $class ) = @_;
+	
+	my $span = $xml->create_element( "div", class => $class );
+	$span->appendChild( $xml->create_text_node( $data ) );
+	return $span;
 }
 
-sub render_table_row_with_link
+sub render_ext_id
 {
-        my( $self, $xml, $label_val, $value_val, $link_val ) = @_;
+	my( $self, $xml, $identifier, $value ) = @_;
 
-        my $label = $xml->create_text_node( $label_val );
-        my $value = $xml->create_element( "a", href=>$link_val, target=>"_blank" );
-        $value->appendChild( $xml->create_text_node( $value_val ) );
-        my $link = $xml->create_text_node( "" );
-        return $self->render_table_row( $xml, $label, $value, $link );
+	my $id_li = $xml->create_element( "li" );
+
+	my $label = $xml->create_text_node( $identifier . ": " );
+        my $link = $xml->create_element( "a", href=>$value, target=>"_blank" );	
+	$link->appendChild( $xml->create_text_node( $value ) );
+
+	$id_li->appendChild( $label );
+	$id_li->appendChild( $link );
+	
+	return $id_li;
 }
 
-sub render_table_row_with_import
+sub render_import_btn
 {
-        my( $self, $xml, $label_val, $disp_val, $import_type, $import_value, $import_count ) = @_;
+	my( $self, $repo, $xml, $work_summary ) = @_;
 
-        my $plugin_map = {
-                "doi" => "DOI",
-                "BIBTEX" => "BibTeX",
-                "PMID" => "PubMedID",
-        };
+	#only support DOI import for now
+	my $doi;
+	my $ext_ids = $work_summary->{'external-ids'}->{'external-id'};
+        foreach my $ext_id ( @$ext_ids )
+        {
+                if( $ext_id->{'external-id-type'} eq "doi" )
+		{
+			$doi = $ext_id->{'external-id-value'};
+			last;
+		}
+        }
+	
+	if( defined $doi )
+	{	
+		#reformat doi for import plugin
+		$doi =~ s/^(http(s)?:\/\/(dx\.)?doi\.org\/)//i;
 
-        my $repo = $self->{session};
-        my $label = $xml->create_text_node( $label_val );
-        my $value = $xml->create_text_node( $disp_val );
-
-        my $import_plugin = $plugin_map->{$import_type};
-
-        my $form = $repo->render_form( "POST" );
-        $form->appendChild( $repo->render_hidden_field ( "screen", "Import" ) );
-        $form->appendChild( $repo->render_hidden_field ( "_action_import_from", "Import" ) );
-        $form->appendChild( $repo->render_hidden_field ( "format", $import_plugin ) );
-        $form->appendChild( $repo->render_hidden_field ( "data", $import_value ) );
-        $form->setAttribute("id", "orcid_import_form_".$import_count);
-        my $button = $form->appendChild( $xml->create_element( "button",
-                        form=>"orcid_import_form_".$import_count,
-                        type=>"submit",
-                        name=>"Import_from_orcid",
-                        value=>"Import_from_orcid" ) );
-        $button->setAttribute( "disabled", "disabled" ) unless $import_plugin;
-        $button->appendChild( $xml->create_text_node( "Import" ) );
-        return $self->render_table_row( $xml, $label, $value, $form );
+		#get import plugin
+		my $import_plugin = "DOI";
+	
+		#render form
+		my $form = $repo->render_form( "POST" );
+		$form->appendChild( $repo->render_hidden_field ( "screen", "Import" ) );		
+		$form->appendChild( $repo->render_hidden_field ( "_action_import_from", "Import" ) );		
+		$form->appendChild( $repo->render_hidden_field ( "format", $import_plugin ) );		
+		$form->appendChild( $repo->render_hidden_field ( "data", $doi ) );		
+		my $button = $form->appendChild( $xml->create_element( "button", 
+			type=>"submit", 
+			name=>"Import_from_orcid", 
+			value=>"Import_from_orcid" ) );
+		$button->appendChild( $xml->create_text_node( "Import" ) );
+		return $form;
+	}
+	else		
+	{
+		return 0;
+	}
 }

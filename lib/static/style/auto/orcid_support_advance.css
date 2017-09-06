@@ -48,3 +48,14 @@ ul.external_identifiers{
 li.orcid_item .orcid_import button{
 	float: right;
 }
+
+/*Export to ORCID*/
+table.export_orcid_records tr td{
+    padding: 5px 10px;
+}
+
+table.export_orcid_records tr:nth-child(odd){
+    background-color:#eee;
+}
+
+

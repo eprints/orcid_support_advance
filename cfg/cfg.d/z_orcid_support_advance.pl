@@ -13,6 +13,7 @@ $c->{orcid_support_advance}->{redirect_uri} = $c->{"perl_url"} . "/orcid/authent
 $c->{"plugins"}->{"Screen::AuthenticateOrcid"}->{"params"}->{"disable"} = 0;
 $c->{"plugins"}->{"Screen::ManageOrcid"}->{"params"}->{"disable"} = 0;
 $c->{"plugins"}->{"Screen::ImportFromOrcid"}->{"params"}->{"disable"} = 0;
+$c->{"plugins"}->{"Screen::ExportToOrcid"}->{"params"}->{"disable"} = 0;
 
 ###ORCIDSync Event Plugin###
 $c->{"plugins"}->{"Event::OrcidSync"}->{"params"}->{"disable"} = 0; # enable the updates plugin
@@ -138,3 +139,55 @@ $c->{ORCID_requestable_permissions} = [
 		"field" => "orcid_read_record",
 	},
 ];
+
+# work types mapping from EPrints to ORCID
+# defined separately from the called function to enable easy overriding.
+$c->{"plugins"}->{"Screen::ExportToOrcid"}->{"params"}->{"work_type"} = {
+		"article" 		=> "JOURNAL_ARTICLE",
+		"book_section" 		=> "BOOK_CHAPTER",
+		"monograph" 		=> "BOOK",
+		"conference_item" 	=> "CONFERENCE_PAPER",
+		"book" 			=> "BOOK",
+		"thesis" 		=> "DISSERTATION",
+		"patent" 		=> "PATENT",
+		"artefact" 		=> "OTHER",
+		"exhibition" 		=> "OTHER",
+		"composition" 		=> "OTHER",
+		"performance" 		=> "ARTISTIC_PERFORMANCE",
+		"image" 		=> "OTHER",
+		"video" 		=> "OTHER",
+		"audio" 		=> "OTHER",
+		"dataset" 		=> "DATA_SET",
+		"experiment" 		=> "OTHER",
+		"teaching_resource"	=> "OTHER",
+		"other"			=> "OTHER",
+};
+
+$c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
+#return the ORCID work-type based on the EPrints item type.
+##default EPrints item types mapped in $c->{"plugins"}{"Event::OrcidSync"}{"params"}{"work_type"} above.
+##ORCID acceptable item types listed here: https://members.orcid.org/api/supported-work-types
+##Defined as a function in case there you need to replace it for more complicated processing
+##based on other-types or conference_item sub-fields
+	my ( $eprint ) = @_;
+
+	my %work_types = %{$c->{"plugins"}{"Screen::ExportToOrcid"}{"params"}{"work_type"}};
+	
+	if( defined( $eprint ) && $eprint->exists_and_set( "type" ))
+	{
+		my $ret_val = $work_types{ $eprint->get_value( "type" ) };
+		if( defined ( $ret_val ) )
+		{
+			return $ret_val;
+		}
+	}
+#if no mapping found, call it 'other'
+	return "OTHER";
+};
+
+# contributor types mapping from EPrints to ORCID - used in Screen::ExportToOrcid to add contributor details to orcid-works and when importing works to eprints
+$c->{"plugins"}{"Screen::ExportToOrcid"}{"params"}{"contributor_map"} = {
+	#eprint field name	=> ORCID contributor type,
+	"creators" => "AUTHOR",
+	"editors" => "EDITOR",
+};

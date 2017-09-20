@@ -9,7 +9,6 @@ use JSON;
 use HTTP::Request::Common;
 use Encode;
 
-
 sub check_permission
 {
 
@@ -39,6 +38,42 @@ sub build_auth_uri
         $uri .= "redirect_uri=" . $repo->config( "orcid_support_advance", "redirect_uri" );
 	
 	return $uri;
+}
+
+sub read_orcid_works
+{
+	my( $repo, $user ) = @_;
+	my @works = ();
+	my $response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/works" );
+	if( $response->is_success )
+        {
+                my $json = new JSON;
+                my $json_text = $json->utf8->decode( $response->content );
+		foreach my $work ( @{$json_text->{group}} )
+		{	
+			#get the put-code
+			my $work_summary = $work->{'work-summary'}[0];
+			my $put_code = $work_summary->{'put-code'};
+
+			#now make a more detailed request
+			my $work_response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/work/$put_code" );
+		        if( $response->is_success )
+			{
+				my $work_json = $json->utf8->decode( $work_response->content );
+				push @works, $work_json;
+			}
+			else
+			{
+				#couldn't retrieve work
+			}
+		}
+	}
+	else
+	{
+		#failed to read works summary
+	}
+	return \@works;
+
 }
 
 sub read_orcid_record
@@ -74,6 +109,84 @@ sub write_orcid_record
 	my $lwp = LWP::UserAgent->new;
 	my $response = $lwp->request( $req );
 	return $response;
+}
+
+#attempts to convert single string name provided by orcid.org into a creators name
+sub get_name
+{
+	
+	my ($in) = @_;
+
+	my $DEBUG = 0;
+
+	my ($honourific, $given, $family) = ('', '', ''); # what we are aiming for
+
+	# trim leading and trailing white space
+	$in =~ s/^\s+//;
+	$in =~ s/[\s\r\n]+$//;
+
+	# tidy up the use of ".", sometimes there is a following space, sometimes not
+	$in =~ s/\./. /g;
+
+	# compress white space sequence to a single space (may have happened due to the . processing)
+	$in =~ s/\s+/ /g;
+
+	# put . after each initial
+	$in =~ s/([A-Z])\s/$1. /g;
+	$in =~ s/\s([A-Z])$/ $1./;
+
+	# encapsulate runs of initils, like "J. R. R." with a joining underscore
+	$in =~ s/([A-Z])(\. | )/$1._/g;
+
+	# put the last _ back to a space if there are more spaces - this bridges the initals to a 'middle' name
+	$in =~ s/_([^_]+)$/ $1/;
+
+	# honourifics can appear almost anywhere, they are a limited set, so find them and take them out up front
+	if( $in =~ s/(Dr|Mr|Prof|Professor).?\s// ) { $honourific = $1 }
+
+	# GSA specicific, but harmless in general
+	# I've seen "." trail on some names, perhaps as a typo or an abbreviation "Ben."  Replace with an eye catcher to strip later
+	$in =~ s/([a-z])\./$1:/g; # just match lower case non accented chars, remove this rule id th
+	# trailing commas really confuse, remove
+	$in =~ s/,$//;
+
+	# key to this parser, does the input have a comma in it?
+	if($in =~ /,/) # yes, then likely the input is like "Smith, John"
+	{
+		print "DEBUG comma:$in\n" if $DEBUG;
+		($family, $given) = split(/, ?/, $in, 2);
+	}
+	elsif($in =~ /^[^\s]+$/) # there are no spaces in this input, like "Anderson", which may have been "Dr. Anderson"
+	{
+		print "DEBUG atomic:$in\n" if $DEBUG;
+		$family = $in;
+	}
+	else # no comma, then likely the input is more like "John Smith"
+	{
+		# a common case is "Ben M. Ward", so bridge 'first' name with any initials, and further initials should already be joined
+		$in =~ s/^([A-Z][a-z]+)\s([A-Z]\.)/${1}~${2}/;
+
+		print "DEBUG plain:$in\n" if $DEBUG;
+
+		# make the (UK based) assumption that a list of name parts is more like to contain several given names rather than several family names
+		if( $in =~ /([^\s]+)\s/ ) # not-space space everything-else
+		{
+			$given = $1;
+			$family = $';
+		}
+		else # something has gone wrong
+		{
+		$given = $family = "error";
+		# $given = '';
+		# $family = $in;
+		}
+	}
+
+	$given =~ s/[~_]/ /g; # take out the first name joiner and nitials joiners
+	$given =~ s/://g; # remove eye catcher
+	$given =~ s/^([A-Z])$/$1./; # single lone initials seems to have been missed - bug in the above
+
+	return ($honourific, $given, $family);
 }
 
 1;

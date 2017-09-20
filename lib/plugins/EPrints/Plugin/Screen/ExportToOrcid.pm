@@ -96,7 +96,7 @@ sub properties_from
 	$self->{processor}->{eprintids} = \@eprintids;
 
 	#get appropriate user
-	my $self->{processor}->{userid} = $self->{repository}->param( "userid" );
+	$self->{processor}->{userid} = $self->{repository}->param( "userid" );
 }
 
 sub render
@@ -306,7 +306,7 @@ sub eprint_to_orcid_work
 
 	#Contributors
 	my $contributors = [];
-	my %contributor_mapping = %{$repo->config( "plugins" )->{"Screen::ExportToOrcid"}->{"params"}->{"contributor_map"}};
+	my %contributor_mapping = %{$repo->config( "orcid_support_advance", "contributor_map" )};
 	foreach my $contributor_role ( keys %contributor_mapping )
 	{
 

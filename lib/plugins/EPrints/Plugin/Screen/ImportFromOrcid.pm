@@ -7,6 +7,7 @@ EPrints::Plugin::Screen::ImportFromOrcid
 package EPrints::Plugin::Screen::ImportFromOrcid;
 
 use EPrints::Plugin::Screen;
+use EPrints::ORCID::Utils;
 use EPrints::ORCID::AdvanceUtils;
 use JSON;
 use Data::Dumper;
@@ -27,20 +28,18 @@ sub new
 		{
 			place => "dataobj_view_actions",
 			position => 100,
-			action => "import",
 		},
 		{
 			place => "item_tools",
 			position => 100,
-			action => "import",
 		}
         ];
 
         return $self;
 }
 
-sub allow_import{
-
+sub can_be_viewed
+{
 	my( $self ) = @_;
 	
 	my $user = $self->{repository}->current_user;
@@ -48,8 +47,79 @@ sub allow_import{
 	return EPrints::ORCID::AdvanceUtils::check_permission( $user, "/read-limited" );
 }
 
-sub action_import{
+sub allow_import{ shift->can_be_viewed }
 
+sub action_import
+{
+	my( $self ) = @_;
+
+	my $repo = $self->{repository};
+
+	my $dataset = $repo->get_dataset( "inbox" );
+
+        #get the user
+        my $user_ds = $repo->dataset( "user" );
+        my $user = $user_ds->dataobj( $self->{processor}->{userid} );
+
+	my $put_codes =	$self->{processor}->{put_codes};
+	my $works = $self->{processor}->{works};
+	
+	foreach my $work ( @{$works} )
+	{
+		if( grep( /^$work->{'put-code'}$/, @{$put_codes} ) )
+		{
+			$self->import_via_orcid( $repo, $user, $work );
+		} 
+	}
+
+	#get the DOIs
+        #my $dois = $self->{processor}->{dois};
+	
+	#get DOI import plugin
+	#my $plugin = $repo->plugin(
+        #	"Import::DOI",
+        #        session => $repo,
+	#        dataset => $dataset,
+        #        processor => $self->{processor},
+        #);
+
+	#if( !defined $plugin || $plugin->broken )
+	#{
+        #	$self->{processor}->add_message( "error", $self->{session}->html_phrase( "general:bad_param" ) );
+	#        return;
+        #}
+
+	#my $tmpfile = File::Temp->new;
+        #binmode($tmpfile, ":utf8");
+        #print $tmpfile join( "\n", @{$dois} );
+        #seek($tmpfile, 0, 0);
+
+	#my $list = eval {
+        #	$plugin->input_fh(
+        #                dataset=>$dataset,
+        #                fh=>$tmpfile,
+        #                user=>$user,
+        #                encoding=>"UTF-8",
+        #        );
+        #};	
+}
+
+sub properties_from
+{
+        my( $self ) = @_;
+
+        my $repo = $self->repository;
+        $self->SUPER::properties_from;
+
+        #get selected works
+        my @put_codes = $self->{repository}->param( "put-code" );
+        $self->{processor}->{put_codes} = \@put_codes;
+        
+        #get appropriate user
+        $self->{processor}->{user} = $repo->current_user;
+        
+        #get works
+        $self->{processor}->{works} = EPrints::ORCID::AdvanceUtils::read_orcid_works( $repo, $self->{processor}->{user} );
 }
 
 sub render
@@ -57,8 +127,9 @@ sub render
 	my( $self ) = @_;
 
         my $repo = $self->{repository};
+	my $xml = $repo->xml;
 
-        my $user = $repo->current_user;
+        my $user = $self->{processor}->{user};
 	
 	my $frag = $repo->xml->create_document_fragment();
 
@@ -73,13 +144,11 @@ sub render
 	$frag->appendChild( $div );
 
 	#display records that might be imported
-	my $response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/works" );
-
-	if( $response->is_success )
+	#my $response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/works" );
+	my $works = $self->{processor}->{works};
+	if( scalar( $works > 0 ) )
 	{
-		my $json = new JSON;
-                my $json_text = $json->utf8->decode($response->content);
-		$frag->appendChild( $self->render_orcid_records( $repo, $json_text ) );
+		$frag->appendChild( $self->render_orcid_import( $repo, $user, $xml, $works ) );
 	}
 	else
 	{
@@ -89,14 +158,68 @@ sub render
 	return $frag;
 }
 
+#construct the import DOM components
+sub render_orcid_import
+{
+	my( $self, $repo, $user, $xml, $works ) = @_;
+	my $form = $self->render_form( "POST" );
+        $form->appendChild( $repo->render_hidden_field( "userid", $user->id ) );	
+
+	$form->appendChild( $self->render_orcid_import_intro( $xml ) );
+	$form->appendChild( $self->render_orcid_records( $repo, $works ) );
+	$form->appendChild( $self->render_orcid_import_outro( $xml ) );
+
+	return $form;
+}
+
+sub render_orcid_import_intro
+{
+        my( $self, $xml ) = @_;
+        my $intro_div = $xml->create_element( "div", class => "import_intro" );
+
+        #render help text
+        my $help_div = $xml->create_element( "div", class => "import_intro_help" );
+        $help_div->appendChild( $self->html_phrase( "import_help" ) );
+
+        #render import button
+        my $btn_div = $xml->create_element( "div", class => "import_intro_btn" );
+        my $button = $btn_div->appendChild( $xml->create_element( "button",
+                        type => "submit",
+                        name => "_action_import",
+                        class => "ep_form_action_button",
+        ) );
+        $button->appendChild( $xml->create_text_node( "Import" ) );
+
+        $intro_div->appendChild( $help_div );
+        $intro_div->appendChild( $btn_div );
+
+        return $intro_div;
+}
+
+sub render_orcid_import_outro
+{
+	my( $self, $xml ) = @_;
+	
+	my $btn_div = $xml->create_element( "div", class => "import_outro_button" );
+	
+	my $button = $btn_div->appendChild( $xml->create_element( "button",
+		type => "submit",
+		name => "_action_import",
+		class => "ep_form_action_button",
+	) );
+	$button->appendChild( $xml->create_text_node( "Import" ) );
+
+	return $btn_div;
+}
+
 sub render_orcid_records
 {
-	my( $self, $repo, $json ) = @_;
+	my( $self, $repo, $works ) = @_;
 
 	my $xml = $repo->xml;
 	my $import_count = 0;
 	my $ul = $xml->create_element( "ul", class => "orcid_imports" );
-	foreach my $work ( @{$json->{group}} )
+	foreach my $work ( @{$works} )
 	{
 		$ul->appendChild( $self->render_orcid_item( $repo, $xml, $work ) );		
 
@@ -107,24 +230,21 @@ sub render_orcid_records
 sub render_orcid_item
 {
 	my( $self, $repo, $xml, $work ) = @_;
-	
 	my $li = $xml->create_element( "li", class => "orcid_item" );
 	
 	my $summary = $xml->create_element( "div", class => "orcid_summary" );
-
-	my $work_summary = $work->{'work-summary'}[0];
 	#render title
-	my $title = $work_summary->{'title'}->{'title'}->{'value'};
+	my $title = $work->{'title'}->{'title'}->{'value'};
 	$summary->appendChild( $self->render_orcid_text( $xml, $title, "title" ) );
 
 	#get date + type
 	my $date = "";
-        $date .= $work_summary->{'publication-date'}->{'day'}->{'value'} if $work_summary->{'publication-date'}->{'day'}->{'value'};
-        $date .= "/".$work_summary->{'publication-date'}->{'month'}->{'value'} if $work_summary->{'publication-date'}->{'month'}->{'value'};
-        $date .= "/".$work_summary->{'publication-date'}->{'year'}->{'value'} if $work_summary->{'publication-date'}->{'year'}->{'value'};
+        $date .= $work->{'publication-date'}->{'day'}->{'value'} if $work->{'publication-date'}->{'day'}->{'value'};
+        $date .= "/".$work->{'publication-date'}->{'month'}->{'value'} if $work->{'publication-date'}->{'month'}->{'value'};
+        $date .= "/".$work->{'publication-date'}->{'year'}->{'value'} if $work->{'publication-date'}->{'year'}->{'value'};
 	
 	#type
-	my $type = $work_summary->{'type'};
+	my $type = $work->{'type'};
 
 	#date|type string
 	my $date_type = "";
@@ -145,14 +265,20 @@ sub render_orcid_item
 	$summary->appendChild( $id_ul );	
 
 	#source
-	my $source = $work_summary->{'source'}->{'source-name'}->{'value'};
+	my $source = $work->{'source'}->{'source-name'}->{'value'};
 	$summary->appendChild( $self->render_orcid_text( $xml, "Source: $source", "source" ) );
 
 	#import
 	my $import = $xml->create_element( "div", class => "orcid_import" );
-	my $form = $self->render_import_btn( $repo, $xml, $work_summary );
-	$import->appendChild( $form ) if $form;
-
+	my $existing_id = $self->check_work_presence( $repo, $work ); 
+	if( $existing_id )
+	{
+		$import->appendChild( $self->render_duplicate_record( $repo, $xml, $existing_id ) );
+	}
+	else
+	{
+		$import->appendChild( $self->render_import_work( $repo, $xml, $work ) );
+	}
 
 	$li->appendChild( $summary );
 	$li->appendChild( $import );
@@ -185,11 +311,58 @@ sub render_ext_id
 	return $id_li;
 }
 
-sub render_import_btn
+sub render_duplicate_record
+{
+	my( $self, $repo, $xml, $existing_id ) = @_;
+	my $div = $xml->create_element( "div", class => "duplicate_record" );
+
+	#get duplicate record
+	my $ds = $repo->dataset( "archive" );
+	my $eprint = $ds->dataobj( @{$existing_id}[0] );
+	$div->appendChild( $self->html_phrase( 
+		"orcid_duplicate_record",
+		title => $eprint->render_value( "title" )
+	) );
+	return $div;
+}
+
+#checkbox for importing work via JSON return from orcid.org
+sub render_import_work
+{
+	my( $self, $repo, $xml, $work ) = @_;
+
+	my $div = $xml->create_element( "div", class => "orcid_import_work" );
+
+	my $label = $self->html_phrase( "orcid_import_work" );
+
+	my $checkbox = $repo->make_element( "input",
+                        type => "checkbox",
+                        name => "put-code",
+        );
+
+	$checkbox->setAttribute( "checked", "yes" );
+        $checkbox->setAttribute( "value", $work->{'put-code'} );	
+	
+	$div->appendChild( $checkbox );
+        $div->appendChild( $label );
+
+	return $div;
+}
+
+#chekcbox for importing work via DOI
+sub render_import_doi
 {
 	my( $self, $repo, $xml, $work_summary ) = @_;
 
-	#only support DOI import for now
+	my $div = $xml->create_element( "div", class => "orcid_import_doi" );
+	
+	my $label = $self->html_phrase( "orcid_import_via_doi" );
+	my $checkbox = $repo->make_element( "input",
+                        type => "checkbox",
+                        name => "doi",
+        );
+
+	#get the DOI
 	my $doi;
 	my $ext_ids = $work_summary->{'external-ids'}->{'external-id'};
         foreach my $ext_id ( @$ext_ids )
@@ -205,25 +378,169 @@ sub render_import_btn
 	{	
 		#reformat doi for import plugin
 		$doi =~ s/^(http(s)?:\/\/(dx\.)?doi\.org\/)//i;
-
-		#get import plugin
-		my $import_plugin = "DOI";
-	
-		#render form
-		my $form = $repo->render_form( "POST" );
-		$form->appendChild( $repo->render_hidden_field ( "screen", "Import" ) );		
-		$form->appendChild( $repo->render_hidden_field ( "_action_import_from", "Import" ) );		
-		$form->appendChild( $repo->render_hidden_field ( "format", $import_plugin ) );		
-		$form->appendChild( $repo->render_hidden_field ( "data", $doi ) );		
-		my $button = $form->appendChild( $xml->create_element( "button", 
-			type=>"submit", 
-			name=>"Import_from_orcid", 
-			value=>"Import_from_orcid" ) );
-		$button->appendChild( $xml->create_text_node( "Import" ) );
-		return $form;
+		
+		$checkbox->setAttribute( "checked", "yes" );
+		$checkbox->setAttribute( "value", $doi );
 	}
 	else		
 	{
-		return 0;
+		$checkbox->setAttribute( "disabled" );
 	}
+
+	$div->appendChild( $checkbox );
+        $div->appendChild( $label );
+
+	return $div;
+}
+
+sub import_via_orcid
+{
+	my( $self, $repo, $user, $work ) = @_;
+	
+	#create the eprint object
+	my $eprint = $repo->dataset( 'eprint' )->create_dataobj({
+		"eprint_status" => "buffer",
+		"userid" => $user->get_value( "userid" ),											
+	});
+	
+	if( defined( $work->{"title"}->{"title"}->{"value"} ) )
+	{
+		$eprint->set_value( "title", $work->{"title"}->{"title"}->{"value"} );
+	}
+
+	if( defined( $work->{"journal-title"}->{"value"} ) )
+	{
+		$eprint->set_value( "publication" , $work->{"journal-title"}->{"value"} );
+	}
+
+	if( defined( $work->{"short-description"} ) )
+	{
+		$eprint->set_value( "abstract", $work->{"short-description"} );
+	}
+
+	if( defined( $work->{"url"} ) )
+	{
+		$eprint->set_value( "official_url", $work->{"url"}->{"value"} );
+	}
+
+	if( defined( $work->{"external-ids"}->{"external-id"} ) )
+	{
+		foreach my $identifier (@{$work->{"external-ids"}->{"external-id"}} )
+		{
+			if( $identifier->{"external-id-type"} eq "doi" )
+			{
+				if( $repo->dataset( 'eprint' )->has_field( "doi" ) )
+				{
+					$eprint->set_value( "doi", $identifier->{"external-id-value"} );
+				}
+				else
+				{	
+					$eprint->set_value( "id_number", "doi".$identifier->{"external-id-value"} );
+				}
+				last;
+			}
+		}
+	}
+	
+	#creators and editors
+	my $creators;
+	if( defined( $work->{"contributors"} ) )
+	{
+		foreach my $contributor (@{$work->{"contributors"}->{"contributor"}} )
+		{
+			my $username = undef;
+			if( defined( $contributor->{"contributor-orcid"} ) )
+			{
+				#search for user with orcid and add username to eprint contributor if found
+				my $orcid = $contributor->{"contributor-orcid"}->{"path"};
+				my $user = EPrints::ORCID::Utils::user_with_orcid( $repo, $orcid );
+			
+				#What kind of contributor is this?  Pull match from config
+				my $contrib_role = $contributor->{"contributor-attributes"}->{"contributor-role"};
+				my %contrib_config = %{$repo->config( "orcid_support_advance", "contributor_map" )};
+				foreach my $contrib_type ( keys %contrib_config )
+				{
+					if( $contrib_config{$contrib_type} eq $contrib_role )
+					{				
+						$contrib_role = $contrib_type;
+					}
+				}
+				#construct a hash of appropriate info
+				my( $honourific, $given, $family ) = EPrints::ORCID::AdvanceUtils::get_name( $contributor->{"credit-name"}->{"value"} );
+				my $contributor = {
+					name => {
+						given => $given,
+						family => $family,
+					},
+					orcid => $orcid,
+				};
+				$contributor->{"id"} = $user->get_value( "email" ) if defined $user;
+			
+				#add user to appropriate field
+				if( $contrib_role eq "creators" )
+				{
+					push @{$creators}, $contributor;
+				}
+			}		
+		}
+	}
+	$eprint->set_value( "creators", $creators );
+	
+	#put code
+	my @put_codes = ( $work->{"put-code"} );
+	$eprint->set_value( "orcid_put_codes", \@put_codes );
+
+	#save the record
+	$eprint->commit;
+	return $eprint;
+}
+
+#chceck to see if this work is already in the repository
+sub check_work_presence
+{
+        my( $self, $repo, $work ) = @_;
+	
+	#get doi
+	my $doi;
+        my $ext_ids = $work->{'external-ids'}->{'external-id'};
+        foreach my $ext_id ( @$ext_ids )
+        {
+                if( $ext_id->{'external-id-type'} eq "doi" )
+                {
+                        $doi = $ext_id->{'external-id-value'};
+			last
+		}
+	};
+	
+	#get the put code
+	my $putcode = $work->{"put-code"};
+	
+	#search for items that may have the put code or doi
+	my $ds = $repo->dataset( "archive" );
+	my $searchexp = $ds->prepare_search( satisfy_all => 0 );
+	$searchexp->add_field(
+    		fields => [
+			$ds->field('orcid_put_codes')
+		],
+		value => $putcode,
+		match => "EQ", # EQuals
+	);
+	
+	if( defined $doi )
+	{
+		$searchexp->add_field(
+    			fields => [
+				$ds->field('id_number')
+			],
+			value => $doi,
+			match => "EQ", # EQuals
+		);
+	}
+	
+	my $items = $searchexp->perform_search;
+	if( $items->count > 0 )
+	{
+		return $items->ids( 0, 1 );
+	}
+	return 0;
 }

@@ -45,8 +45,14 @@ ul.external_identifiers{
 	margin: 10px 0;
 }
 
-li.orcid_item .orcid_import button{
+li.orcid_item .orcid_import input, li.orcid_item .orcid_import .import_label{
 	float: right;
+}
+
+li.orcid_item .orcid_import{
+	color: red;
+	text-align: right;
+	vertical-align: top;
 }
 
 /*Export to ORCID*/

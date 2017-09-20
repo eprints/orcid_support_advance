@@ -101,6 +101,18 @@ $c->add_dataset_field('user',
 		reuse => 1
 );
 
+###EPrint Fields###
+$c->add_dataset_field('eprint',
+        {
+                name => 'orcid_put_codes',
+                type => 'text',
+                multiple => 1,
+                show_in_html => 0,
+                export_as_xml => 0,
+                import => 0,
+        },
+                reuse => 1
+);
 
 #each permission defined below with some default behaviour (basic permission description commented by each item)
 ##default - 1 or 0 = this item selected or not selected on screen by default
@@ -186,7 +198,7 @@ $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
 };
 
 # contributor types mapping from EPrints to ORCID - used in Screen::ExportToOrcid to add contributor details to orcid-works and when importing works to eprints
-$c->{"plugins"}{"Screen::ExportToOrcid"}{"params"}{"contributor_map"} = {
+$c->{orcid_support_advance}->{contributor_map} = {
 	#eprint field name	=> ORCID contributor type,
 	"creators" => "AUTHOR",
 	"editors" => "EDITOR",

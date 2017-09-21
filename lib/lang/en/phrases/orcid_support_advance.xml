@@ -17,6 +17,7 @@
 <epp:phrase id="Plugin/Screen/ImportFromOrcid:orcid_import_work"><span class="import_label">Import from orcid.org: </span></epp:phrase>
 <epp:phrase id="Plugin/Screen/ImportFromOrcid:orcid_import_via_doi"><span class="import_label">Import via DOI: </span></epp:phrase>
 <epp:phrase id="Plugin/Screen/ImportFromOrcid:orcid_duplicate_record"><span class="import_warning">Duplicate record found: <epc:pin name="title" /></span></epp:phrase>
+<epp:phrase id="Plugin/Screen/ImportFromOrcid:imported_works">Successfully imported <epc:pin name="count" /> works from orcid.rog</epp:phrase>
 
 <!-- Export to ORCID -->
 <epp:phrase id="Plugin/Screen/ExportToOrcid:title">Export to orcid.org</epp:phrase>

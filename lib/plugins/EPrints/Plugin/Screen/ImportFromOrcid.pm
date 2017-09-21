@@ -41,10 +41,47 @@ sub new
 sub can_be_viewed
 {
 	my( $self ) = @_;
-	
-	my $user = $self->{repository}->current_user;
-	
-	return EPrints::ORCID::AdvanceUtils::check_permission( $user, "/read-limited" );
+
+	my $repo = $self->{repository};	
+	my $current_user = $self->{repository}->current_user;
+	my $screenid = $self->{processor}->{screenid};
+
+	if( $screenid eq "Items" ) #manage deposits screen
+	{
+		#has the current user given permission?
+		return EPrints::ORCID::AdvanceUtils::check_permission( $current_user, "/read-limited" );
+	}
+
+	if( $screenid eq "Workflow::View") #user profile screen
+	{
+		my $userid = $self->{repository}->param( "dataobj" );
+		if( defined $userid )
+		{	
+			#is this the current user?
+			if( $userid == $current_user->id )
+			{
+				return EPrints::ORCID::AdvanceUtils::check_permission( $current_user, "/read-limited" );
+			}
+			elsif( $self->allow( "orcid_admin" ) ) #a user with permissions to do orcid admin
+			{
+				#has the subject user given permission to read their orcid.org profile?
+				my $ds = $repo->get_dataset( "user" );
+				my $user = $ds->dataobj( $userid );
+				return EPrints::ORCID::AdvanceUtils::check_permission( $user, "/read-limited" );	
+			}
+		}
+	}	
+
+	if( $screenid eq "ImportFromOrcid" ) #import screen
+	{
+		if( defined $self->{processor}->{orcid_user} )
+		{
+			#has the subject user given permission to read their orcid.org profile?
+			return EPrints::ORCID::AdvanceUtils::check_permission( $self->{processor}->{orcid_user}, "/read-limited" );	
+		}
+	}
+
+	return 0;
 }
 
 sub allow_import{ shift->can_be_viewed }
@@ -58,20 +95,37 @@ sub action_import
 	my $dataset = $repo->get_dataset( "inbox" );
 
         #get the user
-        my $user_ds = $repo->dataset( "user" );
-        my $user = $user_ds->dataobj( $self->{processor}->{userid} );
+        my $user = $self->{processor}->{orcid_user};
+	my $current_user = $repo->current_user();
+
 
 	my $put_codes =	$self->{processor}->{put_codes};
 	my $works = $self->{processor}->{works};
-	
+	my $count = 0;	
+
 	foreach my $work ( @{$works} )
 	{
 		if( grep( /^$work->{'put-code'}$/, @{$put_codes} ) )
 		{
-			$self->import_via_orcid( $repo, $user, $work );
+			my $eprint = $self->import_via_orcid( $repo, $user, $work );
+			if( $eprint )
+			{
+				$count++;
+			}
 		} 
 	}
 
+	my $db = $repo->database;
+	$db->save_user_message($current_user->get_value( "userid" ),
+                "message",
+                $repo->html_phrase("Plugin/Screen/ImportFromOrcid:imported_works",
+                        ("count"=>$repo->xml->create_text_node( $count ))
+                )
+        );
+
+	#finished so go home
+	$repo->redirect( $repo->config( 'userhome' ) );
+	exit;
 	#get the DOIs
         #my $dois = $self->{processor}->{dois};
 	
@@ -111,15 +165,26 @@ sub properties_from
         my $repo = $self->repository;
         $self->SUPER::properties_from;
 
+	#get screenid
+	$self->{processor}->{screenid} = $self->{repository}->param( "screen" );
+
         #get selected works
         my @put_codes = $self->{repository}->param( "put-code" );
         $self->{processor}->{put_codes} = \@put_codes;
         
         #get appropriate user
         $self->{processor}->{user} = $repo->current_user;
-        
+        	
+	my $userid = $self->{repository}->param( "dataobj" );
+	my $ds = $repo->dataset( "user" );
+	my $user = $ds->dataobj( $userid ) if defined $userid;
+	$self->{processor}->{orcid_user} = $user || $self->{repository}->current_user;
+
+	#in action import context, get user id from form, so we're definitely still working with the same user
+	$self->{processor}->{orcid_user} = $ds->dataobj( $self->{repository}->param( "orcid_userid" ) ) if defined $self->{repository}->param( "orcid_userid" ); 
+	
         #get works
-        $self->{processor}->{works} = EPrints::ORCID::AdvanceUtils::read_orcid_works( $repo, $self->{processor}->{user} );
+        $self->{processor}->{works} = EPrints::ORCID::AdvanceUtils::read_orcid_works( $repo, $self->{processor}->{orcid_user} );
 }
 
 sub render
@@ -129,7 +194,7 @@ sub render
         my $repo = $self->{repository};
 	my $xml = $repo->xml;
 
-        my $user = $self->{processor}->{user};
+        my $user = $self->{processor}->{orcid_user};
 	
 	my $frag = $repo->xml->create_document_fragment();
 
@@ -163,7 +228,7 @@ sub render_orcid_import
 {
 	my( $self, $repo, $user, $xml, $works ) = @_;
 	my $form = $self->render_form( "POST" );
-        $form->appendChild( $repo->render_hidden_field( "userid", $user->id ) );	
+        $form->appendChild( $repo->render_hidden_field( "orcid_userid", $user->id ) );	
 
 	$form->appendChild( $self->render_orcid_import_intro( $xml ) );
 	$form->appendChild( $self->render_orcid_records( $repo, $works ) );
@@ -273,6 +338,7 @@ sub render_orcid_item
 	my $existing_id = $self->check_work_presence( $repo, $work ); 
 	if( $existing_id )
 	{
+		$import->setAttribute( "class", "orcid_import warning" );
 		$import->appendChild( $self->render_duplicate_record( $repo, $xml, $existing_id ) );
 	}
 	else

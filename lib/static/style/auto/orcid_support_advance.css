@@ -49,7 +49,8 @@ li.orcid_item .orcid_import input, li.orcid_item .orcid_import .import_label{
 	float: right;
 }
 
-li.orcid_item .orcid_import{
+
+li.orcid_item .orcid_import.warning{
 	color: red;
 	text-align: right;
 	vertical-align: top;

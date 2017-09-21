@@ -33,6 +33,11 @@ $c->{"plugins"}->{"Event::OrcidSync"}->{"params"}->{"affiliation"} = {
 						}
 };
 
+###User Roles###
+push @{$c->{user_roles}->{admin}}, qw{
+	+orcid_admin
+};
+
 ###User fields###
 $c->add_dataset_field('user',
         {

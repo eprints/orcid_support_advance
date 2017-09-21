@@ -41,9 +41,46 @@ sub can_be_viewed{
 
 	my( $self ) = @_;
 
-	my $user = $self->{repository}->current_user;
-	
-	return EPrints::ORCID::AdvanceUtils::check_permission( $user, "/activities/update" );
+	my $repo = $self->{repository};
+        my $current_user = $self->{repository}->current_user;
+        my $screenid = $self->{processor}->{screenid};
+
+	if( $screenid eq "Items" ) #manage deposits screen
+        {
+                #has the current user given permission?
+		return EPrints::ORCID::AdvanceUtils::check_permission( $current_user, "/activities/update" );
+        }
+
+        if( $screenid eq "Workflow::View") #user profile screen
+        {
+                my $userid = $self->{repository}->param( "dataobj" );
+                if( defined $userid )
+                {
+                        #is this the current user?
+                        if( $userid == $current_user->id )
+                        {
+                                return EPrints::ORCID::AdvanceUtils::check_permission( $current_user, "/activities/update" );
+                        }
+                        elsif( $self->allow( "orcid_admin" ) ) #a user with permissions to do orcid admin
+                        {
+                                #has the subject user given permission to read their orcid.org profile?
+                                my $ds = $repo->get_dataset( "user" );
+                                my $user = $ds->dataobj( $userid );
+                                return EPrints::ORCID::AdvanceUtils::check_permission( $user, "/activities/update" );
+                        }
+                }
+        }
+
+	if( $screenid eq "ExportToOrcid" ) #import screen
+        {
+                if( defined $self->{processor}->{orcid_user} )
+                {
+                        #has the subject user given permission to read their orcid.org profile?
+			return EPrints::ORCID::AdvanceUtils::check_permission( $self->{processor}->{orcid_user}, "/activities/update" );
+                }
+        }
+
+        return 0;
 }
 
 sub allow_export { shift->can_be_viewed }
@@ -54,8 +91,8 @@ sub action_export{
 	my $repo = $self->{repository};
 	
 	#get the user
-	my $user_ds = $repo->dataset( "user" );
-	my $user = $user_ds->dataobj( $self->{processor}->{userid} );
+	my $user = $self->{processor}->{orcid_user};
+	my $current_user = $repo->current_user();
 
 	#get the eprint ids
 	my $eprintids = $self->{processor}->{eprintids};
@@ -63,11 +100,13 @@ sub action_export{
 	#convert each eprint to orcid json
 	my $orcid_works = [];
 	my $ds = $repo->dataset( "archive" );
+	my $count = 0;
 	foreach my $id ( @{$eprintids} )
 	{
 		my $eprint = $ds->dataobj( $id );
 		my $work = { work => $self->eprint_to_orcid_work( $repo, $eprint ) };
 		push $orcid_works, $work;
+		$count++;
 	}
 	
 	my $orcid_export = { "bulk" => $orcid_works };
@@ -76,7 +115,17 @@ sub action_export{
 	my $result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, "/works", $orcid_export );
 	if( $result->is_success )
 	{
-		#TODO
+		my $db = $repo->database;
+	        $db->save_user_message($current_user->get_value( "userid" ),
+        	        "message",
+                	$repo->html_phrase("Plugin/Screen/ExportToOrcid:exported_eprints",
+                        	("count"=>$repo->xml->create_text_node( $count ))
+                	)
+        	);
+
+		#finished so go home
+		$repo->redirect( $repo->config( 'userhome' ) );
+		exit;		
 	}
 	else
 	{
@@ -91,12 +140,25 @@ sub properties_from
         my $repo = $self->repository;
         $self->SUPER::properties_from;
 
+	#get screenid
+        $self->{processor}->{screenid} = $self->{repository}->param( "screen" );
+
 	#get selected eprints
 	my @eprintids = $self->{repository}->param( "eprint" );
 	$self->{processor}->{eprintids} = \@eprintids;
 
 	#get appropriate user
-	$self->{processor}->{userid} = $self->{repository}->param( "userid" );
+	#$self->{processor}->{userid} = $self->{repository}->param( "userid" );
+	
+	$self->{processor}->{user} = $repo->current_user;
+
+	my $userid = $self->{repository}->param( "dataobj" );
+        my $ds = $repo->dataset( "user" );
+        my $user = $ds->dataobj( $userid ) if defined $userid;
+        $self->{processor}->{orcid_user} = $user || $self->{repository}->current_user;
+
+	#in action export context, get user id from form, so we're definitely still working with the same user
+        $self->{processor}->{orcid_user} = $ds->dataobj( $self->{repository}->param( "orcid_userid" ) ) if defined $self->{repository}->param( "orcid_userid" );
 }
 
 sub render
@@ -106,7 +168,7 @@ sub render
         my $repo = $self->{repository};
 	my $xml = $repo->xml;
 
-        my $user = $repo->current_user;
+        my $user = $self->{processor}->{orcid_user};
 	my $orcid = $user->value( "orcid" );	
 
 	my $frag = $xml->create_document_fragment();
@@ -146,7 +208,7 @@ sub render_orcid_export
 	my( $self, $repo, $user, $xml, $records ) = @_;
 
 	my $form = $self->render_form( "POST" );
-	$form->appendChild( $repo->render_hidden_field( "userid", $user->id ) );
+	$form->appendChild( $repo->render_hidden_field( "orcid_userid", $user->id ) );
 
 	$form->appendChild( $self->render_orcid_export_intro( $xml ) );
 	$form->appendChild( $self->render_eprint_records( $xml, $records ) );

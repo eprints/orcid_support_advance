@@ -126,6 +126,8 @@ sub action_import
 	#finished so go home
 	$repo->redirect( $repo->config( 'userhome' ) );
 	exit;
+
+
 	#get the DOIs
         #my $dois = $self->{processor}->{dois};
 	

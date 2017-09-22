@@ -2,6 +2,9 @@
 <!DOCTYPE phrases SYSTEM "entities.dtd">
 <epp:phrases xmlns="http://www.w3.org/1999/xhtml" xmlns:epp="http://eprints.org/ep3/phrase" xmlns:epc="http://eprints.org/ep3/control">
 
+<!-- New Fields -->
+<epp:phrase id="user_fieldname_orcid_name">orcid.org Name</epp:phrase>
+
 <!-- Authenticate ORCID -->
 <epp:phrase id="Plugin/Screen/AuthenticateOrcid:title"><img class="orcid-icon" src="/images/orcid_16x16.png"/>Create or Connect your ORCID iD</epp:phrase>
 
@@ -47,6 +50,13 @@
 <epp:phrase id="Plugin/Screen/ManageOrcid:admin_local_user_perms_button">Update Local Permissions</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:admin_erase_granted_permissions_button">Erase Granted Permissions</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:local_user_connect_orcid_button">Connect to ORCID</epp:phrase>
+
+<!-- Name Report -->
+<epp:phrase id="Plugin/Screen/Report/Orcid/CheckName:title">orcid.org Name Mismatch</epp:phrase>
+<epp:phrase id="given_name_mismatch">Name does not match given name on orcid.org: <epc:pin name="given" /></epp:phrase>
+<epp:phrase id="family_name_mismatch">Name does not match family name on orcid.org: <epc:pin name="family" /></epp:phrase>
+<epp:phrase id="exportfields:check_name">User</epp:phrase>
+
 
 </epp:phrases>
 

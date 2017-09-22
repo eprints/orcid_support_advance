@@ -249,15 +249,15 @@ sub render_local_permissions
 	#$admin_button->appendChild($self->html_phrase( "admin_local_user_perms_button" ));
 	#$local_perms_form->appendChild($admin_button);
 	
-	my $erase_button = $repo->xml->create_element( "button",
-		type=>"submit",
-		class => "ep_form_action_button danger",
-		name=>"_action_erase_granted_perms",
-		value=>"do",
-		onclick=>"if(!confirm(\"".EPrints::Utils::tree_to_utf8($self->html_phrase( "confirm_erase_dialog" ))."\")) return false;",
-	);
-	$erase_button->appendChild($self->html_phrase( "admin_erase_granted_permissions_button" ));
-	$local_perms_form->appendChild($erase_button);
+	#my $erase_button = $repo->xml->create_element( "button",
+	#	type=>"submit",
+	#	class => "ep_form_action_button danger",
+	#	name=>"_action_erase_granted_perms",
+	#	value=>"do",
+	#	onclick=>"if(!confirm(\"".EPrints::Utils::tree_to_utf8($self->html_phrase( "confirm_erase_dialog" ))."\")) return false;",
+	#);
+	#$erase_button->appendChild($self->html_phrase( "admin_erase_granted_permissions_button" ));
+	#$local_perms_form->appendChild($erase_button);
 	
 	$local_frag->appendChild($local_perms_form);
 

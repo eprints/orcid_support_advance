@@ -15,8 +15,13 @@ $c->{"plugins"}->{"Screen::ManageOrcid"}->{"params"}->{"disable"} = 0;
 $c->{"plugins"}->{"Screen::ImportFromOrcid"}->{"params"}->{"disable"} = 0;
 $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"params"}->{"disable"} = 0;
 
-###ORCIDSync Event Plugin###
-$c->{"plugins"}->{"Event::OrcidSync"}->{"params"}->{"disable"} = 0; # enable the updates plugin
+###Enable Event Plugins###
+$c->{"plugins"}->{"Event::OrcidSync"}->{"params"}->{"disable"} = 0;
+$c->{"plugins"}->{"Event::CheckOrcidName"}->{"params"}->{"disable"} = 0;
+
+####Enable Report Plugin###
+$c->{plugins}{"Screen::Report::Orcid::CheckName"}{params}{disable} = 0
+
 #Details of the organization for affiliation inclusion - the easiest way to obtain the RINGGOLD id is to add it to your ORCID user record manually, then pull the orcid-profile via the API and the identifier will be on the record returned.
 $c->{"plugins"}->{"Event::OrcidSync"}->{"params"}->{"affiliation"} = {
 						"organization" => {
@@ -208,3 +213,19 @@ $c->{orcid_support_advance}->{contributor_map} = {
 	"creators" => "AUTHOR",
 	"editors" => "EDITOR",
 };
+
+#trigger for acuiqring a user's name from their orcid.org profile
+$c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
+
+        my( %params ) = @_;
+
+        my $repo = $params{repository};
+        my $user = $params{dataobj};
+
+        $repo->dataset( "event_queue" )->create_dataobj({
+                pluginid => "Event::CheckOrcidName",
+                action => "check_name",
+                params => ["/id/user/".$user->get_value( "userid" )],
+        });
+} );
+

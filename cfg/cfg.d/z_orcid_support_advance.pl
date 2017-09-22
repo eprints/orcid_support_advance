@@ -20,7 +20,7 @@ $c->{"plugins"}->{"Event::OrcidSync"}->{"params"}->{"disable"} = 0;
 $c->{"plugins"}->{"Event::CheckOrcidName"}->{"params"}->{"disable"} = 0;
 
 ####Enable Report Plugin###
-$c->{plugins}{"Screen::Report::Orcid::CheckName"}{params}{disable} = 0
+$c->{plugins}{"Screen::Report::Orcid::CheckName"}{params}{disable} = 0;
 
 #Details of the organization for affiliation inclusion - the easiest way to obtain the RINGGOLD id is to add it to your ORCID user record manually, then pull the orcid-profile via the API and the identifier will be on the record returned.
 $c->{"plugins"}->{"Event::OrcidSync"}->{"params"}->{"affiliation"} = {

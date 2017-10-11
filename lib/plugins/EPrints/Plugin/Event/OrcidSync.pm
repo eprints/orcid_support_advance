@@ -19,13 +19,20 @@ sub update_employment
 	die "Repository or User object not defined" unless (defined( $repo ) && defined( $user ));
 	die "Orcid id or authorisation code not set for user ". $user->get_value( "userid" ) unless( $user->exists_and_set( "orcid" ) && $user->exists_and_set( "orcid_access_token" ) );
 
+	my $user_type = $user->get_value( "usertype" );
+	my $affiliation = "employment";
+	if( defined $user_type && grep( /^$user_type$/, @{$repo->config( "orcid_support_advance", "education_user_types" )} ) )
+	{
+		$affiliation = "education";
+	}
+
 	#get details for the communication from config - check they exist
 	my $organisation = $repo->config( "plugins" )->{"Event::OrcidSync"}->{"params"}->{"affiliation"};
 	die "Organization not defined correctly in configuration"  unless ( defined( $organisation ));
 
 	#check if we have already created a profile on the ORCID record to determine whether to create or update the profile
 	#NOTE: Assuming we are only maintaining one affiliation record as we have no historical detail over role / deparmental changes
-	my $response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/employments" );
+	my $response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/$affiliation" ."s" );
 
 	if( $response->is_success )
         {
@@ -35,7 +42,7 @@ sub update_employment
 	
 		#check this institution isn't already in the orcid.org list of employments
 		my $add_institution = 1;
-                foreach my $employment ( @{$json_text->{'employment-summary'}} )
+                foreach my $employment ( @{$json_text->{"$affiliation-summary"}} )
                 {
                         if( $employment->{'organization'}->{'disambiguation-organization-identifier'} eq $institution->{'organization'}->{'disambiguation-organization-identifier'} )
                         {
@@ -46,7 +53,7 @@ sub update_employment
 		#add the insitution if we still need to
 		if( $add_institution )
                 {
-                        my $result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, "/employment", $institution );
+                        my $result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, "/$affiliation", $institution );
 			if( $result->is_success )
 			{
 				return EPrints::Const::HTTP_OK;

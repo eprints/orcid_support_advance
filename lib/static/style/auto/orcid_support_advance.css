@@ -7,6 +7,42 @@
 	vertical-align: text-top;
 }
 
+/* Create or Connect - https://members.orcid.org/api/resources/graphics */
+#connect-orcid-button{
+	border: 1px solid #D3D3D3;
+	padding: .3em;
+	background-color: #fff;
+	border-radius: 8px;
+	box-shadow: 1px 1px 3px #999;
+	cursor: pointer;
+	color: #999;
+	font-weight: bold;
+	font-size: .9em;
+	line-height: 24px;
+	vertical-align: middle;
+}
+
+#connect-orcid-button:hover{
+	border: 1px solid #338caf;
+	color: #338caf;
+}
+
+#orcid-id-logo{
+	display: block;
+	margin: 0 .5em 0 0;
+	padding: 0;
+	float: left;
+}
+
+/*Manage ORCID Permissions */
+.local_perms_div{
+	margin-bottom: 20px;
+}
+
+.danger.manage_orcid_button{
+	float: right;
+}
+
 /*Import from ORCID*/
 ul.orcid_imports{
 	list-style: none;
@@ -64,5 +100,3 @@ table.export_orcid_records tr td{
 table.export_orcid_records tr:nth-child(odd){
     background-color:#eee;
 }
-
-

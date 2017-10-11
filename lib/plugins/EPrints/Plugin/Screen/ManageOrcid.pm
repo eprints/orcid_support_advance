@@ -20,7 +20,7 @@ sub new
 
         my $self = $class->SUPER::new(%params);
 
-        $self->{actions} = [qw/ manage connect_to_orcid /];
+        $self->{actions} = [qw/ manage connect_to_orcid disconnect /];
 
         $self->{appears} = [
 		{
@@ -31,6 +31,21 @@ sub new
         ];
 
         return $self;
+}
+
+sub render_title
+{
+        my( $self ) = @_;
+
+	my $user = $self->{repository}->current_user;
+	if( EPrints::Utils::is_set( $user->value( "orcid" ) && EPrints::Utils::is_set( $user->value( "orcid_granted_permissions" ) ) ) )
+	{
+        	return $self->html_phrase( "title" );
+	}
+	else
+	{
+		return $self->html_phrase( "orcid/connect" );
+	}
 }
 
 #managing permissions can only be done by the current user about the current user - admin cannot change the permissions a user has given orcid.org
@@ -46,14 +61,17 @@ sub allow_connect_to_orcid { return $_[0]->can_be_viewed; }
 sub allow_manage
 {
 	my( $self ) = @_;
-	
+
 	my $user = $self->{repository}->current_user;
-	if( defined $user && EPrints::Utils::is_set( $user->value( "orcid" ) ) && EPrints::Utils::is_set( $user->value( "orcid_granted_permissions" ) ) )
+
+	if( defined $user )
 	{
 		return 1;
 	}
 	return 0;
 }
+
+sub allow_disconnect { return $_[0]->can_be_viewed; }
 
 sub action_manage
 {
@@ -86,6 +104,25 @@ sub action_connect_to_orcid
         exit(0);
 }
 
+sub action_disconnect
+{
+	my( $self ) = @_;
+
+	my $repo = $self->{repository};
+	my $user = $repo->current_user;
+
+	if( defined ( $user ))
+	{
+		$user->set_value( "orcid", undef );
+		$user->set_value( "orcid_auth_code", undef );
+		$user->set_value( "orcid_token_expires", undef );
+		$user->set_value( "orcid_granted_permissions", undef );
+		$user->set_value( "orcid_access_token", undef );
+		$user->set_value( "orcid_name", undef );
+		$user->commit();
+	}
+}
+
 sub render
 {
 	my( $self ) = @_;
@@ -102,6 +139,9 @@ sub render
 	$user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
 	$frag->appendChild( $user_title );	
 
+	#add link to info page
+	$frag->appendChild( $self->html_phrase( "orcid_info" ) );
+
 	#add details of ORCID permissions we hold for this user
 	$frag->appendChild( $self->render_held_permissions( $repo, $user ) );
 
@@ -117,7 +157,7 @@ sub render_held_permissions
 
 	my $held_frag = $repo->xml->create_document_fragment();
 
-	#f we hold permissions from ORCID, display the user's ORCID Details and list the granted permissions
+	#if we hold permissions from ORCID, display the user's ORCID Details and list the granted permissions
 	if( $user->exists_and_set( "orcid_granted_permissions" ) )
 	{
 		#Display the ORCID
@@ -212,7 +252,8 @@ sub render_local_permissions
 						type	=> "checkbox",
 						value	=> 1,
 					);
-			if( $selected ){
+			if( $selected || !$user->exists_and_set( "orcid_granted_permissions" ) ) #set true if selected or connecting for first time
+			{
 				$input->setAttribute( "checked", "checked" );
 			}
 			
@@ -233,10 +274,13 @@ sub render_local_permissions
 	
 	my $connect_button = $repo->xml->create_element( "button",
 		type=>"submit",
-		class => "ep_form_action_button",
+		class => "ep_form_action_button manage_orcid_button",
 		name=>"_action_connect_to_orcid",
 		value=>"do",
+		id=>"connect-orcid-button",
 	);
+
+	$connect_button->appendChild( $repo->xml->create_element( "img", src=>"/images/orcid_24x24.png", id=>"orcid-id-logo", width=>24, height=>24, alt=>"ORCID logo" ) );
 	$connect_button->appendChild($self->html_phrase( "local_user_connect_orcid_button" ));
 	$local_perms_form->appendChild($connect_button);
 			
@@ -249,15 +293,15 @@ sub render_local_permissions
 	#$admin_button->appendChild($self->html_phrase( "admin_local_user_perms_button" ));
 	#$local_perms_form->appendChild($admin_button);
 	
-	#my $erase_button = $repo->xml->create_element( "button",
-	#	type=>"submit",
-	#	class => "ep_form_action_button danger",
-	#	name=>"_action_erase_granted_perms",
-	#	value=>"do",
-	#	onclick=>"if(!confirm(\"".EPrints::Utils::tree_to_utf8($self->html_phrase( "confirm_erase_dialog" ))."\")) return false;",
-	#);
-	#$erase_button->appendChild($self->html_phrase( "admin_erase_granted_permissions_button" ));
-	#$local_perms_form->appendChild($erase_button);
+	my $disconnect_button = $repo->xml->create_element( "button",
+		type=>"submit",
+		class => "ep_form_action_button danger manage_orcid_button",
+		name=>"_action_disconnect",
+		value=>"do",
+		onclick=>"if(!confirm(\"".EPrints::Utils::tree_to_utf8($self->html_phrase( "confirm_erase_dialog" ))."\")) return false;",
+	);
+	$disconnect_button->appendChild($self->html_phrase( "admin_disconnect_button" ));
+	$local_perms_form->appendChild($disconnect_button);
 	
 	$local_frag->appendChild($local_perms_form);
 

@@ -45,7 +45,7 @@ sub can_be_viewed{
         my $current_user = $self->{repository}->current_user;
         my $screenid = $self->{processor}->{screenid};
 
-	if( $screenid eq "Items" ) #manage deposits screen
+	if( $screenid eq "Items" && EPrints::Utils::is_set( $current_user->value( "orcid" ) ) ) #manage deposits screen
         {
                 #has the current user given permission?
 		return EPrints::ORCID::AdvanceUtils::check_permission( $current_user, "/activities/update" );
@@ -57,7 +57,7 @@ sub can_be_viewed{
                 if( defined $userid )
                 {
                         #is this the current user?
-                        if( $userid == $current_user->id )
+                        if( $userid == $current_user->id && EPrints::Utils::is_set( $current_user->value( "orcid" ) ) )
                         {
                                 return EPrints::ORCID::AdvanceUtils::check_permission( $current_user, "/activities/update" );
                         }
@@ -66,7 +66,10 @@ sub can_be_viewed{
                                 #has the subject user given permission to read their orcid.org profile?
                                 my $ds = $repo->get_dataset( "user" );
                                 my $user = $ds->dataobj( $userid );
-                                return EPrints::ORCID::AdvanceUtils::check_permission( $user, "/activities/update" );
+				if( EPrints::Utils::is_set( $user->value( "orcid" ) ) )
+                                {
+                                	return EPrints::ORCID::AdvanceUtils::check_permission( $user, "/activities/update" );
+				}
                         }
                 }
         }

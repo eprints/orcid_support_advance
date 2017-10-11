@@ -37,12 +37,14 @@ sub allow_authenticate
 {
 	my( $self ) = @_;
 	
-	my $user = $self->{repository}->current_user;
-	if( defined $user && !EPrints::Utils::is_set( $user->value( "orcid" ) ) )
-	{
-		return 1;
-	}
 	return 0;
+
+	#my $user = $self->{repository}->current_user;
+	#if( defined $user && !EPrints::Utils::is_set( $user->value( "orcid" ) ) )
+	#{
+	#	return 1;
+	#}
+	#return 0;
 }
 
 sub action_authenticate

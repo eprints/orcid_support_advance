@@ -19,8 +19,10 @@ $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"params"}->{"disable"} = 0;
 $c->{"plugins"}->{"Event::OrcidSync"}->{"params"}->{"disable"} = 0;
 $c->{"plugins"}->{"Event::CheckOrcidName"}->{"params"}->{"disable"} = 0;
 
-####Enable Report Plugin###
+####Enable Report Plugins###
 $c->{plugins}{"Screen::Report::Orcid::CheckName"}{params}{disable} = 0;
+$c->{plugin_alias_map}->{"Screen::Report::Orcid::UserOrcid"} = "Screen::Report::Orcid::UserPermsOrcid";
+$c->{plugin_alias_map}->{"Screen::Report::Orcid::UserPermsOrcid"} = undef;
 
 #Details of the organization for affiliation inclusion - the easiest way to obtain the RINGGOLD id is to add it to your ORCID user record manually, then pull the orcid-profile via the API and the identifier will be on the record returned.
 $c->{"plugins"}->{"Event::OrcidSync"}->{"params"}->{"affiliation"} = {
@@ -37,6 +39,10 @@ $c->{"plugins"}->{"Event::OrcidSync"}->{"params"}->{"affiliation"} = {
         	                                        }
 						}
 };
+
+###Education User Types###
+##If the user type matches any of the following defined fields, update user's education affiliations rather than employment affiliations
+$c->{orcid_support_advance}->{education_user_types} = [];
 
 ###User Roles###
 push @{$c->{user_roles}->{admin}}, qw{
@@ -109,6 +115,17 @@ $c->add_dataset_field('user',
 		import => 0,
 	},
 		reuse => 1
+);
+
+$c->add_dataset_field('user',
+        {
+                name => 'orcid_name',
+                type => 'name',
+                show_in_html => 0,
+                export_as_xml => 0,
+                import => 0,
+        },
+                reuse => 1
 );
 
 ###EPrint Fields###
@@ -214,7 +231,7 @@ $c->{orcid_support_advance}->{contributor_map} = {
 	"editors" => "EDITOR",
 };
 
-#trigger for acuiqring a user's name from their orcid.org profile
+#trigger for acquiring a user's name from their orcid.org profile
 $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 
         my( %params ) = @_;

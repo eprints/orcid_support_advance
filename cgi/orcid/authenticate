@@ -52,6 +52,13 @@ if( defined( $authcode ) )
 		my $json = new JSON;
 		my $json_text = $json->utf8->decode($response->content);
 
+		#new connection or updating existing connection?
+		my $update = 0;
+		if( $current_user->is_set( "orcid_granted_permissions" ) )
+		{
+			$update = 1;
+		}
+
 		#save the orcid, auth code and granted permissions
 		$current_user->set_value( "orcid", $json_text->{"orcid"});
 		$current_user->set_value( "orcid_access_token", $json_text->{"access_token"});
@@ -65,12 +72,24 @@ if( defined( $authcode ) )
 		$current_user->commit();
 
 		#Flag a message to the user to indicate the success of linking to ORCID
-		$db->save_user_message($current_user->get_value( "userid" ),
-			"message", 
-			$repo->html_phrase("Plugin/Screen/AuthenticateOrcid:created_orcid_link",
-				("name"=>$current_user->render_value( "name" ))
-			)
-		);	
+		if( $update )
+		{
+			$db->save_user_message($current_user->get_value( "userid" ),
+				"message", 
+				$repo->html_phrase("Plugin/Screen/AuthenticateOrcid:updated_orcid_link",
+					("name"=>$current_user->render_value( "name" ))
+				)
+			);	
+		}
+		else
+		{
+			$db->save_user_message($current_user->get_value( "userid" ),
+				"message", 
+				$repo->html_phrase("Plugin/Screen/AuthenticateOrcid:created_orcid_link",
+					("name"=>$current_user->render_value( "name" ))
+				)
+			);	
+		}
 
 		#Create an Event to update user employment details to ORCID, if we have the granted permission
 		if( $json_text->{"scope"} =~ m#/activities/update# )

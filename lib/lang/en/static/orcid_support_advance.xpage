@@ -4,9 +4,12 @@
 <xpage:title>Your Repository and ORCID</xpage:title>
 <xpage:body>
 
-<p>For more information about connecting with orcid.org, please see: <a href="https://members.orcid.org/cc-research-organizations">COLLECT &amp; CONNECT FOR RESEARCH ORGANIZATIONS</a></p>
+<p>For more information about connecting with orcid.org, please see: <a href="https://orcid.org/help">Welcome to ORCID!</a></p>
 
 <p>For more information about the ORCID Support and ORCID Support Advance plugins, please see: <a href="https://wiki.eprints.org/w/ORCID_Support">EPrints Wiki: ORCID Support</a></p>
+
+<h2 id="updating-affiliation">Updating Employment/Education Activities</h2>
+<p>When you give  <epc:phrase ref="archive_name" /> permission to update your ORCID activities, the repository will update your Employment activity accordingly. If you are a student user, your Employment activity will be updated instead.</p>
 
 </xpage:body>
 </xpage:page>

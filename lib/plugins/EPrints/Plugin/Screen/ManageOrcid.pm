@@ -120,6 +120,12 @@ sub action_disconnect
 		$user->set_value( "orcid_access_token", undef );
 		$user->set_value( "orcid_name", undef );
 		$user->commit();
+
+	 	my $db = $repo->database;
+	        $db->save_user_message($user->get_value( "userid" ),
+        	        "message",
+                	$repo->html_phrase( "Plugin/Screen/ManageOrcid:disconnected" )
+        	);
 	}
 }
 
@@ -138,6 +144,12 @@ sub render
 	my $user_title = $repo->xml->create_element( "h3", class => "orcid_subheading" );
 	$user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
 	$frag->appendChild( $user_title );	
+
+	#display initial connect message
+	if( ! ( EPrints::Utils::is_set( $user->value( "orcid" ) && EPrints::Utils::is_set( $user->value( "orcid_granted_permissions" ) ) ) ) )
+        {
+		$frag->appendChild( $self->html_phrase( "orcid_initial_connect" ) );
+	}
 
 	#add link to info page
 	$frag->appendChild( $self->html_phrase( "orcid_info" ) );

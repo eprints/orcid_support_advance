@@ -13,25 +13,32 @@
           <filesize>8727</filesize>
         </file>
         <file>
+          <filename>epm/orcid_support_advance/cfg/cfg.d/z_orcid_support_advance_rdf_triples.pl</filename>
+          <mime_type>text/plain</mime_type>
+          <hash>a577b6ab37b004a50e728663be53e940</hash>
+          <hash_type>MD5</hash_type>
+          <filesize>4569</filesize>
+        </file>
+        <file>
           <filename>epm/orcid_support_advance/cgi/orcid/authenticate</filename>
           <mime_type>text/plain</mime_type>
-          <hash>e67636481bb3c4cb94b892ef37b8d272</hash>
+          <hash>74e6f0271968e9f90f2d81c1710395f4</hash>
           <hash_type>MD5</hash_type>
-          <filesize>3116</filesize>
+          <filesize>3539</filesize>
         </file>
         <file>
           <filename>lang/en/phrases/orcid_support_advance.xml</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>fd5f8265d149234eb8117d5e320d1e34</hash>
+          <hash>c1d880373a44c635cc3130da5abdbab3</hash>
           <hash_type>MD5</hash_type>
-          <filesize>8475</filesize>
+          <filesize>10274</filesize>
         </file>
         <file>
           <filename>lang/en/static/orcid_support_advance.xpage</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>c1ba78ed3717b5e5307705804ba5b91a</hash>
+          <hash>c46945cfe941c671b8ce449d94fbf02f</hash>
           <hash_type>MD5</hash_type>
-          <filesize>681</filesize>
+          <filesize>940</filesize>
         </file>
         <file>
           <filename>plugins/EPrints/Plugin/Event/CheckOrcidName.pm</filename>
@@ -64,23 +71,23 @@
         <file>
           <filename>plugins/EPrints/Plugin/Screen/ExportToOrcid.pm</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>056fff2abfe583a35cb292f78c0d11d0</hash>
+          <hash>d17b5944ab9660c4e1a67979fb5014f1</hash>
           <hash_type>MD5</hash_type>
-          <filesize>12322</filesize>
+          <filesize>13577</filesize>
         </file>
         <file>
           <filename>plugins/EPrints/Plugin/Screen/ImportFromOrcid.pm</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>50a37fa7816b970e80eea1710fd9342c</hash>
+          <hash>58394dcd2f439d38c5140f607903672d</hash>
           <hash_type>MD5</hash_type>
-          <filesize>16714</filesize>
+          <filesize>17641</filesize>
         </file>
         <file>
           <filename>plugins/EPrints/Plugin/Screen/ManageOrcid.pm</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>229640adfdd193088fbbef43d435896d</hash>
+          <hash>0544d283ec1c5b840f8eb798d9409021</hash>
           <hash_type>MD5</hash_type>
-          <filesize>9125</filesize>
+          <filesize>9592</filesize>
         </file>
         <file>
           <filename>plugins/EPrints/Plugin/Screen/Report/Orcid/CheckName.pm</filename>
@@ -120,9 +127,9 @@
         <file>
           <filename>static/style/auto/orcid_support_advance.css</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>fe294bf9d95bc52e6131ab5dd8c49a82</hash>
+          <hash>02e7167f95dc802b64a0ad467e8263eb</hash>
           <hash_type>MD5</hash_type>
-          <filesize>1659</filesize>
+          <filesize>1881</filesize>
         </file>
       </files>
       <mime_type>inode/symlink</mime_type>
@@ -145,7 +152,7 @@
       <content>coverimage</content>
     </document>
   </documents>
-  <version>0.7</version>
+  <version>0.8</version>
   <controller>EPMC::OrcidSupportAdvance</controller>
   <creators>
     <item>

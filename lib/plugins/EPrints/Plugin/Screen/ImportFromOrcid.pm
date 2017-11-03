@@ -10,7 +10,6 @@ use EPrints::Plugin::Screen;
 use EPrints::ORCID::Utils;
 use EPrints::ORCID::AdvanceUtils;
 use JSON;
-use Data::Dumper;
 
 @ISA = ( 'EPrints::Plugin::Screen' );
 
@@ -45,11 +44,11 @@ sub can_be_viewed
 	my $repo = $self->{repository};	
 	my $current_user = $self->{repository}->current_user;
 	my $screenid = $self->{processor}->{screenid};
-
+	
 	if( $screenid eq "Items" && EPrints::Utils::is_set( $current_user->value( "orcid" ) ) ) #manage deposits screen
 	{
 		#has the current user given permission?
-		return EPrints::ORCID::AdvanceUtils::check_permission( $current_user, "/read-limited" );
+		return 1;
 	}
 
 	if( $screenid eq "Workflow::View") #user profile screen
@@ -60,7 +59,7 @@ sub can_be_viewed
 			#is this the current user?
 			if( $userid == $current_user->id && EPrints::Utils::is_set( $current_user->value( "orcid" ) ) )
 			{
-				return EPrints::ORCID::AdvanceUtils::check_permission( $current_user, "/read-limited" );
+				return 1;
 			}
 			elsif( $self->allow( "orcid_admin" ) ) #a user with permissions to do orcid admin
 			{
@@ -69,7 +68,7 @@ sub can_be_viewed
 				my $user = $ds->dataobj( $userid );
 				if( EPrints::Utils::is_set( $user->value( "orcid" ) ) )
 				{
-					return EPrints::ORCID::AdvanceUtils::check_permission( $user, "/read-limited" );	
+					return 1;
 				}
 			}
 		}
@@ -184,6 +183,32 @@ sub properties_from
 	my $ds = $repo->dataset( "user" );
 	my $user = $ds->dataobj( $userid ) if defined $userid;
 	$self->{processor}->{orcid_user} = $user || $self->{repository}->current_user;
+
+	#if user hasn't given permission, redirect to manage permissions page
+	if( !EPrints::ORCID::AdvanceUtils::check_permission( $self->{processor}->{orcid_user}, "/read-limited" ) )
+	{
+		my $db = $repo->database;
+		if( $self->{processor}->{orcid_user} eq $self->{repository}->current_user ) #redirect user to manage their permissions
+		{
+			$repo->redirect( $repo->config( 'userhome' )."?screen=ManageOrcid" ); 
+			$db->save_user_message($self->{processor}->{orcid_user}->get_value( "userid" ),
+                		"warning",
+		                $repo->html_phrase( "Plugin/Screen/ImportFromOrcid:review_permissions" )
+		        );
+			exit;
+		}
+		else #we're an admin user trying to modify someone else's record
+		{
+			$db->save_user_message($self->{repository}->current_user->get_value( "userid" ),
+                		"warning",
+		        	$repo->html_phrase("Plugin/Screen/ImportFromOrcid:user_permissions",
+                        		("user"=>$repo->xml->create_text_node("'" . EPrints::Utils::make_name_string( $self->{processor}->{orcid_user}->get_value( "name" ), 1 ) . "'"))
+                		)
+		        );
+			$repo->redirect( $repo->config( 'userhome' ) );
+			exit;
+		}
+	}
 
 	#in action import context, get user id from form, so we're definitely still working with the same user
 	$self->{processor}->{orcid_user} = $ds->dataobj( $self->{repository}->param( "orcid_userid" ) ) if defined $self->{repository}->param( "orcid_userid" ); 

@@ -37,11 +37,27 @@
 /*Manage ORCID Permissions */
 .local_perms_div{
 	margin-bottom: 20px;
+	padding-left: 20px;
+}
+
+.local_perms_div input{
+	margin-bottom: 5px;
+}
+
+.local_perms_div .orcid_permission_title{
+	font-weight: bold;
+}
+
+.local_perms_div .permission_description{
+	margin-bottom: 10px;
+	margin-left: 3px;
 }
 
 .danger.manage_orcid_button{
 	float: right;
 }
+
+
 
 /*Import from ORCID*/
 ul.orcid_imports{

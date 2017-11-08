@@ -213,9 +213,10 @@ sub render_held_permissions
 		my $held_div = $repo->xml->create_element( "div", class => "orcid_user_info" );
 			#Display how long these permissions are due to last, in the local timezone.
 			my $localtime = EPrints::Time::datetime_utc( EPrints::Time::split_value( $user->get_value( "orcid_token_expires" ) ) );
-		        $held_div->appendChild( $self->html_phrase( "token_expiry_date", 
+		        $held_div->appendChild( $self->html_phrase( "permissions_instructions", 
 				expiry_date => $repo->xml->create_text_node( EPrints::Time::human_time( $localtime ) ) )
 			);
+
 			$held_frag->appendChild($held_div);
 	}
 	return $held_frag;

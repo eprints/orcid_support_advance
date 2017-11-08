@@ -1,4 +1,6 @@
 ###General ORCID Support Advance config###
+$c->{orcid_support_advance}->{disable_input} = 1;
+
 $c->{ORCID_contact_email} = $c->{adminemail};
 
 $c->{orcid_support_advance}->{client_id} = "XXXX";
@@ -23,6 +25,10 @@ $c->{"plugins"}->{"Event::CheckOrcidName"}->{"params"}->{"disable"} = 0;
 $c->{plugins}{"Screen::Report::Orcid::CheckName"}{params}{disable} = 0;
 $c->{plugin_alias_map}->{"Screen::Report::Orcid::UserOrcid"} = "Screen::Report::Orcid::UserPermsOrcid";
 $c->{plugin_alias_map}->{"Screen::Report::Orcid::UserPermsOrcid"} = undef;
+
+###Override DOI Import plugin###
+$c->{plugin_alias_map}->{"Import::DOI"} = "Import::OrcidDOI";
+$c->{plugin_alias_map}->{"Import::OrcidDOI"} = undef;
 
 #Details of the organization for affiliation inclusion - the easiest way to obtain the RINGGOLD id is to add it to your ORCID user record manually, then pull the orcid-profile via the API and the identifier will be on the record returned.
 $c->{"plugins"}->{"Event::OrcidSync"}->{"params"}->{"affiliation"} = {

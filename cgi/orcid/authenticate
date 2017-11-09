@@ -4,7 +4,6 @@ use strict;
 
 use LWP::UserAgent;
 use JSON;
-use Data::Dumper;
 
 my $repo = new EPrints::Session;
 exit( 0 ) unless( defined $repo );
@@ -90,6 +89,13 @@ if( defined( $authcode ) )
 				)
 			);	
 		}
+
+		#Create an Event to update user's records with their ORCID
+		$repo->dataset( "event_queue" )->create_dataobj({
+			pluginid => "Event::UpdateCreatorOrcid",
+			action => "update_creators",
+			params => ["/id/user/".$current_user->get_value( "userid" )],
+		});
 
 		#Create an Event to update user employment details to ORCID, if we have the granted permission
 		if( $json_text->{"scope"} =~ m#/activities/update# )

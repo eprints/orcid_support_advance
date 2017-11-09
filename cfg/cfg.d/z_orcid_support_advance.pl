@@ -20,6 +20,7 @@ $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"params"}->{"disable"} = 0;
 ###Enable Event Plugins###
 $c->{"plugins"}->{"Event::OrcidSync"}->{"params"}->{"disable"} = 0;
 $c->{"plugins"}->{"Event::CheckOrcidName"}->{"params"}->{"disable"} = 0;
+$c->{"plugins"}->{"Event::UpdateCreatorOrcid"}->{"params"}->{"disable"} = 0;
 
 ####Enable Report Plugins###
 $c->{plugins}{"Screen::Report::Orcid::CheckName"}{params}{disable} = 0;
@@ -245,10 +246,13 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
         my $repo = $params{repository};
         my $user = $params{dataobj};
 
-        $repo->dataset( "event_queue" )->create_dataobj({
-                pluginid => "Event::CheckOrcidName",
-                action => "check_name",
-                params => ["/id/user/".$user->get_value( "userid" )],
-        });
+	if( $user->is_set( "orcid" ) )
+        {
+	        $repo->dataset( "event_queue" )->create_dataobj({
+        	        pluginid => "Event::CheckOrcidName",
+                	action => "check_name",
+	                params => ["/id/user/".$user->get_value( "userid" )],
+        	});
+	}
 } );
 

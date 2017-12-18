@@ -495,7 +495,7 @@ sub import_via_orcid
 	
 	#create the eprint object
 	my $eprint = $repo->dataset( 'eprint' )->create_dataobj({
-		"eprint_status" => "buffer",
+		"eprint_status" => $repo->config( "orcid_support_advance", "import_destination") || "inbox",
 		"userid" => $user->get_value( "userid" ),											
 	});
 	

@@ -36,7 +36,7 @@
 <epp:phrase id="Plugin/Screen/ExportToOrcid:user_header">Export to orcid.org for <epc:pin name="user_name" /></epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:action:export:title">Export to orcid.org</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:export_help">Select records to export to your orcid.org profile</epp:phrase>
-<epp:phrase id="Plugin/Screen/ExportToOrcid:exported_eprints">Successfully exported <epc:pin name="count" /> eprint recors to orcid.org</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:exported_eprints">Successfully exported <epc:pin name="count" /> eprint records to orcid.org</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:review_permissions">ORCID PERMISSION DENIED<br />Before you can export records to orcid.org, you must give the repository permission to create and update activities on your ORCID record. Please change your permissions below.</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:user_permissions">ORCID Permission DENIED<br />The user <epc:pin name="user" /> has not given the repository permission to create and update activities on your ORCID record.</epp:phrase>
 

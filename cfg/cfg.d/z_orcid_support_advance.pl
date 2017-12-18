@@ -231,6 +231,24 @@ $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
 	return "OTHER";
 };
 
+$c->{"plugins"}->{"Screen::ImportFromOrcid"}->{"work_type"} = sub {
+	my ( $type ) = @_;
+
+	my %work_types = reverse %{$c->{"plugins"}{"Screen::ExportToOrcid"}{"params"}{"work_type"}};
+	
+	if( defined( $type ) )
+	{
+		my $ret_val = $work_types{ $type };
+		if( defined ( $ret_val ) )
+		{
+			return $ret_val;
+		}
+	}
+#if no mapping found, call it 'other'
+	return "other";
+};
+
+
 # contributor types mapping from EPrints to ORCID - used in Screen::ExportToOrcid to add contributor details to orcid-works and when importing works to eprints
 $c->{orcid_support_advance}->{contributor_map} = {
 	#eprint field name	=> ORCID contributor type,

@@ -499,6 +499,11 @@ sub import_via_orcid
 		"userid" => $user->get_value( "userid" ),											
 	});
 	
+	if( defined( $work->{"type"} ) )
+	{
+		$eprint->set_value( "type", &{$repo->config( "plugins" )->{"Screen::ImportFromOrcid"}->{"work_type"}}( $work->{"type"} ) );
+	}
+
 	if( defined( $work->{"title"}->{"title"}->{"value"} ) )
 	{
 		$eprint->set_value( "title", $work->{"title"}->{"title"}->{"value"} );

@@ -140,53 +140,57 @@ sub properties_from
         my( $self ) = @_;
 
         my $repo = $self->repository;
+ 
         $self->SUPER::properties_from;
+ 
+ 	my $ds = $repo->dataset( "user" );
 
-	#get screenid
-        $self->{processor}->{screenid} = $self->{repository}->param( "screen" );
+	if( !$self->{repository}->param( "orcid_userid" ) ) #only check who the user is if we are not in action import context
+	{
+	
+		#get screenid
+        	$self->{processor}->{screenid} = $self->{repository}->param( "screen" );
+	
+		$self->{processor}->{user} = $repo->current_user;
+
+		my $userid = $self->{repository}->param( "dataobj" );
+	      	my $user = $ds->dataobj( $userid ) if defined $userid;
+	        $self->{processor}->{orcid_user} = $user || $self->{repository}->current_user;
+
+		#if user hasn't given permission, redirect to manage permissions page
+		if( !EPrints::ORCID::AdvanceUtils::check_permission( $self->{processor}->{orcid_user}, "/activities/update" ) )
+        	{
+                	my $db = $repo->database;
+	                if( $self->{processor}->{orcid_user} eq $self->{repository}->current_user ) #redirect user to manage their permissions
+        	        {
+                	        $repo->redirect( $repo->config( 'userhome' )."?screen=ManageOrcid" );
+	                        $db->save_user_message($self->{processor}->{orcid_user}->get_value( "userid" ),
+        	                        "warning",
+                	                $repo->html_phrase( "Plugin/Screen/ExportToOrcid:review_permissions" )
+                        	);
+	                        exit;
+        	        }
+                	else #we're an admin user trying to modify someone else's record
+	                {
+        	                $db->save_user_message($self->{repository}->current_user->get_value( "userid" ),
+                	                "warning",
+                        	        $repo->html_phrase("Plugin/Screen/ExportToOrcid:user_permissions",
+	                                        ("user"=>$repo->xml->create_text_node("'" . EPrints::Utils::make_name_string( $self->{processor}->{orcid_user}->get_value( "name" ), 1 ) . "'"))
+        	                        )
+                	        );
+	                        $repo->redirect( $repo->config( 'userhome' ) );
+        	                exit;
+	                }
+        	}
+	}	
+
+	#in action export context, get user id from form, so we're definitely still working with the same user
+        $self->{processor}->{orcid_user} = $ds->dataobj( $self->{repository}->param( "orcid_userid" ) ) if defined $self->{repository}->param( "orcid_userid" );
 
 	#get selected eprints
 	my @eprintids = $self->{repository}->param( "eprint" );
 	$self->{processor}->{eprintids} = \@eprintids;
 
-	#get appropriate user
-	#$self->{processor}->{userid} = $self->{repository}->param( "userid" );
-	
-	$self->{processor}->{user} = $repo->current_user;
-
-	my $userid = $self->{repository}->param( "dataobj" );
-        my $ds = $repo->dataset( "user" );
-        my $user = $ds->dataobj( $userid ) if defined $userid;
-        $self->{processor}->{orcid_user} = $user || $self->{repository}->current_user;
-
-	#if user hasn't given permission, redirect to manage permissions page
-	if( !EPrints::ORCID::AdvanceUtils::check_permission( $self->{processor}->{orcid_user}, "/activities/update" ) )
-        {
-                my $db = $repo->database;
-                if( $self->{processor}->{orcid_user} eq $self->{repository}->current_user ) #redirect user to manage their permissions
-                {
-                        $repo->redirect( $repo->config( 'userhome' )."?screen=ManageOrcid" );
-                        $db->save_user_message($self->{processor}->{orcid_user}->get_value( "userid" ),
-                                "warning",
-                                $repo->html_phrase( "Plugin/Screen/ExportToOrcid:review_permissions" )
-                        );
-                        exit;
-                }
-                else #we're an admin user trying to modify someone else's record
-                {
-                        $db->save_user_message($self->{repository}->current_user->get_value( "userid" ),
-                                "warning",
-                                $repo->html_phrase("Plugin/Screen/ExportToOrcid:user_permissions",
-                                        ("user"=>$repo->xml->create_text_node("'" . EPrints::Utils::make_name_string( $self->{processor}->{orcid_user}->get_value( "name" ), 1 ) . "'"))
-                                )
-                        );
-                        $repo->redirect( $repo->config( 'userhome' ) );
-                        exit;
-                }
-        }
-
-	#in action export context, get user id from form, so we're definitely still working with the same user
-        $self->{processor}->{orcid_user} = $ds->dataobj( $self->{repository}->param( "orcid_userid" ) ) if defined $self->{repository}->param( "orcid_userid" );
 }
 
 sub render

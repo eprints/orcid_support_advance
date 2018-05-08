@@ -7,6 +7,11 @@
 	vertical-align: text-top;
 }
 
+/*User Profile Workflow*/
+input[value="orcid"] ~ input[value="Edit"] {
+	display: none;
+}
+
 /* Create or Connect - https://members.orcid.org/api/resources/graphics */
 #connect-orcid-button{
 	border: 1px solid #D3D3D3;

@@ -274,3 +274,73 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 	}
 } );
 
+#automatic update of eprint creator field - orcid must be set to user's orcid value
+$c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
+{
+        my( %args ) = @_;
+        my( $repo, $eprint, $changed ) = @args{qw( repository dataobj changed )};
+	
+        return unless $eprint->dataset->has_field( "creators_orcid" );
+
+        my $creators = $eprint->get_value('creators');
+        my @new_creators;
+
+        foreach my $c (@{$creators})
+        {
+                my $new_c = $c;
+                #get id and user profile
+                my $email = $c->{id};
+                $email = lc($email) if defined $email;
+                my $user = EPrints::DataObj::User::user_with_email($eprint->repository, $email);
+                if( $user )
+                {
+                        if( EPrints::Utils::is_set( $user->value( 'orcid' ) ) ) #user has an orcid
+                        {
+				#set the orcid
+                                $new_c->{orcid} = $user->value( 'orcid' );
+                                
+                        }
+			else
+			{
+				$new_c->{orcid} = undef;
+			}
+                }
+                push( @new_creators, $new_c );
+        }
+        $eprint->set_value("creators", \@new_creators);
+}, priority => 60 );
+
+#automatic update of eprint editor field - orcid must be set to user's orcid value
+$c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
+{
+        my( %args ) = @_;
+        my( $repo, $eprint, $changed ) = @args{qw( repository dataobj changed )};
+
+        return unless $eprint->dataset->has_field( "editors_orcid" );
+
+        my $editors = $eprint->get_value('editors');
+        my @new_editors;
+
+        foreach my $e (@{$editors})
+        {
+                my $new_e = $e;
+                #get id and user profile
+                my $email = $e->{id};
+                $email = lc($email) if defined $email;
+                my $user = EPrints::DataObj::User::user_with_email($eprint->repository, $email);
+                if( $user )
+                {
+                        if( EPrints::Utils::is_set( $user->value( 'orcid' ) ) ) #user has an orcid
+                        {
+                                #set the orcid
+                                $new_e->{orcid} = $user->value( 'orcid' );
+                        }
+                        else
+                        {
+                                $new_e->{orcid} = undef;
+                        }
+                }
+                push( @new_editors, $new_e );
+        }
+        $eprint->set_value("editors", \@new_editors);
+}, priority => 60 );

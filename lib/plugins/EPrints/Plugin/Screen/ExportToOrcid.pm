@@ -107,7 +107,7 @@ sub action_export{
 	{
 		my $eprint = $ds->dataobj( $id );
 		my $work = { work => $self->eprint_to_orcid_work( $repo, $eprint ) };
-		push $orcid_works, $work;
+		push @$orcid_works, $work;
 		$count++;
 	}
 	

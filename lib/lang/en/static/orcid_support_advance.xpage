@@ -12,7 +12,7 @@
 <a href="https://orcid.org/help">Welcome to ORCID!</a> or watch the <a href="https://vimeo.com/237730655">Why ORCID? video</a> to learn more.</p>
 
 <h2>Connect your ORCID ID with <epc:phrase ref="archive_name" /></h2>
-<p><epc:phrase ref="archive_name" /> would like to collect your iD from ORCID for use in the repository.  Please use the Connect to ORCID tab to authorize the collection and use of your ORCID iD in <epc:phrase ref="archive_name" />. <epc:phrase ref="archive_name" /> will connect information about your research activities stored in our systems (e.g. publications) to your ORCID ID.  If you have not yet registered for an ORCID iD, you will be prompted to do so as part of the process.  If you grant <epc:phrase ref="archive_name" /> permission to update your ORCID record, we will also push your affiliation with [your institution] to ORCID.  This information is authoritative because it comes from [your institution], making your ORCID record more trustworthy.</p>
+<p><epc:phrase ref="archive_name" /> would like to collect your iD from ORCID for use in the repository.  Please use the Connect to ORCID tab to authorize the collection and use of your ORCID iD in <epc:phrase ref="archive_name" />. <epc:phrase ref="archive_name" /> will connect information about your research activities stored in our systems (e.g. publications) to your ORCID ID.  If you have not yet registered for an ORCID iD, you will be prompted to do so as part of the process.  If you grant <epc:phrase ref="archive_name" /> permission to update your ORCID record, we will also push your affiliation with <epc:phrase ref="orcid_support_advance:institution" /> to ORCID.  This information is authoritative because it comes from <epc:phrase ref="orcid_support_advance:institution" />, making your ORCID record more trustworthy.</p>
 
 <h2 id="updating-affiliation">Updating Employment/Education Activities</h2>
 <p>When you give  <epc:phrase ref="archive_name" /> permission to update your ORCID activities, the repository will update your Employment activity accordingly. If you are a student user, your Education activity will be updated instead.</p>
@@ -25,7 +25,7 @@
 <ul>
 <ol>Connect your ORCID ID to<epc:phrase ref="archive_name" /> </ol>
 <ol>Add and update activities to your ORCID record</ol>
-<ol>Retrieve restricted details from your ORCID record</ol>
+<ol>Retrieve read limited information from your ORCID record</ol>
 </ul>
 You may revoke or re-instate these permissions at any time after first making the connection with ORCID, either using the ORCID web interface at ORCID.org, or through <epc:phrase ref="archive_name" /> using the Manage ORCID permissions tab.  If you would like to import activities (including publications) from ORCID into <epc:phrase ref="archive_name" /> you need to give permission to <epc:phrase ref="archive_name" /> to retrieve your limited access items.  If you wish to export items from <epc:phrase ref="archive_name" /> to ORCID, you need to enable the permission to create or update ORCID.  You are also able to disconnect from ORCID from the Manage ORCID Permissions page.</p>
 

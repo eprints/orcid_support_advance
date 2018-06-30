@@ -1,0 +1,33 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE page SYSTEM "entities.dtd" >
+<xpage:page xmlns="http://www.w3.org/1999/xhtml" xmlns:xpage="http://eprints.org/ep3/xpage" xmlns:epc="http://eprints.org/ep3/control">
+<xpage:title>Ihr Repositorium und ORCID</xpage:title>
+<xpage:body>
+
+
+<p>Weitere Informationen zum ORCID Support und ORCID Support Advance Plugin finden Sie hier: <a href="https://wiki.eprints.org/w/ORCID_Support">EPrints Wiki: ORCID Support</a></p>
+
+<h2>Was ist ORCID?</h2>
+<p>ORCID bietet einen persistenten digitalen Identifikator, der Sie von anderen Forschern unterscheidet. ORCID ist eine unabhängige, gemeinnützige Organisation, die Dienstleistungen anbietet, um Forschungsaktivitäten und -organisationen mit eindeutigen Forscherkennungen zu verbinden. ORCID ist in viele Systeme integriert, die von Verlagen, Förderorganisationen, Institutionen und anderen forschungsnahen Diensten genutzt werden. Weitere Informationen zum Verbinden mit orcid.org finden Sie unter:
+<a href="https://orcid.org/help">Welcome to ORCID!</a> oder sehen Sie sich das Video <a href="https://vimeo.com/237730655">Why ORCID?</a> an, um mehr zu erfahren.</p>
+
+<h2>Verbinden Sie Ihre ORCID mit <epc:phrase ref="archive_name" /></h2>
+<p><epc:phrase ref="archive_name" /> möchte Ihre ORCID für die Verwendung im Repositorium speichern. Bitte verwenden Sie die Registerkarte Mit ORCID verbinden, um das Speichern und Verwenden Ihrer ORCID in <epc:phrase ref="archive_name" />zu autorisieren. <epc:phrase ref="archive_name" /> verbindet Informationen über Ihre in unseren Systemen gespeicherten Forschungsaktivitäten (z.B. Publikationen) mit Ihrer ORCID. Wenn Sie sich noch keine ORCID besitzt, werden Sie als Teil des Prozesses zur Registrierung aufgefordert. Wenn Sie <epc:phrase ref="archive_name" /> die Erlaubnis erteilen, Ihren ORCID-Eintrag zu aktualisieren, werden wir auch Ihre Zugehörigkeit zu <epc:phrase ref="orcid_support_advance:institution" /> zu ORCID forcieren. Diese Informationen sind zuverlässig, da sie von <epc:phrase ref="orcid_support_advance:institution" /> stammen, wodurch Ihr ORCID-Eintrag vertrauenswürdiger wird.</p>
+
+<h2 id="updating-affiliation">Aktualisierung der Beschäftigungs-/Bildungsaktivitäten</h2>
+<p>Wenn Sie <epc:phrase ref="archive_name" /> die Berechtigung geben, Ihre ORCID-Aktivitäten zu aktualisieren, wird das Repositorium Ihre Beschäftigungsaktivität entsprechend aktualisieren. Wenn Sie ein Studierender sind, wird Ihre Bildungsaktivität stattdessen aktualisiert.</p>
+
+<h2>Import und Export nach ORCID</h2>
+<p>Bitte verwenden Sie die Registerkarte Einträge verwalten, um Aktivitätsdetails von ORCID zu importieren oder nach ORCID zu exportieren. Sie müssen <epc:phrase ref="archive_name" /> die entsprechenden Berechtigungen erteilen. Sie können die Berechtigungen während des Verbindens oder jederzeit danach vergeben. Die Optionen zum Importieren und Exportieren von ORCID werden erst auf der Seite Einträge verwalten angezeigt, nachdem Sie Ihre ORCID verbunden haben (über die Option Mit ORCID verbinden).</p>
+
+<h2>Hinweis zu Berechtigungen</h2>
+<p>Sie können die Berechtigungen, die Sie <epc:phrase ref="archive_name" /> erteilen, über den Menüpunkt Meine ORCID-Berechtigungen verwalten ändern. Diese Menüoption wird verfügbar, sobald Sie eine Verbindung zu ORCID herstellen. <epc:phrase ref="archive_name" /> fordert während der Verbindung zu ORCID die Erlaubnis an, Folgendes zu tun:
+<ul>
+<ol>Verbinden Sie Ihre ORCID mit <epc:phrase ref="archive_name" /> </ol>
+<ol>Hinzufügen und Aktualisieren von Aktivitäten zu Ihrem ORCID-Eintrag</ol>
+<ol>Abrufen von lesebegrenzten Informationen aus Ihrem ORCID-Eintrag</ol>
+</ul>
+Sie können diese Berechtigungen jederzeit widerrufen oder wiederherstellen, nachdem Sie die Verbindung mit ORCID hergestellt haben, entweder über das ORCID-Webinterface auf ORCID.org oder über <epc:phrase ref="archive_name" /> auf der Registerkarte ORCID-Berechtigungen verwalten. Wenn Sie Aktivitäten (einschließlich Publikationen) aus ORCID in <epc:phrase ref="archive_name" /> importieren möchten, müssen Sie <epc:phrase ref="archive_name" /> die Erlaubnis erteilen, Ihre zugriffsbeschränkten Einträge abzurufen. Wenn Sie Elemente von <epc:phrase ref="archive_name" /> nach ORCID exportieren möchten, müssen Sie die Berechtigung zum Erstellen oder Aktualisieren Ihres ORCID-Profils aktivieren. Sie können die Verbindung auch von der ORCID-Seite trennen unter ORCID-Berechtigungen verwalten.</p>
+
+</xpage:body>
+</xpage:page>

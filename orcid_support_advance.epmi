@@ -15,9 +15,9 @@
         <file>
           <filename>epm/orcid_support_advance/cfg/cfg.d/z_orcid_support_advance_rdf_triples.pl</filename>
           <mime_type>text/plain</mime_type>
-          <hash>a577b6ab37b004a50e728663be53e940</hash>
+          <hash>b4fc3887de5b4580ec9a0ff0ea62ec04</hash>
           <hash_type>MD5</hash_type>
-          <filesize>4569</filesize>
+          <filesize>4641</filesize>
         </file>
         <file>
           <filename>epm/orcid_support_advance/cgi/orcid/authenticate</filename>
@@ -173,7 +173,7 @@
       <content>coverimage</content>
     </document>
   </documents>
-  <version>1.3.1</version>
+  <version>1.3.2</version>
   <controller>EPMC::OrcidSupportAdvance</controller>
   <creators>
     <item>

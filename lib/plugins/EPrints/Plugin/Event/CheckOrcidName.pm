@@ -41,6 +41,7 @@ sub check_name
 
                         $user->commit;
                 }
+		return;
         }
         else
         {

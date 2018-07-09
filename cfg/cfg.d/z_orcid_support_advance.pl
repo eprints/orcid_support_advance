@@ -293,8 +293,9 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 #        foreach my $c (@{$creators})
 #        {
 #                my $new_c = $c;
+#                $new_c->{orcid} = undef;
 #                #get id and user profile
-#                my $email = $c->{id};
+#                my $email = $c->{id};              
 #                $email = lc($email) if defined $email;
 #                my $user = EPrints::DataObj::User::user_with_email($eprint->repository, $email);
 #                if( $user )
@@ -305,10 +306,6 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 #                                $new_c->{orcid} = $user->value( 'orcid' );
 #                                
 #                        }
-#			else
-#			{
-#				$new_c->{orcid} = undef;
-#			}
 #                }
 #                push( @new_creators, $new_c );
 #        }
@@ -329,6 +326,7 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 #        foreach my $e (@{$editors})
 #        {
 #                my $new_e = $e;
+#                $new_e->{orcid} = undef;
 #                #get id and user profile
 #                my $email = $e->{id};
 #                $email = lc($email) if defined $email;
@@ -339,10 +337,6 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 #                        {
 #                                #set the orcid
 #                                $new_e->{orcid} = $user->value( 'orcid' );
-#                        }
-#                        else
-#                        {
-#                                $new_e->{orcid} = undef;
 #                        }
 #                }
 #                push( @new_editors, $new_e );

@@ -11,6 +11,8 @@
 <epp:phrase id="user_fieldname_orcid_name">orcid.org Name</epp:phrase>
 <epp:phrase id="user_fieldname_orcid_token_expires">ORCID Token Expiry</epp:phrase>
 
+<epp:phrase id="eprint_fieldname_orcid_put_codes">ORCID Put Codes</epp:phrase>
+
 <!-- Authenticate ORCID -->
 <epp:phrase id="Plugin/Screen/AuthenticateOrcid:title"><img class="orcid-icon" src="/images/orcid_16x16.png"/>ORCID einrichten oder verbinden</epp:phrase>
 
@@ -67,6 +69,7 @@ Nach Erteilung dieser Genehmigung wird <epc:phrase ref="archive_name" /> auch ve
 <epp:phrase id="Plugin/Screen/ManageOrcid:admin_disconnect_button">Verbindung zu ORCID trennen</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:local_user_connect_orcid_button">ORCID einrichten oder verbinden</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:disconnected">Sie sind momentan nicht mit ORCID verbunden</epp:phrase>
+<epp:phrase id="Plugin/Screen/ManageOrcid:confirm_erase_dialog">Sind Sie sicher?\nAre you sure?\nEinmal entfernt, können wir den ORCID-Eintrag des Nutzers/der Nutzerin nicht mehr pflegen, bis er/sie sich wieder mit ORCID authentifiziert hat.</epp:phrase>
 
 <!-- Name Report -->
 <epp:phrase id="Plugin/Screen/Report/Orcid/CheckName:title">orcid.org Nichtübereinstimmung von Namen</epp:phrase>

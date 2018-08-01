@@ -46,11 +46,8 @@ sub update_employment
                 {
 			my $orgid1 = $institution->{'organization'}->{'disambiguated-organization'}->{'disambiguated-organization-identifier'};
         		my $orgid2 = $employment->{'organization'}->{'disambiguated-organization'}->{'disambiguated-organization-identifier'};
-			print STDERR "id1.....$orgid1\n";
-			print STDERR "id2.....$orgid2\n";
 		        if( $orgid1 eq $orgid2 )
 			{
-				print STDERR "don't add institution\n";
 		                $add_institution = 0;
 		        }
                 }

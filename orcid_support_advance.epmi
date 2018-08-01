@@ -27,11 +27,25 @@
           <filesize>3782</filesize>
         </file>
         <file>
+          <filename>lang/de/phrases/z_orcid_support_advance.xml</filename>
+          <mime_type>application/xml</mime_type>
+          <hash>c1ba1d63cc58b0efac91c8d23c8b6f2f</hash>
+          <hash_type>MD5</hash_type>
+          <filesize>11762</filesize>
+        </file>
+        <file>
+          <filename>lang/de/static/orcid_support_advance.xpage</filename>
+          <mime_type>application/xml</mime_type>
+          <hash>5080b47c4bdb2864c1b71c29662ece7c</hash>
+          <hash_type>MD5</hash_type>
+          <filesize>4537</filesize>
+        </file>
+        <file>
           <filename>lang/en/phrases/z_orcid_support_advance.xml</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>71bd082655d6ca40c338e8d3158b5193</hash>
+          <hash>1ac3c5613f7dbd49b68a8aa64a427ce2</hash>
           <hash_type>MD5</hash_type>
-          <filesize>10837</filesize>
+          <filesize>11120</filesize>
         </file>
         <file>
           <filename>lang/en/static/orcid_support_advance.xpage</filename>
@@ -57,9 +71,9 @@
         <file>
           <filename>plugins/EPrints/Plugin/Event/OrcidSync.pm</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>48e5b754c0ec0c4177a2c8bfbae2dfcb</hash>
+          <hash>01b7e4a44698100907c0c411d62e1a99</hash>
           <hash_type>MD5</hash_type>
-          <filesize>3113</filesize>
+          <filesize>3169</filesize>
         </file>
         <file>
           <filename>plugins/EPrints/Plugin/Event/UpdateCreatorOrcid.pm</filename>
@@ -173,7 +187,7 @@
       <content>coverimage</content>
     </document>
   </documents>
-  <version>1.3.2</version>
+  <version>1.4</version>
   <controller>EPMC::OrcidSupportAdvance</controller>
   <creators>
     <item>

@@ -15,6 +15,12 @@ sub new
         $self->{custom_order} = '-name';
         $self->{report} = 'orcid-user';
 
+	$self->{show_compliance} = 0;
+
+	$self->{labels} = {
+                outputs => "users"
+        };
+
         $self->{exportfields} = {
                 check_name => [ qw(
                         userid

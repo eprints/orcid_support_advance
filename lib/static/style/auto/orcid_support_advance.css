@@ -118,6 +118,6 @@ table.export_orcid_records tr td{
     padding: 5px 10px;
 }
 
-table.export_orcid_records tr:nth-child(odd){
+table.export_orcid_records > tbody > tr:nth-child(odd){
     background-color:#eee;
 }

@@ -64,9 +64,9 @@
         <file>
           <filename>plugins/EPrints/Plugin/Event/CheckOrcidName.pm</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>89ced5b8ede0b76ae46d02d68927b872</hash>
+          <hash>fae137f6ee5df4db1ff0e2c15c387bf2</hash>
           <hash_type>MD5</hash_type>
-          <filesize>1810</filesize>
+          <filesize>1913</filesize>
         </file>
         <file>
           <filename>plugins/EPrints/Plugin/Event/OrcidSync.pm</filename>
@@ -187,7 +187,7 @@
       <content>coverimage</content>
     </document>
   </documents>
-  <version>1.4.1</version>
+  <version>1.4.2</version>
   <controller>EPMC::OrcidSupportAdvance</controller>
   <creators>
     <item>

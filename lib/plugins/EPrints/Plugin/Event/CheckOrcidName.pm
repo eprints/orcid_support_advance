@@ -30,6 +30,10 @@ sub check_name
                 my $orcid_given = $json_text->{"name"}->{"given-names"}->{"value"};
                 my $orcid_family = $json_text->{"name"}->{"family-name"}->{"value"};
 
+		#trim whitespace
+		$orcid_given =~ s/^\s+|\s+$//g;
+                $orcid_family =~ s/^\s+|\s+$//g;
+
                 my $name = $user->get_value( "orcid_name" );
 
                 if( $orcid_given ne $name->{given} || $orcid_family ne $name->{family} )

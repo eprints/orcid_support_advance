@@ -264,7 +264,7 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
         my $repo = $params{repository};
         my $user = $params{dataobj};
 
-	if( $user->is_set( "orcid" ) )
+	if( $user->is_set( "orcid" ) && $user->exists_and_set( "orcid_access_token" ) )
         {
 	        $repo->dataset( "event_queue" )->create_dataobj({
         	        pluginid => "Event::CheckOrcidName",

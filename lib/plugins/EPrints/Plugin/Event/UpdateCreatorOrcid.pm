@@ -16,7 +16,7 @@ sub update_creators
 	#get user object for relevant details - check it exists and has appropriate fields
 	my $repo = $self->{repository};
         die "Repository or User object not defined" unless (defined( $repo ) && defined( $user ));
-        die "Orcid id or authorisation code not set for user ". $user->get_value( "userid" ) unless( $user->exists_and_set( "orcid" ) && $user->exists_and_set( "orcid_access_token" ) );
+        die "Orcid id or authorisation code not set for user ". $user->get_value( "userid" ) unless( $user->exists_and_set( "orcid" ) );
 
         if( $user->is_set( "email" ) )
         {

@@ -9,6 +9,9 @@ package EPrints::Plugin::Screen::ExportToOrcid;
 use EPrints::Plugin::Screen;
 use EPrints::ORCID::AdvanceUtils;
 use JSON;
+use POSIX qw(strftime);
+use CGI;
+use Time::Piece;
 
 @ISA = ( 'EPrints::Plugin::Screen' );
 
@@ -205,6 +208,8 @@ sub render
 
 	my $frag = $xml->create_document_fragment();
 
+    $frag->appendChild( $self->render_toggle_function( $xml ) );
+
 	#display user's name
         my $user_title = $xml->create_element( "h3", class => "orcid_subheading" );
         $user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
@@ -215,6 +220,10 @@ sub render
         $div->appendChild( $user->render_value( "orcid" ) );
 	$frag->appendChild( $div );
 
+    # add filters
+    # Get URL query (important, if editor/admin wants to filter import page of another user)
+    my $query = new CGI;
+    $frag->appendChild( $self->render_filter_date_form( $xml, $query ) );
 	#display records that might be exported
 	my $dataset = $repo->dataset( "archive" );
 	my $results = $dataset->search(
@@ -232,6 +241,60 @@ sub render
 	}
 
 	return $frag;
+}
+
+sub render_toggle_function
+{
+    my( $self, $xml ) = @_;
+    my $toggle_function = 'var isChecked = true;
+
+    function toggleOrcidCheckbox() {
+
+        var cb_putcode = document.getElementsByName("put-code");
+        var cb_doi = document.getElementsByName("doi");
+        var cb_eprint = document.getElementsByName("eprint");
+        var arrCheckboxes = [...cb_putcode, ...cb_doi, ...cb_eprint];
+
+        for( checkbox of arrCheckboxes ) {
+            if(isChecked) {
+                checkbox.checked = "";
+            } else {
+                checkbox.checked = "checked";
+              }
+         }
+         isChecked = !isChecked;
+    }';
+
+    my $js_tag = $xml->create_element( "script" );
+    $js_tag->appendChild( $xml->create_text_node( $toggle_function ) );
+    return $js_tag;
+}
+
+sub render_filter_date_form
+{
+    my( $self, $xml, $query ) = @_;
+    my $filter_div = $xml->create_element( "div", class => "filter_date" );
+    my $filter_date_form = $xml->create_element( "form", method => "get", action => "/cgi/users/home" );
+    $filter_date_form->appendChild( $xml->create_element( "input", type => "hidden", name => "screen", id => "screen", value => "ExportToOrcid") );
+
+    # Save other params
+    my $query_dataset = $query->param('dataset');
+    my $query_dataobj = $query->param('dataobj');
+    my $query_duplicate = $query->param('hide_duplicates');
+    if( defined($query_dataset) && defined($query_dataobj) ) {
+        $filter_date_form->appendChild( $xml->create_element( "input", type => "hidden", name => "dataset", value => $query_dataset) );
+        $filter_date_form->appendChild( $xml->create_element( "input", type => "hidden", name => "dataobj", value => $query_dataobj) );
+    }
+    if( defined($query_duplicate) ){
+        $filter_date_form->appendChild( $xml->create_element( "input", type => "hidden", name => "hide_duplicates", value => $query_duplicate) );
+    }
+
+    $filter_date_form->appendChild( $self->html_phrase( "show_last_modified" ) );
+    my $date_picker =  $xml->create_element( "input", type => "date", name => "filter_date");
+    $filter_date_form->appendChild( $date_picker );
+    $filter_date_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->html_phrase( "filter" ) ) );
+    $filter_div->appendChild( $filter_date_form );
+    return $filter_div;
 }
 
 #construct the export DOM components
@@ -268,6 +331,14 @@ sub render_orcid_export_intro
         ) );
         $button->appendChild( $xml->create_text_node( "Export" ) );	
 
+    # toggle switch
+    my $toggle_button = $btn_div->appendChild( $xml->create_element( "button",
+                    type => "button",
+                    onclick => "toggleOrcidCheckbox();",
+                    class => "ep_form_action_button toggle_button",
+    ) );
+    $toggle_button->appendChild( $xml->create_text_node( $self->html_phrase( "select" ) ) );
+
 	$intro_div->appendChild( $help_div );
 	$intro_div->appendChild( $btn_div );	
 
@@ -283,23 +354,44 @@ sub render_eprint_records
 	$records->map(sub{
 		my( $session, $dataset, $eprint ) = @_;
 
+    # modification date
+    my $cgi = CGI->new();
+    my $filter_date = 0;
+    my $mod_date = ($eprint->get_value('lastmod'));
+    $mod_date = Time::Piece->strptime( $mod_date, '%Y-%m-%d %H:%M:%S' );
+    if( defined $cgi->param('filter_date'))
+    {
+        $filter_date = $cgi->param('filter_date');
+        $filter_date = Time::Piece->strptime( $filter_date, '%Y-%m-%d' );
+    }
 		#show the eprint citation
-		my $tr = $session->make_element( "tr" );
+		my $tr = "";
 		my $td_citation = $session->make_element( "td", class => "export_orcid_citation" );
 		$td_citation->appendChild($eprint->render_citation_link );
-                $tr->appendChild( $td_citation );
-
-		#show checkbox for this record
-		my $td_check = $session->make_element( "td", class => "export_orcid_check" );
-		my $checkbox = $session->make_element( "input",
-			type => "checkbox",
-			name => "eprint",
-			value => $eprint->id,
-		);
-		$checkbox->setAttribute( "checked", "yes" );
-		$td_check->appendChild( $checkbox );
-		$tr->appendChild( $td_check );
-
+		if( $mod_date < $filter_date )
+        {
+            $tr = $session->make_element( "tr", class => "filtered" );
+            $td_citation->appendChild( $xml->create_text_node( "Moddate: $mod_date" ) );
+            $td_citation->appendChild( $xml->create_element("br"));
+            $td_citation->appendChild( $xml->create_text_node( "Filterdate: $filter_date" ) );
+            $td_citation->appendChild( $xml->create_element("br"));
+            $tr->appendChild( $td_citation );
+        }
+        else
+        {
+            $tr = $session->make_element( "tr" );
+            $tr->appendChild( $td_citation );
+            #show checkbox for this record
+            my $td_check = $session->make_element( "td", class => "export_orcid_check" );
+            my $checkbox = $session->make_element( "input",
+                type => "checkbox",
+                name => "eprint",
+                value => $eprint->id,
+            );
+            $checkbox->setAttribute( "checked", "yes" );
+            $td_check->appendChild( $checkbox );
+            $tr->appendChild( $td_check );
+        }
 		$table->appendChild( $tr );
 	});
 
@@ -317,6 +409,15 @@ sub render_orcid_export_outro
 			class => "ep_form_action_button",
         ) );
         $button->appendChild( $xml->create_text_node( "Export" ) );
+
+    # toggle switch
+    my $toggle_button = $btn_div->appendChild( $xml->create_element( "button",
+                    type => "button",
+                    onclick => "toggleOrcidCheckbox();",
+                    class => "ep_form_action_button toggle_button",
+    ) );
+    $toggle_button->appendChild( $xml->create_text_node( $self->html_phrase( "select" ) ) );
+
 	return $btn_div;
 }
 

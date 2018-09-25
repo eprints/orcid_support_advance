@@ -113,6 +113,24 @@ li.orcid_item .orcid_import.warning{
 	vertical-align: top;
 }
 
+li.duplicate, li.filtered{
+    opacity: 0.4;
+}
+
+.filter{
+    vertical-align: bottom;
+    margin-left: 5px;
+}
+
+.filter_date{
+    margin: 5px 0;
+}
+
+
+.toggle_button{
+    margin-left: 5px;
+}
+
 /*Export to ORCID*/
 table.export_orcid_records tr td{
     padding: 5px 10px;
@@ -120,4 +138,8 @@ table.export_orcid_records tr td{
 
 table.export_orcid_records > tbody > tr:nth-child(odd){
     background-color:#eee;
+}
+
+tr.filtered{
+    opacity: 0.4;
 }

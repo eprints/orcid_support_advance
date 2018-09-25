@@ -32,6 +32,9 @@
 <epp:phrase id="Plugin/Screen/ImportFromOrcid:imported_works"><epc:pin name="count" /> Einträge von orcid.org erfolgreich importiert</epp:phrase>
 <epp:phrase id="Plugin/Screen/ImportFromOrcid:review_permissions">ORCID PERMISSION DENIED<br />Bevor Sie Datensätze von orcid.org importieren können, müssen Sie dem Repositorium die Berechtigung geben, eingeschränkte Details aus Ihrem ORCID-Profil abzurufen. Bitte ändern Sie Ihre Berechtigungen unten.</epp:phrase>
 <epp:phrase id="Plugin/Screen/ImportFromOrcid:user_permissions">ORCID Permission DENIED<br /><epc:pin name="user" /> hat dem Repository nicht die Berechtigung gegeben, eingeschränkte Details aus seinem ORCID-Profil abzurufen.</epp:phrase>
+<epp:phrase id="Plugin/Screen/ImportFromOrcid:show_last_modified">Zeige nur Einträge, die bearbeitet wurden seit: </epp:phrase>
+<epp:phrase id="Plugin/Screen/ImportFromOrcid:filter">Filtern</epp:phrase>
+<epp:phrase id="Plugin/Screen/ImportFromOrcid:select">Alle aus-/abwählen</epp:phrase>
 
 <!-- Export to ORCID -->
 <epp:phrase id="Plugin/Screen/ExportToOrcid:title">Export nach orcid.org</epp:phrase>
@@ -41,6 +44,9 @@
 <epp:phrase id="Plugin/Screen/ExportToOrcid:exported_eprints"><epc:pin name="count" /> Einträge nach orcid.org erfolgreich exportiert</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:review_permissions">ORCID PERMISSION DENIED<br />Bevor Sie Datensätze nach orcid.org exportieren können, müssen Sie dem Repositorium die Berechtigung zum Erstellen und Aktualisieren von Aktivitäten auf Ihrem ORCID-Datensatz geben. Bitte ändern Sie Ihre Berechtigungen unten.</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:user_permissions">ORCID Permission DENIED<br /><epc:pin name="user" /> hat dem Repositorium nicht die Berechtigung erteilt, Aktivitäten auf ihrem ORCID-Datensatz anzulegen und zu aktualisieren.</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:show_last_modified">Zeige nur Einträge, die bearbeitet wurden seit: </epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:filter">Filtern</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:select">Alle aus-/abwählen</epp:phrase>
 
 <!-- Manage ORCID -->
 <epp:phrase id="Plugin/Screen/ManageOrcid:title"><img class="orcid-icon" src="/images/orcid_16x16.png"/>ORCID-Berechtigungen verwalten</epp:phrase>

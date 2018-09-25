@@ -92,6 +92,10 @@ li.orcid_item .title{
 	margin-bottom: 5px;
 }
 
+li.orcid_item .subtitle{
+	margin-bottom: 5px;
+}
+
 li.orcid_item .date-type{
 	margin-bottom: 5px;
 }	

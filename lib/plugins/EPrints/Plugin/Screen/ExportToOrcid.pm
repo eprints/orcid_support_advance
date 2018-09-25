@@ -438,14 +438,13 @@ sub eprint_to_orcid_work
 	#add abstract, if relevant
 	$work->{"short-description"} = curtail_abstract( $eprint->get_value( "abstract" ) ) if $eprint->exists_and_set( "abstract" );
 
-	#*** Citations not support in APIv2???***
 	#add citation
-	#my $bibtex_plugin = EPrints::Plugin::Export::BibTeX->new();
-	#$bibtex_plugin->{"session"} = $repo;
-	#$work->{"citation"} = {
-	#	"citation-type" => "bibtex",
-	#	"citation-value" => $bibtex_plugin->output_dataobj( $eprint ),
-	#};
+	my $bibtex_plugin = EPrints::Plugin::Export::BibTeX->new();
+	$bibtex_plugin->{"session"} = $repo;
+	$work->{"citation"} = {
+		"citation-type" => "BIBTEX",
+		"citation-value" => $bibtex_plugin->output_dataobj( $eprint ),
+	};
 
 	#publication date
 	if( $eprint->exists_and_set( "date" ) )
@@ -493,6 +492,49 @@ sub eprint_to_orcid_work
 			});
 	}
 	
+    #URNs
+    my $urn = undef;
+	if( $eprint->exists_and_set( "urn" ) && $eprint->get_value( "urn" ) =~ m'(^urn:[a-z0-9][a-z0-9-]{0,31}:[a-z0-9()+,\-.:=@;$_!*\'%/?#]+$)' )
+	{
+		$urn = $1;
+	}
+	if( !defined( $urn ) && $eprint->exists_and_set( "id_number" ) && $eprint->get_value( "id_number" ) =~ m'(^urn:[a-z0-9][a-z0-9-]{0,31}:[a-z0-9()+,\-.:=@;$_!*\'%/?#]+$)' )
+	{
+		$urn = $1;
+	}
+
+    if( defined( $urn ))
+    {
+        push ( @{$work->{"external-ids"}->{"external-id"}}, {
+                "external-id-type" => "urn",
+                "external-id-value" => $urn,
+                "external-id-url" => "http://nbn-resolving.de/$urn",
+                "external-id-relationship" => "SELF",
+            });
+    }
+
+
+    # ISBN
+    if( $eprint->exists_and_set( "isbn" ))
+    {
+        if( $eprint->exists_and_set( "type" ) && (($eprint->get_value( "type" ) eq "book_section") || ($eprint->get_value( "type" ) eq "encyclopedia_article")) )
+        {
+            push ( @{$work->{"external-ids"}->{"external-id"}}, {
+                    "external-id-type" => "isbn",
+                    "external-id-value" => $eprint->get_value( "isbn" ),
+                    "external-id-relationship" => "PART_OF",
+                });
+        }
+        else
+        {
+            push ( @{$work->{"external-ids"}->{"external-id"}}, {
+                    "external-id-type" => "isbn",
+                    "external-id-value" => $eprint->get_value( "isbn" ),
+                    "external-id-relationship" => "SELF",
+                });
+        }
+    }
+
 	#Official URL
 	if( $eprint->exists_and_set( "official_url" ) )
 	{

@@ -8,6 +8,7 @@ use EPrints;
 use EPrints::Plugin::Event;
 use EPrints::ORCID::AdvanceUtils;
 use JSON;
+use Storable qw(dclone);
 
 #add institution to employment list - requires /activities/update scope
 sub update_employment
@@ -39,7 +40,15 @@ sub update_employment
                 my $json = new JSON;
                 my $json_text = $json->utf8->decode($response->content);
 		my $institution = $repo->config( "plugins" )->{"Event::OrcidSync"}->{"params"}->{"affiliation"}; #get our institution from the config
-	
+
+        # Add department
+        if ( $user->is_set( "dept" ) )
+        {
+            my $institution_temp = dclone $institution;
+            $institution_temp->{ "department-name" } = $user->get_value( "dept" );
+            $institution = \%{$institution_temp};
+        }
+
 		#check this institution isn't already in the orcid.org list of employments
 		my $add_institution = 1;
                 foreach my $employment ( @{$json_text->{"$affiliation-summary"}} )

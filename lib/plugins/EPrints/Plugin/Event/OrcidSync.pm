@@ -63,8 +63,8 @@ sub update_employment
 
 		#add the insitution if we still need to
 		if( $add_institution )
-                {
-                        my $result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, "/$affiliation", $institution );
+        {
+            my $result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, "POST", "/$affiliation", $institution );
 			if( $result->is_success )
 			{
 				return EPrints::Const::HTTP_OK;

@@ -221,8 +221,15 @@ sub properties_from
         my @put_codes = $self->{repository}->param( "put-code" );
 	$self->{processor}->{put_codes} = \@put_codes;
 
-        #get works
-        $self->{processor}->{works} = EPrints::ORCID::AdvanceUtils::read_orcid_works( $repo, $self->{processor}->{orcid_user} );
+    my $hide_duplicates = 1;
+    my $query = new CGI;
+    if( defined($query->param('hide_duplicates')) )
+    {
+        $hide_duplicates = $query->param('hide_duplicates');
+    }
+
+    #get works
+    $self->{processor}->{works} = EPrints::ORCID::AdvanceUtils::read_orcid_works( $repo, $self->{processor}->{orcid_user}, $hide_duplicates );
 }
 
 sub render
@@ -252,6 +259,8 @@ sub render
     # Get URL query (important, if editor/admin wants to filter import page of another user)
     my $query = new CGI;
     $frag->appendChild( $self->render_filter_date_form( $xml, $query ) );
+    $frag->appendChild( $self->render_filter_duplicate_form( $xml, $query ) );
+
 	#display records that might be imported
 	#my $response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/works" );
 	my $works = $self->{processor}->{works};
@@ -319,6 +328,45 @@ sub render_filter_date_form
     $filter_date_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->html_phrase( "filter" ) ) );
     $filter_div->appendChild( $filter_date_form );
     return $filter_div;
+}
+
+sub render_filter_duplicate_form
+{
+    my( $self, $xml, $query ) = @_;
+    my $duplicate_div = $xml->create_element( "div", class => "filter_duplicate" );
+    my $filter_duplicate_form = $xml->create_element( "form", method => "get", action => "/cgi/users/home" );
+    $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "hidden", name => "screen", id => "screen", value => "ImportFromOrcid") );
+
+    # Save other params
+    my $query_dataset = $query->param('dataset');
+    my $query_dataobj = $query->param('dataobj');
+    my $query_date = $query->param('filter_date');
+    my $query_duplicate = $query->param('hide_duplicates');
+    if( defined($query_dataset) && defined($query_dataobj) ) {
+        $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "hidden", name => "dataset", value => $query_dataset) );
+        $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "hidden", name => "dataobj", value => $query_dataobj) );
+    }
+    if( defined($query_date) ){
+        $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "hidden", name => "filter_date", value => $query_date) );
+    }
+
+    if( defined($query_duplicate) )
+    {
+        if( $query_duplicate == 1 )
+        {
+            $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "hidden", name => "hide_duplicates", value => 0) );
+        } else {
+            $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "hidden", name => "hide_duplicates", value => 1) );
+        }
+    } else {
+        $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "hidden", name => "hide_duplicates", value => 0) );
+    }
+
+
+    $filter_duplicate_form->appendChild( $xml->create_text_node($self->html_phrase( "duplicates" )) );
+    $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $xml->create_text_node($self->html_phrase( "show_hide_duplicates" )) ) );
+    $duplicate_div->appendChild( $filter_duplicate_form );
+    return $duplicate_div;
 }
 
 #construct the import DOM components
@@ -401,8 +449,11 @@ sub render_orcid_records
 	foreach my $work ( @{$works} )
 	{
 		$ul->appendChild( $self->render_orcid_item( $repo, $xml, $work ) );
-
+        $import_count++;
 	}
+    if( $import_count == 0 ) {
+        $ul->appendChild( $xml->create_text_node( $self->html_phrase( "no_items" ) ) );
+    }
 	return $ul;
 }
 
@@ -454,7 +505,8 @@ sub render_orcid_item
 
 	#import
 	my $import = $xml->create_element( "div", class => "orcid_import" );
-	my $existing_id = $self->check_work_presence( $repo, $work );
+	my $existing_id = $work->{'$existing_id'};
+
     #modification date (divided by 1000 because of different time handling seconds/milliseconds by epoch/unix)
     my $cgi = CGI->new();
     my $filter_date = 0;
@@ -469,6 +521,7 @@ sub render_orcid_item
 	{
 		$import->setAttribute( "class", "orcid_import warning" );
 		$import->appendChild( $self->render_duplicate_record( $repo, $xml, $existing_id ) );
+        $li->setAttribute( "class", "orcid_item duplicate" );
 	}
     elsif( $mod_date < $filter_date )
     {
@@ -717,11 +770,22 @@ sub import_via_orcid
 		foreach my $contributor (@{$work->{"contributors"}->{"contributor"}} )
 		{
 			my $username = undef;
+            my $putcode = undef;
+            my $users_orcid = $user->value( "orcid" );
 			if( defined( $contributor->{"contributor-orcid"} ) )
 			{
 				#search for user with orcid and add username to eprint contributor if found
 				my $orcid = $contributor->{"contributor-orcid"}->{"path"};
 				my $user = EPrints::ORCID::Utils::user_with_orcid( $repo, $orcid );
+                # Save putcode if this contributor is the importing user
+                if( $users_orcid eq $orcid )
+                {
+                    my @work_putcodes = ( $work->{"put-code"} );
+                    foreach my $work_putcode (@work_putcodes)
+                    {
+                        $putcode = $work_putcode;
+                    }
+                }
 
 				#What kind of contributor is this?  Pull match from config
 				my $contrib_role = $contributor->{"contributor-attributes"}->{"contributor-role"};
@@ -741,6 +805,7 @@ sub import_via_orcid
 						family => $family,
 					},
 					orcid => $orcid,
+					putcode => $putcode,
 				};
 				$contributor->{"id"} = $user->get_value( "email" ) if defined $user;
 
@@ -752,63 +817,32 @@ sub import_via_orcid
 			}
 		}
 	}
-	$eprint->set_value( "creators", $creators );
 
-	#put code
-	my @put_codes = ( $work->{"put-code"} );
-	$eprint->set_value( "orcid_put_codes", \@put_codes );
+    # If there have been no contributors, assume the user is a creator
+    if( !$creators )
+    {
+        my $users_name = $user->get_value("name");
+        my $putcode = undef;
+        my @work_putcodes = ( $work->{"put-code"} );
+        foreach my $work_putcode (@work_putcodes)
+        {
+            $putcode = $work_putcode;
+        }
+		my $contributor = {
+			name => {
+				given => $users_name->{given},
+				family => $users_name->{family},
+			},
+            id => $user->get_value( "email" ),
+			orcid => $user->value( "orcid" ),
+			putcode => $putcode,
+		};
+        push @{$creators}, $contributor;
+    }
+
+	$eprint->set_value( "creators", $creators );
 
 	#save the record
 	$eprint->commit;
 	return $eprint;
-}
-
-#chceck to see if this work is already in the repository
-sub check_work_presence
-{
-        my( $self, $repo, $work ) = @_;
-
-	#get doi
-	my $doi;
-        my $ext_ids = $work->{'external-ids'}->{'external-id'};
-        foreach my $ext_id ( @$ext_ids )
-        {
-                if( $ext_id->{'external-id-type'} eq "doi" )
-                {
-                        $doi = $ext_id->{'external-id-value'};
-			last
-		}
-	};
-
-	#get the put code
-	my $putcode = $work->{"put-code"};
-
-	#search for items that may have the put code or doi
-	my $ds = $repo->dataset( "archive" );
-	my $searchexp = $ds->prepare_search( satisfy_all => 0 );
-	$searchexp->add_field(
-    		fields => [
-			$ds->field('orcid_put_codes')
-		],
-		value => $putcode,
-		match => "EQ", # EQuals
-	);
-
-	if( defined $doi )
-	{
-		$searchexp->add_field(
-    			fields => [
-				$ds->field('id_number')
-			],
-			value => $doi,
-			match => "EQ", # EQuals
-		);
-	}
-
-	my $items = $searchexp->perform_search;
-	if( $items->count > 0 )
-	{
-		return $items->ids( 0, 1 );
-	}
-	return 0;
 }

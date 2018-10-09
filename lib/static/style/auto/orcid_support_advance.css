@@ -130,6 +130,9 @@ li.duplicate, li.filtered{
     margin: 5px 0;
 }
 
+.filter_duplicate {
+    margin: 5px 0;
+}
 
 .toggle_button{
     margin-left: 5px;

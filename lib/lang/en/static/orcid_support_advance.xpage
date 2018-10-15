@@ -12,7 +12,14 @@
 <a href="https://orcid.org/help">Welcome to ORCID!</a> or watch the <a href="https://vimeo.com/237730655">Why ORCID? video</a> to learn more.</p>
 
 <h2>Connect your ORCID ID with <epc:phrase ref="archive_name" /></h2>
-<p><epc:phrase ref="archive_name" /> would like to collect your iD from ORCID for use in the repository.  Please use the Connect to ORCID tab to authorize the collection and use of your ORCID iD in <epc:phrase ref="archive_name" />. <epc:phrase ref="archive_name" /> will connect information about your research activities stored in our systems (e.g. publications) to your ORCID ID.  If you have not yet registered for an ORCID iD, you will be prompted to do so as part of the process.  If you grant <epc:phrase ref="archive_name" /> permission to update your ORCID record, we will also push your affiliation with <epc:phrase ref="orcid_support_advance:institution" /> to ORCID.  This information is authoritative because it comes from <epc:phrase ref="orcid_support_advance:institution" />, making your ORCID record more trustworthy.</p>
+<p><epc:phrase ref="archive_name" /> would like to collect your iD from ORCID for use in the repository:
+<ul>
+    <li><b>Authenticate:</b> When you click the “Connect to ORCID” button, we will ask you to share your iD using an authenticated process: either by registering for an ORCID iD or, if you already have one, to sign in to your ORCID account. We do this to ensure that you are correctly identified and securely connecting your ORCID iD. Learn more in <a href="https://orcid.org/blog/2017/02/20/whats-so-special-about-signing">What’s so special about signing in</a>.</li>
+    <li><b>Display:</b> To acknowledge that you have used your iD and that it has been authenticated, we display the ORCID iD icon alongside your name in our database.</li>
+    <li><b>Connect</b>: By sharing your iD with <epc:phrase ref="archive_name" />, and giving us permission to read and update your ORCID record, you enable us to help you <a href="https://support.orcid.org/hc/articles/360006896394">keep your record up-to-date with trusted information</a>. This includes updating your employment activities and export publications data to orcid.org, seeing the points below. This information is authoritative because it comes from <epc:phrase ref="orcid_support_advance:institution" />, making your ORCID record more trustworthy.</li>
+    <li><b>Collect:</b> Filling in the same information over and over again is frustrating. That’s why we let you choose to use information from your ORCID record to import your publications data into <epc:phrase ref="archive_name" />.</li>
+</ul>
+</p>
 
 <h2 id="updating-affiliation">Updating Employment/Education Activities</h2>
 <p>When you give  <epc:phrase ref="archive_name" /> permission to update your ORCID activities, the repository will update your Employment activity accordingly. If you are a student user, your Education activity will be updated instead.</p>

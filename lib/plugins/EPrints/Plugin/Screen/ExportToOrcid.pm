@@ -816,7 +816,7 @@ sub eprint_to_orcid_work
     # ISBN
     if( $eprint->exists_and_set( "isbn" ))
     {
-        if( $eprint->exists_and_set( "type" ) && (($eprint->get_value( "type" ) eq "book_section") || ($eprint->get_value( "type" ) eq "encyclopedia_article")) )
+        if( $eprint->exists_and_set( "type" ) && (($eprint->get_value( "type" ) eq "book_section") || ($eprint->get_value( "type" ) eq "encyclopedia_article") || ($eprint->get_value( "type" ) eq "conference_item")) )
         {
             push ( @{$work->{"external-ids"}->{"external-id"}}, {
                     "external-id-type" => "isbn",

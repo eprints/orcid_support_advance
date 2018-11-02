@@ -357,7 +357,7 @@ $c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
     return unless $eprint->dataset->has_field( "creators_orcid" );
     return unless $eprint->dataset->has_field( "creators_putcode" );
 
-    my $prev_creators = $changed->{creators};
+    my $prev_creators = $changed->{creators_orcid};
     my $current_creators = $eprint->get_value('creators');
     my @new_creators;
 

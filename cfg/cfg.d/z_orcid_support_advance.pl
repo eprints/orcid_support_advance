@@ -105,7 +105,7 @@ $c->add_dataset_field('user',
 $c->add_dataset_field('user',
 	{
 		name => 'orcid_update_works',
-		type => 'boolean',	
+		type => 'boolean',
 		show_in_html => 0,
 		export_as_xml => 0,
 		import => 0,
@@ -116,7 +116,7 @@ $c->add_dataset_field('user',
 $c->add_dataset_field('user',
 	{
 		name => 'orcid_update_profile',
-		type => 'boolean',	
+		type => 'boolean',
 		show_in_html => 0,
 		export_as_xml => 0,
 		import => 0,
@@ -136,17 +136,22 @@ $c->add_dataset_field('user',
 );
 
 ###EPrint Fields###
-$c->add_dataset_field('eprint',
-        {
-                name => 'orcid_put_codes',
+#add put-code as a subfield to appropriate eprint fields
+foreach my $field( @{$c->{fields}->{eprint}} )
+{
+    if( grep { $field->{name} eq $_ } @{$c->{orcid}->{eprint_fields}}) #$c->{orcid}->{eprint_fields} defined in z_orcid_support.pl
+    {
+        @{$field->{fields}} = (@{$field->{fields}}, (
+            {
+                sub_name => 'putcode',
                 type => 'text',
-                multiple => 1,
-                show_in_html => 0,
-                export_as_xml => 0,
-                import => 0,
-        },
-                reuse => 1
-);
+                allow_null => 1,
+                show_in_html => 0, #we don't need this field to appear in the workflow
+                export_as_xml => 0, #nor do we want it appearing in exports
+            }
+        ));
+    }
+}
 
 #each permission defined below with some default behaviour (basic permission description commented by each item)
 ##default - 1 or 0 = this item selected or not selected on screen by default
@@ -218,7 +223,7 @@ $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
 	my ( $eprint ) = @_;
 
 	my %work_types = %{$c->{"plugins"}{"Screen::ExportToOrcid"}{"params"}{"work_type"}};
-	
+
 	if( defined( $eprint ) && $eprint->exists_and_set( "type" ))
 	{
 		my $ret_val = $work_types{ $eprint->get_value( "type" ) };
@@ -235,7 +240,7 @@ $c->{"plugins"}->{"Screen::ImportFromOrcid"}->{"work_type"} = sub {
 	my ( $type ) = @_;
 
 	my %work_types = reverse %{$c->{"plugins"}{"Screen::ExportToOrcid"}{"params"}{"work_type"}};
-	
+
 	if( defined( $type ) )
 	{
 		my $ret_val = $work_types{ $type };
@@ -275,7 +280,7 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 } );
 
 ###
-# These triggers have been commented out as they have the potential to wipe creator/editor ORCID data. 
+# These triggers have been commented out as they have the potential to wipe creator/editor ORCID data.
 # However they are necessary when the ORCID field is non-editable to ensure that ORCIDs are only ever authenticated against user profiles.
 # Re-enable only if repository user profiles (connected to orcid.org) are the sole source of ORCID data.
 ###
@@ -284,7 +289,7 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 #{
 #        my( %args ) = @_;
 #        my( $repo, $eprint, $changed ) = @args{qw( repository dataobj changed )};
-#	
+#
 #        return unless $eprint->dataset->has_field( "creators_orcid" );
 #
 #        my $creators = $eprint->get_value('creators');
@@ -295,7 +300,7 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 #                my $new_c = $c;
 #                $new_c->{orcid} = undef;
 #                #get id and user profile
-#                my $email = $c->{id};              
+#                my $email = $c->{id};
 #                $email = lc($email) if defined $email;
 #                my $user = EPrints::DataObj::User::user_with_email($eprint->repository, $email);
 #                if( $user )
@@ -304,7 +309,7 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 #                        {
 #				#set the orcid
 #                                $new_c->{orcid} = $user->value( 'orcid' );
-#                                
+#
 #                        }
 #                }
 #                push( @new_creators, $new_c );
@@ -343,3 +348,77 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 #        }
 #        $eprint->set_value("editors", \@new_editors);
 #}, priority => 60 );
+
+$c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
+{
+    my( %args ) = @_;
+    my( $repo, $eprint, $changed ) = @args{qw( repository dataobj changed )};
+
+    return unless $eprint->dataset->has_field( "creators_orcid" );
+    return unless $eprint->dataset->has_field( "creators_putcode" );
+
+    my $prev_creators = $changed->{creators};
+    my $current_creators = $eprint->get_value('creators');
+    my @new_creators;
+
+    # Only do things, if there have been previous creators
+    if( defined( $prev_creators) && @{$prev_creators} )
+    {
+        # Get the updated creators table right
+        foreach my $cc (@{$current_creators})
+        {
+            my $new_c = $cc;
+            if( grep { $_->{orcid} eq $cc->{orcid}} @{$prev_creators} )
+            {
+                #creator has existed before edit
+                #check for changed putcode
+                foreach my $pc (@{$prev_creators})
+                {
+                    if( $cc->{orcid} eq $pc->{orcid} && $cc->{putcode} ne $pc->{putcode})
+                    {
+                        if( $cc->{putcode} ne $pc->{putcode} )
+                        {
+                            if( defined( $pc->{putcode} ) )
+                            {
+                                # putcode has changed, assign valid one from before edit
+                                $new_c->{putcode} = $pc->{putcode};
+                            }
+                            # otherwise it was previously empty.
+                            # in that case we allow change or we won't be able to save the putcode at all
+                        }
+                    }
+                }
+            }
+            else
+            {
+                #creator added manually and thus cannot have a putcode
+                $new_c->{putcode} = undef;
+            }
+            push( @new_creators, $new_c );
+        }
+
+        # Clean up obsolete data
+        foreach my $pc (@{$prev_creators})
+        {
+            if( !(grep { $_->{orcid} eq $pc->{orcid}} @new_creators) )
+            {
+                # Creator has been deleted
+                # delete the record on ORCID
+                if( grep { $_->{putcode} eq $pc->{putcode}} @new_creators )
+                {
+                    foreach my $new_c (@new_creators)
+                    {
+                        if( (defined $new_c->{putcode}) && ($new_c->{putcode} eq $pc->{putcode}) )
+                        {
+                            # To Do: Think about deleting item in orcid record
+                            $new_c->{putcode} = undef;
+                        }
+                    }
+                }
+            }
+        }
+
+        $eprint->set_value("creators", \@new_creators);
+    }
+
+}, priority => 60 );

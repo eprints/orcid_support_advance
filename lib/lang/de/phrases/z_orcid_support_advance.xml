@@ -11,7 +11,7 @@
 <epp:phrase id="user_fieldname_orcid_name">orcid.org Name</epp:phrase>
 <epp:phrase id="user_fieldname_orcid_token_expires">ORCID Token Expiry</epp:phrase>
 
-<epp:phrase id="eprint_fieldname_orcid_put_codes">ORCID Put Codes</epp:phrase>
+<epp:phrase id="eprint_fieldname_creators_putcode">ORCID Put Code</epp:phrase>
 
 <!-- Authenticate ORCID -->
 <epp:phrase id="Plugin/Screen/AuthenticateOrcid:title"><img class="orcid-icon" src="/images/orcid_16x16.png"/>ORCID einrichten oder verbinden</epp:phrase>
@@ -32,15 +32,29 @@
 <epp:phrase id="Plugin/Screen/ImportFromOrcid:imported_works"><epc:pin name="count" /> Einträge von orcid.org erfolgreich importiert</epp:phrase>
 <epp:phrase id="Plugin/Screen/ImportFromOrcid:review_permissions">ORCID PERMISSION DENIED<br />Bevor Sie Datensätze von orcid.org importieren können, müssen Sie dem Repositorium die Berechtigung geben, eingeschränkte Details aus Ihrem ORCID-Profil abzurufen. Bitte ändern Sie Ihre Berechtigungen unten.</epp:phrase>
 <epp:phrase id="Plugin/Screen/ImportFromOrcid:user_permissions">ORCID Permission DENIED<br /><epc:pin name="user" /> hat dem Repository nicht die Berechtigung gegeben, eingeschränkte Details aus seinem ORCID-Profil abzurufen.</epp:phrase>
+<epp:phrase id="Plugin/Screen/ImportFromOrcid:show_last_modified">Zeige nur Einträge, die bearbeitet wurden seit: </epp:phrase>
+<epp:phrase id="Plugin/Screen/ImportFromOrcid:filter">Filtern</epp:phrase>
+<epp:phrase id="Plugin/Screen/ImportFromOrcid:duplicates">Einträge, die bereits importiert wurden, werden standardmäßig nicht angezeigt.</epp:phrase>
+<epp:phrase id="Plugin/Screen/ImportFromOrcid:show_hide_duplicates">Zeige/verstecke Dubletten</epp:phrase>
+<epp:phrase id="Plugin/Screen/ImportFromOrcid:select">Alle aus-/abwählen</epp:phrase>
+<epp:phrase id="Plugin/Screen/ImportFromOrcid:no_items">Es gibt keine zu importierenden Einträge.</epp:phrase>
 
 <!-- Export to ORCID -->
 <epp:phrase id="Plugin/Screen/ExportToOrcid:title">Export nach orcid.org</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:user_header">Export nach orcid.org für <epc:pin name="user_name" /></epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:action:export:title">Export nach orcid.org</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:export_help">Wählen Sie die ORCID-Einträge zum Exportieren zu Ihrem orcid.org Profil aus</epp:phrase>
-<epp:phrase id="Plugin/Screen/ExportToOrcid:exported_eprints"><epc:pin name="count" /> Einträge nach orcid.org erfolgreich exportiert</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:exported_eprints"><epc:pin name="count_successful" />/<epc:pin name="count_all" /> Einträge erfolgreich nach orcid.org exportiert</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:updated_eprints"><epc:pin name="count_overwrite" />/<epc:pin name="count_all" /> Einträge erfolgreich bei orcid.org aktualisiert</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:failed_eprints">Entschuldigung! <epc:pin name="count_failed" />/<epc:pin name="count_all" /> Einträge konnten nicht exportiert oder aktualisiert werden! Bitte kontaktieren Sie Ihren Systemadministrator.</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:review_permissions">ORCID PERMISSION DENIED<br />Bevor Sie Datensätze nach orcid.org exportieren können, müssen Sie dem Repositorium die Berechtigung zum Erstellen und Aktualisieren von Aktivitäten auf Ihrem ORCID-Datensatz geben. Bitte ändern Sie Ihre Berechtigungen unten.</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:user_permissions">ORCID Permission DENIED<br /><epc:pin name="user" /> hat dem Repositorium nicht die Berechtigung erteilt, Aktivitäten auf ihrem ORCID-Datensatz anzulegen und zu aktualisieren.</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:show_last_modified">Zeige nur Einträge, die bearbeitet wurden seit: </epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:filter">Filtern</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:duplicates">Einträge, die bereits exportiert wurden, werden standardmäßig nicht angezeigt.</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:show_hide_duplicates">Zeige/verstecke Dubletten</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:select">Alle aus-/abwählen</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:no_items">Es gibt keine zu exportierenden Einträge.</epp:phrase>
 
 <!-- Manage ORCID -->
 <epp:phrase id="Plugin/Screen/ManageOrcid:title"><img class="orcid-icon" src="/images/orcid_16x16.png"/>ORCID-Berechtigungen verwalten</epp:phrase>
@@ -52,7 +66,7 @@
 <epp:phrase id="Plugin/Screen/ManageOrcid:permission:/person/update">Erstellen und aktualisieren von Details Ihrer biographischen Details (institutionelle Zugehörigkeit), die bereits von <epc:phrase ref="archive_name" /> zu Ihrem ORCID-Datensatz hinzugefügt wurden</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:permission:/activities/update">Erstellen und aktualisieren von Details Ihrer Forschungsaktivitäten (Publikationen, Ausbildung oder Beschäftigung), die bereits von <epc:phrase ref="archive_name" /> zu Ihrem ORCID-Datensatz hinzugefügt wurden</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:permission:/read-limited">Abrufen von Details aus Ihrem ORCID-Profil, die nur für vertrauenswürdige Parteien bestimmt sind</epp:phrase>
-<epp:phrase id="Plugin/Screen/ManageOrcid:permissions_instructions">Diese Berechtigungen laufen am <span class="expiry_date"><epc:pin name="expiry_date" /></span> ab.<br /><strong>Bitte beachten Sie:</strong> Sie können die gewährten Berechtigungen jederzeit entfernen entweder über Ihr ORCID-Konto oder indem Sie die unten ausgewählten Berechtigungen ändern und sich erneut mit ORCID verbinden.<br /><br />Wir werden diese erteilten Berechtigungen nur wie unten angegeben verwenden. Zur Änderung der Nutzung dieser Bedingungen wenden Sie sich bitte an <a href="mailto:{$config{ORCID_contact_email}}"><epc:print expr="$config{ORCID_contact_email}"/></a><br /><br />Wählen Sie unten die Berechtigungen aus, die Sie dem Repositorium gewähren möchten. Klicken Sie nach der Auswahl auf die Schaltfläche 'ORCID einrichten oder verbinden', um Ihre Berechtigungen zu aktualisieren.</epp:phrase> 
+<epp:phrase id="Plugin/Screen/ManageOrcid:permissions_instructions">Diese Berechtigungen laufen am <span class="expiry_date"><epc:pin name="expiry_date" /></span> ab.<br /><strong>Bitte beachten Sie:</strong> Sie können die gewährten Berechtigungen jederzeit entfernen entweder über Ihr ORCID-Konto oder indem Sie die unten ausgewählten Berechtigungen ändern und sich erneut mit ORCID verbinden.<br /><br />Wir werden diese erteilten Berechtigungen nur wie unten angegeben verwenden. Zur Änderung der Nutzung dieser Bedingungen wenden Sie sich bitte an <a href="mailto:{$config{ORCID_contact_email}}"><epc:print expr="$config{ORCID_contact_email}"/></a><br /><br />Wählen Sie unten die Berechtigungen aus, die Sie dem Repositorium gewähren möchten. Klicken Sie nach der Auswahl auf die Schaltfläche 'ORCID einrichten oder verbinden', um Ihre Berechtigungen zu aktualisieren.</epp:phrase>
 
 <epp:phrase id="Plugin/Screen/ManageOrcid:/authenticate_select_text">Mit ORCID verbinden</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:/authenticate_select_description">Ermöglicht es <epc:phrase ref="archive_name" />, Ihre ORCID-ID mit Ihrem <epc:phrase ref="archive_name" /> Eintrag zu verknüpfen. Dies ist die minimale erforderliche Erlaubnis und daher nicht editierbar.</epp:phrase>
@@ -86,4 +100,3 @@ Nach Erteilung dieser Genehmigung wird <epc:phrase ref="archive_name" /> auch ve
 <epp:phrase id="user_fieldhelp_orcid">Benutzen Sie den 'Mit ORCID verbinden' Link um Ihre ORCID festzulegen.</epp:phrase>
 
 </epp:phrases>
-

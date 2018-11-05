@@ -115,7 +115,7 @@ sub action_export{
 	foreach my $id ( @{$eprintids} )
 	{
         $count_all++;
-		my $eprint = $ds->dataobj( $id );
+	my $eprint = $ds->dataobj( $id );
         #convert eprint to orcid json
         my $work = $self->eprint_to_orcid_work( $repo, $eprint );
         # Use POST for unpublished and PUT with putcode for published records and write json to orcid profile activities
@@ -137,29 +137,11 @@ sub action_export{
 
         if( $method eq "POST")
         {
-            $result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, $method, "/work", $work );
-            if( $result->is_success )
+	    $result = $self->_post( $repo, $user, $work, $users_orcid, \@creators, $eprint );	
+	    if( $result->is_success )
             {
                 $count_successful++;
-                # Save put-code in eprints
-                # XML response is empty, so we need to get it via the location in the HTTP header plus some regex
-                # Example location: http://api.sandbox.orcid.org/orcid-api-web/v2.0/0000-0002-1905-9139/work/950312
-                if( $result->header("Location") =~ m/^*\/$users_orcid\/work\/([0-9]*)$/ )
-                {
-                    my $pc = $1;
-                    my @new_creators = ();
-                    foreach my $creator (@creators)
-                    {
-                        if( $creator->{orcid} eq $users_orcid )
-                        {
-                            $creator->{putcode} = $pc;
-                        }
-                        push (@new_creators, $creator);
-                    }
-                    $eprint->set_value( "creators", \@new_creators );
-                    $eprint->commit;
-                }
-            }
+	    }
         }
         elsif( $method eq "PUT" )
         {
@@ -169,14 +151,40 @@ sub action_export{
             }
         }
 
-        if( $result->is_error )
-        {
-            # Identify response code by parsing XML with ORCID namespace
+	if( $result->is_error ) #first check orcid error code
+	{
+    	    # Identify response code by parsing XML with ORCID namespace
             my $dom = XML::LibXML->load_xml( string => $result->content() );
             my $xpc = XML::LibXML::XPathContext->new($dom);
             $xpc->registerNs('orcid_error', 'http://www.orcid.org/ns/error');
             my($error_nodes) = $xpc->findnodes('//orcid_error:error');
-            my $response_code = $xpc->findvalue('.//orcid_error:response-code', $error_nodes);
+            
+	    #get orcid error code			
+	    my $error_code = $xpc->findvalue('.//orcid_error:error-code', $error_nodes);
+	    if( ( $error_code eq "9010" || $error_code eq "9016" ) && $method eq "PUT" ) 
+	    {
+		# Error code 9010: The client application is not the source of the resource it is trying to access.
+		# Therefore we should POST the record to add a new source to the ORCID profile
+		# Error code 9016: The work has been removed from orcid.org since original export and so we need to POST it again
+		delete $work->{"put-code"};
+		$result = $self->_post( $repo, $user, $work, $users_orcid, \@creators, $eprint );
+	        if( $result->is_success )
+                {
+                    $count_successful++;
+	        }
+	    }	
+	}
+
+        if( $result->is_error ) #still getting an error, or previous error wasn't a 9010
+        {       
+ 	    # Identify response code by parsing XML with ORCID namespace
+            my $dom = XML::LibXML->load_xml( string => $result->content() );
+            my $xpc = XML::LibXML::XPathContext->new($dom);
+            $xpc->registerNs('orcid_error', 'http://www.orcid.org/ns/error');
+            my($error_nodes) = $xpc->findnodes('//orcid_error:error');
+
+	    #get response code
+	    my $response_code = $xpc->findvalue('.//orcid_error:response-code', $error_nodes);
             if( $response_code eq "409" )
             {
                 # Error 409: Record already published, so try PUT request
@@ -810,4 +818,33 @@ sub curtail_abstract
         }
         $abstract .= " ...";
         return $abstract;
+}
+
+sub _post
+{
+	my ( $self, $repo, $user, $work, $users_orcid, $creators, $eprint ) = @_;
+
+        my $result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, "POST", "/work", $work );
+        if( $result->is_success )
+        {
+                # Save put-code in eprints
+                # XML response is empty, so we need to get it via the location in the HTTP header plus some regex
+                # Example location: http://api.sandbox.orcid.org/orcid-api-web/v2.0/0000-0002-1905-9139/work/950312
+                if( $result->header("Location") =~ m/^*\/$users_orcid\/work\/([0-9]*)$/ )
+                {
+                    my $pc = $1;
+                    my @new_creators = ();
+                    foreach my $creator (@{$creators})
+                    {
+                        if( $creator->{orcid} eq $users_orcid )
+                        {
+                            $creator->{putcode} = $pc;
+                        }
+                        push (@new_creators, $creator);
+                    }
+                    $eprint->set_value( "creators", \@new_creators );
+                    $eprint->commit;
+                }
+	}
+	return $result;
 }

@@ -291,75 +291,76 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 #        my( $repo, $eprint, $changed ) = @args{qw( repository dataobj changed )};
 #        return unless $eprint->dataset->has_field( "creators_orcid" );
 #
-#        my $creators = $eprint->get_value('creators');
-#        my @new_creators;
-#
-#        my $old_eprint = $eprint->dataset->dataobj( $eprint->id );
-#        my $old_creators = $old_eprint->get_value( 'creators' ) if defined $old_eprint;
-#
-#        my $prev_ids = $changed->{creators_id};
-#
-#        #loop through the existing creators and update them
-#        foreach my $c (@{$creators})
+#	 if( !$eprint->{orcid_update} ) #this update hasn't come from orcid, therefore we want to check the orcids and put-codes
 #        {
-#                my $new_c = $c;
+#	        my $creators = $eprint->get_value('creators');
+# 	        my @new_creators;
 #
-#                #ensure orcid is set via user profile
-#                $new_c->{orcid} = undef;
-#                #get id and user profile
-#                my $email = $c->{id};
-#                $email = lc($email) if defined $email;
-#                my $user = EPrints::DataObj::User::user_with_email($eprint->repository, $email);
-#                if( $user )
-#                {
-#                        if( EPrints::Utils::is_set( $user->value( 'orcid' ) ) ) #user has an orcid
-#                        {
-#                                #set the orcid
-#                                $new_c->{orcid} = $user->value( 'orcid' );
+#	 	my $old_eprint = $eprint->dataset->dataobj( $eprint->id );
+#        	my $old_creators = $old_eprint->get_value( 'creators' ) if defined $old_eprint;
 #
-#                        }
-#                }
+#        	my $prev_ids = $changed->{creators_id};
 #
-#                #need to update any put-codes associated with creators
-#                if( defined( $old_creators) && @{$old_creators} )
-#                {
-#                        #first delete any put-code we've carried over, but keep a record of an existing put-code
-#                        $new_c->{putcode} = undef;
-#                        if( defined $new_c->{orcid} )
-#                        {
-#                                #we have an orcid, so see if this orcid had a put code attached previously
-#                                foreach my $old_c ( @{$old_creators} )
-#                                {
-#                                        if( $old_c->{orcid} eq $new_c->{orcid} && defined $old_c->{putcode} )
-#                                        {
-#                                                $new_c->{putcode} = $old_c->{putcode};
-#                                        }
-#                                }
-#                        }
-#                }
-#                push( @new_creators, $new_c );
-#        }
+#        	#loop through the existing creators and update them
+#        	foreach my $c (@{$creators})
+#        	{
+#               	my $new_c = $c;
 #
-#        #now we have a list of new and old creators, see if any put-codes have been removed and if so, remove those records from ORCID
-#        foreach my $old_c ( @{$old_creators} )
-#        {
-#                my $seen = 0;
-#                foreach my $new_c( @new_creators )
-#                {
-#                        if( $old_c->{putcode} eq $new_c->{putcode} )
-#                        {
-#                                $seen = 1;
-#                                last;
-#                        }
-#                }
-#                if( !$seen )
-#                {
-#                        #this record has been removed
-#	                #To Do: Think about deleting item in orcid record
-#                 }
-#        }
+#                	#ensure orcid is set via user profile
+#                	$new_c->{orcid} = undef;
+#                	#get id and user profile
+#                	my $email = $c->{id};
+#                	$email = lc($email) if defined $email;
+#                	my $user = EPrints::DataObj::User::user_with_email($eprint->repository, $email);
+#                	if( $user )
+#                	{
+#                       	if( EPrints::Utils::is_set( $user->value( 'orcid' ) ) ) #user has an orcid
+#                        	{
+#                               	#set the orcid
+#                                	$new_c->{orcid} = $user->value( 'orcid' );
+#                        	}
+#                	}
 #
-#        $eprint->set_value("creators", \@new_creators);
+#                	#need to update any put-codes associated with creators
+#                	if( defined( $old_creators) && @{$old_creators} )
+#                	{
+#                       	#first delete any put-code we've carried over, but keep a record of an existing put-code
+#                        	$new_c->{putcode} = undef;
+#                        	if( defined $new_c->{orcid} )
+#                        	{
+#                               	#we have an orcid, so see if this orcid had a put code attached previously
+#                                	foreach my $old_c ( @{$old_creators} )
+#                                	{
+#                                       	if( $old_c->{orcid} eq $new_c->{orcid} && defined $old_c->{putcode} )
+#                                        	{
+#                                               	$new_c->{putcode} = $old_c->{putcode};
+#                                        	}
+#                                	}
+#                        	}
+#                	}
+#                	push( @new_creators, $new_c );
+#        	}
+#
+#        	#now we have a list of new and old creators, see if any put-codes have been removed and if so, remove those records from ORCID
+#        	foreach my $old_c ( @{$old_creators} )
+#        	{
+#               	my $seen = 0;
+#                	foreach my $new_c( @new_creators )
+#                	{
+#                       	if( $old_c->{putcode} eq $new_c->{putcode} )
+#                        	{
+#                               	$seen = 1;
+#                                	last;
+#                        	}
+#                	}
+#                	if( !$seen )
+#                	{
+#                       	#this record has been removed
+#	                	#To Do: Think about deleting item in orcid record
+#                 	}
+#        	}
+#		$eprint->set_value("creators", \@new_creators);
+#	 }
 #}, priority => 60 );
 
 #automatic update of eprint editor field - orcid must be set to user's orcid value

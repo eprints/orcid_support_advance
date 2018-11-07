@@ -172,6 +172,59 @@ sub action_export{
                 {
                     $count_successful++;
 	        }
+	    }
+	    elsif( $error_code eq "9021" && $method eq "POST" )
+	    {
+		# This record already exists in ORCID, but we've lost our PUT code for it - lets see if we can retrieve it
+		
+		#first retrieve the external ids that we've got on record
+		my %work_ids;
+		foreach my $work_ext_id ( @{$work->{'external-ids'}->{'external-id'}} )
+		{		
+			$work_ids{$work_ext_id->{'external-id-type'}} = $work_ext_id->{'external-id-value'};
+		}
+	
+		my $orcid_works = EPrints::ORCID::AdvanceUtils::read_orcid_works( $repo, $user, 0 );
+
+		foreach my $orcid_work ( @{$orcid_works} )
+		{
+			my $ext_ids = $orcid_work->{'external-ids'}->{'external-id'};
+			foreach my $ext_id ( @$ext_ids )
+			{
+				#if( $ext_id->{'external-id-type'} eq "doi" && $ext_id->{'external-id-value'} eq "thing" ) #we've found a matching record in the user's orcid profile
+				if( exists $work_ids{$ext_id->{'external-id-type'}} && $work_ids{$ext_id->{'external-id-type'}} eq $ext_id->{'external-id-value'} )
+				{
+					#update the put-code for the work we're trying to export
+					my @new_creators;
+					my $update = 0;
+					foreach my $c ( @{$eprint->value( "creators" )} )
+					{
+						my $new_c = $c;
+						if( $c->{orcid} eq $users_orcid ) #we have the matching user
+						{
+							$putcode = $orcid_work->{'put-code'};
+							$new_c->{putcode} = $putcode;
+							$update = 1;
+						}
+						push( @new_creators, $new_c );
+					}
+					if( $update )
+					{
+						$eprint->{orcid_update} = 1;
+						$eprint->set_value("creators", \@new_creators);
+						$eprint->commit;
+					
+						#now we have an updated eprint with a new put code, try to PUT the record again
+						my $new_work = $self->eprint_to_orcid_work( $repo, $eprint );
+						$result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, "PUT", "/work/$putcode", $new_work );
+					        if( $result->is_success ) {
+							$count_overwrite++;
+					        }
+					}
+					last;
+				}
+			}
+		}
 	    }	
 	}
 
@@ -842,6 +895,7 @@ sub _post
                         }
                         push (@new_creators, $creator);
                     }
+	            $eprint->{orcid_update} = 1;
                     $eprint->set_value( "creators", \@new_creators );
                     $eprint->commit;
                 }

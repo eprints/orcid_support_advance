@@ -148,6 +148,23 @@ sub read_orcid_works
 
 }
 
+sub read_orcid_works_all_sources
+{
+	my( $repo, $user ) = @_;
+	my @works = ();
+	my $response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/works" );
+	if( $response->is_success )
+	{
+        	my $json = new JSON;
+	        my $json_text = $json->utf8->decode( $response->content );
+		foreach my $work ( @{$json_text->{group}} )
+		{
+    			push @works, $work;
+   		}
+	}
+	return \@works;
+}
+
 sub read_orcid_record
 {
 	my( $repo, $user, $item ) = @_;

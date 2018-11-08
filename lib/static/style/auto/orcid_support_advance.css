@@ -150,3 +150,8 @@ table.export_orcid_records > tbody > tr:nth-child(odd){
 tr.filtered{
     opacity: 0.4;
 }
+
+/*Put Code Field*/
+th[epsection="creators_putcode"], input.ep_eprint_creators_putcode{
+	display: none;
+}

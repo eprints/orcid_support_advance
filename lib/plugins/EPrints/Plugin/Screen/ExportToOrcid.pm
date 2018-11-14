@@ -96,7 +96,7 @@ sub action_export{
 	my( $self ) = @_;
 
 	my $repo = $self->{repository};
-	
+
 	#get the user
 	my $user = $self->{processor}->{orcid_user};
 	my $current_user = $repo->current_user();
@@ -137,7 +137,7 @@ sub action_export{
 
         if( $method eq "POST")
         {
-	    $result = $self->_post( $repo, $user, $work, $users_orcid, \@creators, $eprint );	
+	    $result = $self->_post( $repo, $user, $work, $users_orcid, \@creators, $eprint );
 	    if( $result->is_success )
             {
                 $count_successful++;
@@ -158,10 +158,10 @@ sub action_export{
             my $xpc = XML::LibXML::XPathContext->new($dom);
             $xpc->registerNs('orcid_error', 'http://www.orcid.org/ns/error');
             my($error_nodes) = $xpc->findnodes('//orcid_error:error');
-            
-	    #get orcid error code			
+
+	    #get orcid error code
 	    my $error_code = $xpc->findvalue('.//orcid_error:error-code', $error_nodes);
-	    if( ( $error_code eq "9010" || $error_code eq "9016" ) && $method eq "PUT" ) 
+	    if( ( $error_code eq "9010" || $error_code eq "9016" ) && $method eq "PUT" )
 	    {
 		# Error code 9010: The client application is not the source of the resource it is trying to access.
 		# Therefore we should POST the record to add a new source to the ORCID profile
@@ -181,10 +181,10 @@ sub action_export{
 		#first retrieve the external ids that we've got on record
 		my %work_ids;
 		foreach my $work_ext_id ( @{$work->{'external-ids'}->{'external-id'}} )
-		{		
+		{
 			$work_ids{$work_ext_id->{'external-id-type'}} = $work_ext_id->{'external-id-value'};
 		}
-	
+
 		#get all the works, including the different versions from different sources
 		my $orcid_works = EPrints::ORCID::AdvanceUtils::read_orcid_works_all_sources( $repo, $user );
 		foreach my $orcid_work ( @{$orcid_works} )
@@ -233,7 +233,7 @@ sub action_export{
 				$eprint->{orcid_update} = 1;
 				$eprint->set_value("creators", \@new_creators);
 				$eprint->commit;
-					
+
 				#now we have an updated eprint with a new put code, try to PUT the record again
 				my $new_work = $self->eprint_to_orcid_work( $repo, $eprint );
 				$result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, "PUT", "/work/$new_putcode", $new_work );
@@ -242,55 +242,17 @@ sub action_export{
 					$count_overwrite++;
 			        }
 			}
-		}					
-	    }	
+		}
+	    }
 	}
 
-        if( $result->is_error ) #still getting an error, or previous error wasn't a 9010
-        {       
- 	    # Identify response code by parsing XML with ORCID namespace
-            my $dom = XML::LibXML->load_xml( string => $result->content() );
-            my $xpc = XML::LibXML::XPathContext->new($dom);
-            $xpc->registerNs('orcid_error', 'http://www.orcid.org/ns/error');
-            my($error_nodes) = $xpc->findnodes('//orcid_error:error');
-
-	    #get response code
-	    my $response_code = $xpc->findvalue('.//orcid_error:response-code', $error_nodes);
-            if( $response_code eq "409" )
-            {
-                # Error 409: Record already published, so try PUT request
-                # ORCID currently does not return the put-code in a 409 response, but is planning to.
-                # So right now this loop is not necessary, but we'll fill this with life later.
-
-                # Get putcode
-                # To Do (read from header or parse XML, depending on ORCID's implementation)
-
-                # Issue PUT Request
-                # $result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, $method, "/work/$putcode", $work );
-
-                if( $result->is_success )
-                {
-                    $count_overwrite++;
-                    # Save put-code in eprints and link it to the user
-                    # To Do. Copy from above or outsource to function.
-                }
-                else
-                {
-                    # Unhandled error: break loop and continue with next eprint item
-                    $count_failed++;
-                    my $error_message = $result->content();
-                    $repo->log( "[Event::ExportToOrcid::action_export]Failed to update $id. Response from ORCID: $error_message\n" );
-                    next;
-                }
-            }
-            else
-            {
-                # Unhandled error: break loop and continue with next eprint item
-                $count_failed++;
-                my $error_message = $result->content();
-                $repo->log( "[Event::ExportToOrcid::action_export]Failed to add or update $id. Response from ORCID: $error_message\n" );
-                next;
-            }
+        if( $result->is_error ) #still getting an error or one we're not actively handling
+        {
+            # log the response message, break loop and continue with next eprint item
+            $count_failed++;
+            my $error_message = $result->content();
+            $repo->log( "[Event::ExportToOrcid::action_export]Failed to add or update $id. Response from ORCID: $error_message\n" );
+            next;
         }
     }
 
@@ -342,17 +304,17 @@ sub properties_from
         my( $self ) = @_;
 
         my $repo = $self->repository;
- 
+
         $self->SUPER::properties_from;
- 
+
  	my $ds = $repo->dataset( "user" );
 
 	if( !$self->{repository}->param( "orcid_userid" ) ) #only check who the user is if we are not in action import context
 	{
-	
+
 		#get screenid
         	$self->{processor}->{screenid} = $self->{repository}->param( "screen" );
-	
+
 		$self->{processor}->{user} = $repo->current_user;
 
 		my $userid = $self->{repository}->param( "dataobj" );
@@ -384,7 +346,7 @@ sub properties_from
         	                exit;
 	                }
         	}
-	}	
+	}
 
 	#in action export context, get user id from form, so we're definitely still working with the same user
         $self->{processor}->{orcid_user} = $ds->dataobj( $self->{repository}->param( "orcid_userid" ) ) if defined $self->{repository}->param( "orcid_userid" );
@@ -403,7 +365,7 @@ sub render
 	my $xml = $repo->xml;
 
         my $user = $self->{processor}->{orcid_user};
-	my $orcid = $user->value( "orcid" );	
+	my $orcid = $user->value( "orcid" );
 
 	my $frag = $xml->create_document_fragment();
 
@@ -604,7 +566,7 @@ sub render_orcid_export_intro
 	my( $self, $xml ) = @_;
 
 	my $intro_div = $xml->create_element( "div", class => "export_intro" );
-	
+
 	#render help text
 	my $help_div = $xml->create_element( "div", class => "export_intro_help" );
 	$help_div->appendChild( $self->html_phrase( "export_help" ) );
@@ -616,7 +578,7 @@ sub render_orcid_export_intro
                         name=>"_action_export",
 			class => "ep_form_action_button",
         ) );
-        $button->appendChild( $xml->create_text_node( "Export" ) );	
+        $button->appendChild( $xml->create_text_node( "Export" ) );
 
     # toggle switch
     my $toggle_button = $btn_div->appendChild( $xml->create_element( "button",
@@ -627,7 +589,7 @@ sub render_orcid_export_intro
     $toggle_button->appendChild( $xml->create_text_node( $self->html_phrase( "select" ) ) );
 
 	$intro_div->appendChild( $help_div );
-	$intro_div->appendChild( $btn_div );	
+	$intro_div->appendChild( $btn_div );
 
 	return $intro_div;
 }
@@ -637,7 +599,7 @@ sub render_eprint_records
 	my( $self, $xml, $records ) = @_;
 
 	my $table = $xml->create_element( "table", class => "export_orcid_records" );
-	
+
 	$records->map(sub{
 		my( $session, $dataset, $eprint ) = @_;
 
@@ -780,17 +742,17 @@ sub eprint_to_orcid_work
 	if( !defined( $doi ) && $eprint->exists_and_set( "id_number" ) && $eprint->get_value( "id_number" ) =~ m#(doi:)?[doixrg./]*(10\..*)$# )
 	{
 		$doi = $2;
-	}	
-	
+	}
+
 	if( defined( $doi ) )
 	{
 		push ( @{$work->{"external-ids"}->{"external-id"}}, {
 				"external-id-type" => "doi",
-				"external-id-value" => $doi,	
+				"external-id-value" => $doi,
 				"external-id-relationship" => "SELF",
 			});
 	}
-	
+
     #URNs
     my $urn = undef;
 	if( $eprint->exists_and_set( "urn" ) && $eprint->get_value( "urn" ) =~ m'(^urn:[a-z0-9][a-z0-9-]{0,31}:[a-z0-9()+,\-.:=@;$_!*\'%/?#]+$)' )
@@ -837,7 +799,7 @@ sub eprint_to_orcid_work
 	#Official URL
 	if( $eprint->exists_and_set( "official_url" ) )
 	{
-		$work->{"url"} = $eprint->get_value( "official_url" ); 
+		$work->{"url"} = $eprint->get_value( "official_url" );
 	}
 
 	#Contributors
@@ -850,8 +812,8 @@ sub eprint_to_orcid_work
 		{
 			foreach my $contributor (@{$eprint->get_value( $contributor_role )})
 			{
-								
-				my $orcid_contributor = { 
+
+				my $orcid_contributor = {
 					"credit-name" => $contributor->{"name"}->{"family"}.", ".$contributor->{"name"}->{"given"},
 					"contributor-attributes" => {
 						"contributor-role" => $contributor_mapping{$contributor_role}

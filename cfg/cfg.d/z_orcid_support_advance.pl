@@ -137,19 +137,35 @@ $c->add_dataset_field('user',
 
 ###EPrint Fields###
 #add put-code as a subfield to appropriate eprint fields
+my $putcode_present = 0;
 foreach my $field( @{$c->{fields}->{eprint}} )
 {
     if( grep { $field->{name} eq $_ } @{$c->{orcid}->{eprint_fields}}) #$c->{orcid}->{eprint_fields} defined in z_orcid_support.pl
     {
-        @{$field->{fields}} = (@{$field->{fields}}, (
+        #check if field already has a putcode subfield
+        $putcode_present = 0;
+        for(@{$field->{fields}})
+        {
+            if( EPrints::Utils::is_set( $_->{name} ) && $_->{name} eq "putcode" )
             {
-                sub_name => 'putcode',
-                type => 'text',
-                allow_null => 1,
-                show_in_html => 0, #we don't need this field to appear in the workflow
-                export_as_xml => 0, #nor do we want it appearing in exports
+                $putcode_present = 1;
+                last;
             }
-        ));
+        }
+
+        if( !$putcode_present )
+        {
+            @{$field->{fields}} = (@{$field->{fields}}, (
+                {
+                    sub_name => 'putcode',
+                    type => 'text',
+                    allow_null => 1,
+                    show_in_html => 0, #we don't need this field to appear in the workflow
+                    export_as_xml => 0, #nor do we want it appearing in exports
+                }
+            ));
+            # Possible to do: If that was successful, find and save putcodes of all items that have been exported in previous versions of this plugin.
+        }
     }
 }
 

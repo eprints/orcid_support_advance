@@ -1,4 +1,4 @@
-This is a *hopefully* temporary fork to fix a few issues and create pull requests back to it's parent
+This is a *hopefully* temporary fork to fix a few issues and create pull requests back to its parent
 
 # ORCID Support Advance Plugin
 

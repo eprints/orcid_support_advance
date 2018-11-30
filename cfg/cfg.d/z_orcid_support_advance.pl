@@ -348,7 +348,7 @@ $c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
                 }
 
                 #need to update any put-codes associated with creators/editors
-                if( defined( $old_contributors) && @{$old_contributors} )
+                if( defined($old_contributors) && @{$old_contributors} )
                 {
                     #first delete any put-code we've carried over, but keep a record of an existing put-code
                     $new_c->{putcode} = undef;
@@ -364,7 +364,9 @@ $c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
                         }
                     }
                 }
-                push( @new_contributors, $new_c );
+                # Drop creator/editor without name or id.
+                # Effectively removes manually deleted entries where the orcid couldn't be removed since it's read-only
+                push( @new_contributors, $new_c ) unless !$new_c->{id} && !$new_c->{name}->{family} && !$new_c->{name}->{given};
             }
 
             #now we have a list of new and old creators/editors, see if any put-codes have been removed and if so, remove those records from ORCID

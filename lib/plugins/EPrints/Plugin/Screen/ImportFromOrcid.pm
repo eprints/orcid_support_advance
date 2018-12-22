@@ -325,7 +325,7 @@ sub render_filter_date_form
     $filter_date_form->appendChild( $self->html_phrase( "show_last_modified" ) );
     my $date_picker =  $xml->create_element( "input", type => "date", name => "filter_date");
     $filter_date_form->appendChild( $date_picker );
-    $filter_date_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->html_phrase( "filter" ) ) );
+    $filter_date_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->phrase( "filter" ) ) );
     $filter_div->appendChild( $filter_date_form );
     return $filter_div;
 }
@@ -363,8 +363,8 @@ sub render_filter_duplicate_form
     }
 
 
-    $filter_duplicate_form->appendChild( $xml->create_text_node($self->html_phrase( "duplicates" )) );
-    $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $xml->create_text_node($self->html_phrase( "show_hide_duplicates" )) ) );
+    $filter_duplicate_form->appendChild( $self->html_phrase( "duplicates" ) );
+    $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->phrase( "show_hide_duplicates" )));
     $duplicate_div->appendChild( $filter_duplicate_form );
     return $duplicate_div;
 }
@@ -407,7 +407,9 @@ sub render_orcid_import_intro
                         onclick => "toggleOrcidCheckbox();",
                         class => "ep_form_action_button toggle_button",
         ) );
-        $toggle_button->appendChild( $xml->create_text_node( $self->html_phrase( "select" ) ) );
+#        $toggle_button->appendChild( $xml->create_text_node( $self->html_phrase( "select" ) ) );
+        $toggle_button->appendChild( $self->html_phrase( "select" ) );
+
 
         $intro_div->appendChild( $help_div );
         $intro_div->appendChild( $btn_div );
@@ -434,7 +436,7 @@ sub render_orcid_import_outro
                     onclick => "toggleOrcidCheckbox();",
                     class => "ep_form_action_button toggle_button",
     ) );
-    $toggle_button->appendChild( $xml->create_text_node( $self->html_phrase( "select" ) ) );
+    $toggle_button->appendChild( $self->html_phrase( "select" ) );
 
 	return $btn_div;
 }
@@ -699,8 +701,6 @@ sub import_via_orcid
 				$epdata = $plugin->convert_input( $entry );
 				next unless defined $epdata;
 			    }
-		    }else{
-			$plugin->warning("Plugin $pluginid (derivced from <work:citation-type>) not found.");
   		    }
 		}		
 	}
@@ -886,7 +886,7 @@ sub import_via_orcid
         push @{$creators}, $contributor;
     }
     #If creators set then this takes precednce over what's been gleaned from citation
-	$eprint->set_value( "creators", $creators ) if EPrint::Utils::is_set($creators);
+	$eprint->set_value( "creators", $creators ) if EPrints::Utils::is_set($creators);
 
 	#save the record
 	$eprint->commit;

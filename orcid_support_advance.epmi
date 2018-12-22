@@ -8,9 +8,9 @@
         <file>
           <filename>epm/orcid_support_advance/cfg/cfg.d/z_orcid_support_advance.pl</filename>
           <mime_type>text/plain</mime_type>
-          <hash>03d26a455ee724e09e6883d80cf6a3f6</hash>
+          <hash>9582b54cb6c5798651be8a364ab9998b</hash>
           <hash_type>MD5</hash_type>
-          <filesize>12407</filesize>
+          <filesize>14738</filesize>
         </file>
         <file>
           <filename>epm/orcid_support_advance/cfg/cfg.d/z_orcid_support_advance_rdf_triples.pl</filename>
@@ -43,23 +43,23 @@
         <file>
           <filename>lang/en/phrases/z_orcid_support_advance.xml</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>1ac3c5613f7dbd49b68a8aa64a427ce2</hash>
+          <hash>4754204548878dd875e6d6c91cba78c5</hash>
           <hash_type>MD5</hash_type>
-          <filesize>11120</filesize>
+          <filesize>12800</filesize>
         </file>
         <file>
           <filename>lang/en/static/orcid_support_advance.xpage</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>e1c8ac1a274e0bc39500c7ba7685163e</hash>
+          <hash>bd76ca83683e8a5c4e4cfe0287bc7d57</hash>
           <hash_type>MD5</hash_type>
-          <filesize>4021</filesize>
+          <filesize>4763</filesize>
         </file>
         <file>
           <filename>plugins/EPrints/ORCID/AdvanceUtils.pm</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>fbac43baa226afb891aaffc8549ee1b3</hash>
+          <hash>8783987546e5ad728efa974d310c05ed</hash>
           <hash_type>MD5</hash_type>
-          <filesize>5491</filesize>
+          <filesize>7622</filesize>
         </file>
         <file>
           <filename>plugins/EPrints/Plugin/Event/CheckOrcidName.pm</filename>
@@ -71,9 +71,9 @@
         <file>
           <filename>plugins/EPrints/Plugin/Event/OrcidSync.pm</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>01b7e4a44698100907c0c411d62e1a99</hash>
+          <hash>ce19d9bba8fecb9c7d6719c7c32dd768</hash>
           <hash_type>MD5</hash_type>
-          <filesize>3169</filesize>
+          <filesize>3455</filesize>
         </file>
         <file>
           <filename>plugins/EPrints/Plugin/Event/UpdateCreatorOrcid.pm</filename>
@@ -106,16 +106,16 @@
         <file>
           <filename>plugins/EPrints/Plugin/Screen/ExportToOrcid.pm</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>b19e47805ce1955daf50e634b0b5b606</hash>
+          <hash>99ece3437550be362737a1908ca33063</hash>
           <hash_type>MD5</hash_type>
-          <filesize>13639</filesize>
+          <filesize>30747</filesize>
         </file>
         <file>
           <filename>plugins/EPrints/Plugin/Screen/ImportFromOrcid.pm</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>2fbb01d745de73cd90dba7bda4862b47</hash>
+          <hash>e78612d46cbc722750d496a07810b456</hash>
           <hash_type>MD5</hash_type>
-          <filesize>18061</filesize>
+          <filesize>27199</filesize>
         </file>
         <file>
           <filename>plugins/EPrints/Plugin/Screen/ManageOrcid.pm</filename>
@@ -162,9 +162,9 @@
         <file>
           <filename>static/style/auto/orcid_support_advance.css</filename>
           <mime_type>inode/symlink</mime_type>
-          <hash>ee30151fc18641d897ef73391140b8b8</hash>
+          <hash>5252258ab888c2f7d36f62193270c299</hash>
           <hash_type>MD5</hash_type>
-          <filesize>1981</filesize>
+          <filesize>2399</filesize>
         </file>
       </files>
       <mime_type>inode/symlink</mime_type>
@@ -187,7 +187,7 @@
       <content>coverimage</content>
     </document>
   </documents>
-  <version>1.4.2</version>
+  <version>1.5</version>
   <controller>EPMC::OrcidSupportAdvance</controller>
   <creators>
     <item>
@@ -204,6 +204,12 @@
       </name>
       <id>alan.stiles@open.ac.uk</id>
     </item>
+    <item>
+      <name>
+        <family>Muller</family>
+        <given>Dennis</given>
+      </name>
+    </item>
   </creators>
   <datestamp>2017-08-21 10:39:19</datestamp>
   <title>ORCID Support Advance</title>
@@ -211,7 +217,7 @@
 
 Requires ORCID membership and access to the Production Member API. For more information please see https://wiki.eprints.org/w/ORCID_Support#ORCID_Support_Advance and to register a client application for the Production Member API please see https://orcid.org/content/register-client-application-production-trusted-party
 
-Allows users to register and connect their ORCIDs via the orcid.org API. Once an ORCID has been authenticated, users may manage their ORCID read/write permissions. If read permissions are granted works from orcid.org may be imported. If write permissions are granted, EPrint records may be export to orcid.org. 
+Allows users to register and connect their ORCIDs via the orcid.org API. Once an ORCID has been authenticated, users may manage their ORCID read/write permissions. If read permissions are granted works from orcid.org may be imported. If write permissions are granted, EPrint records may be exported to orcid.org. 
 
 Once a user has connected their ORCID, the institutional repositories details are added to their orcid.org employment details.
 

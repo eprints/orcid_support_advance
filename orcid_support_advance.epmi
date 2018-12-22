@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <epm xmlns='http://eprints.org/ep2/data/2.0' id='http://template.ulcc.ac.uk/id/epm/orcid_support_advance'>
   <epmid>orcid_support_advance</epmid>
-  <uri>/id/epm/orcid_support_advance</uri>
+  <uri>http://template.ulcc.ac.uk/id/epm/orcid_support_advance</uri>
   <documents>
     <document>
       <files>
@@ -137,9 +137,9 @@
           <datasetid>document</datasetid>
           <filename>plugins/EPrints/Plugin/Screen/ImportFromOrcid.pm</filename>
           <mime_type>text/x-java</mime_type>
-          <hash>5a305b6a7c6a6635b3de48dea8125e72</hash>
+          <hash>104f2b0c51c52b71d44a9d5c128b5fcb</hash>
           <hash_type>MD5</hash_type>
-          <filesize>31357</filesize>
+          <filesize>28755</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -235,7 +235,7 @@
       </name>
     </item>
   </creators>
-  <datestamp>2018-12-22 20:11:13</datestamp>
+  <datestamp>2018-12-22 20:59:40</datestamp>
   <title>ORCID Support Advance</title>
   <description>ORCID Support Advance offers enhanced functionality, designed to build on top of the features already present in ORCID Support. 
 

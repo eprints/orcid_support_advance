@@ -664,105 +664,6 @@ sub render_import_doi
 	return $div;
 }
 
-sub import_via_orcid
-{
-	my( $self, $repo, $user, $work ) = @_;
-	
-	#If we have a work:citation and an import plugin that can 
-	#process it, we should use that to "prime" the eprint.
-	#Parsed ORCID data will then take precedent 
-
-	my $epdata = {};
-
-	if(EPrints::Utils::is_set($work->{citation})){
-
-		my $tmpfile = File::Temp->new;
-		binmode($tmpfile, ":utf8");
-		print $tmpfile $work->{citation}->{"citation-value"};
-		seek($tmpfile, 0, 0);
-
-		if(EPrints::Utils::is_set($work->{citation}->{"citation-type"})){
-		    my $pluginid = $repo->config( "orcid_support_advance", "import_citation_type_map" )->{$work->{citation}->{"citation-type"}};
-	 	    my $plugin = $repo->plugin( "Import::".$pluginid );
-			
-		    unless( !defined $plugin )
-		    {
-			    my $parser = BibTeX::Parser->new( $tmpfile );
-			    while(my $entry = $parser->next)
-			    {
-				if( !$entry->parse_ok )
-				{
-				    $plugin->warning( "Error parsing: " . $entry->error );
-				    next;
-				}
-				$epdata = $plugin->convert_input( $entry );
-				next unless defined $epdata;
-			    }
-		    }else{
-			$plugin->warning("Plugin $pluginid (derivced from <work:citation-type>) not found.");
-  		    }
-		}		
-	}
-
-	$epdata->{eprint_status} = $repo->config( "orcid_support_advance", "import_destination") || "inbox";
-	$epdata->{userid} = $user->get_value( "userid" );
-
-	#create the eprint object
-	my $eprint = $repo->dataset( 'eprint' )->create_dataobj($epdata);
-
-	if( defined( $work->{"type"} ) )
-	{
-		$eprint->set_value( "type", &{$repo->config( "plugins" )->{"Screen::ImportFromOrcid"}->{"work_type"}}( $work->{"type"} ) );
-	}
-
-	if( defined( $work->{"title"}->{"title"}->{"value"} ) )
-	{
-		$eprint->set_value( "title", $work->{"title"}->{"title"}->{"value"} );
-	}
-
-	if( defined( $work->{"journal-title"}->{"value"} ) )
-	{
-		$eprint->set_value( "publication" , $work->{"journal-title"}->{"value"} );
-	}
-
-	if( defined( $work->{"short-description"} ) )
-	{
-		$eprint->set_value( "abstract", $work->{"short-description"} );
-	}
-
-	if( defined( $work->{"url"} ) )
-	{
-		$eprint->set_value( "official_url", $work->{"url"}->{"value"} );
-	}
-
-	if( defined( $work->{"external-ids"}->{"external-id"} ) )
-	{
-		foreach my $identifier (@{$work->{"external-ids"}->{"external-id"}} )
-		{
-			if( $identifier->{"external-id-type"} eq "doi" )
-			{
-				if( $repo->dataset( 'eprint' )->has_field( "doi" ) )
-				{
-					$eprint->set_value( "doi", $identifier->{"external-id-value"} );
-				}
-				else
-				{	
-					$eprint->set_value( "id_number", "doi".$identifier->{"external-id-value"} );
-				}
-				last;
-			}
-		}
-	}
-	
-	
-	#put code
-	my @put_codes = ( $work->{"put-code"} );
-	$eprint->set_value( "orcid_put_codes", \@put_codes );
-
-	#save the record
-	$eprint->commit;
-	return $eprint;
-}
 
 sub import_via_orcid
 {
@@ -964,7 +865,7 @@ sub import_via_orcid
 
     # If there have been no contributor AND no creators were parsed from citation...
     # assume the user is a creator
-    if( !$creators )
+    if( !$creators  && !$eprint->is_set("creators") )
     {
         my $users_name = $user->get_value("name");
         my $putcode = undef;
@@ -984,7 +885,7 @@ sub import_via_orcid
 		};
         push @{$creators}, $contributor;
     }
-
+    #If creators set then this takes precednce over what's been gleaned from citation
 	$eprint->set_value( "creators", $creators ) if EPrint::Utils::is_set($creators);
 
 	#save the record

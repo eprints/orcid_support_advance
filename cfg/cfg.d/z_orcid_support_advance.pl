@@ -282,6 +282,11 @@ $c->{orcid_support_advance}->{contributor_map} = {
 	"editors" => "EDITOR",
 };
 
+# map orcids work: citation-type to available import plugins
+$c->{orcid_support_advance}->{import_citation_type_map} = {
+    BIBTEX => "BibTeX",
+};
+
 #trigger for acquiring a user's name from their orcid.org profile
 $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
 

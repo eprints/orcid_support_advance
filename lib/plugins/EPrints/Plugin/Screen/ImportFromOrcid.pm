@@ -667,12 +667,148 @@ sub render_import_doi
 sub import_via_orcid
 {
 	my( $self, $repo, $user, $work ) = @_;
+	
+	#If we have a work:citation and an import plugin that can 
+	#process it, we should use that to "prime" the eprint.
+	#Parsed ORCID data will then take precedent 
+
+	my $epdata = {};
+
+	if(EPrints::Utils::is_set($work->{citation})){
+
+		my $tmpfile = File::Temp->new;
+		binmode($tmpfile, ":utf8");
+		print $tmpfile $work->{citation}->{"citation-value"};
+		seek($tmpfile, 0, 0);
+
+		if(EPrints::Utils::is_set($work->{citation}->{"citation-type"})){
+		    my $pluginid = $repo->config( "orcid_support_advance", "import_citation_type_map" )->{$work->{citation}->{"citation-type"}};
+	 	    my $plugin = $repo->plugin( "Import::".$pluginid );
+			
+		    unless( !defined $plugin )
+		    {
+			    my $parser = BibTeX::Parser->new( $tmpfile );
+			    while(my $entry = $parser->next)
+			    {
+				if( !$entry->parse_ok )
+				{
+				    $plugin->warning( "Error parsing: " . $entry->error );
+				    next;
+				}
+				$epdata = $plugin->convert_input( $entry );
+				next unless defined $epdata;
+			    }
+		    }else{
+			$plugin->warning("Plugin $pluginid (derivced from <work:citation-type>) not found.");
+  		    }
+		}		
+	}
+
+	$epdata->{eprint_status} = $repo->config( "orcid_support_advance", "import_destination") || "inbox";
+	$epdata->{userid} = $user->get_value( "userid" );
 
 	#create the eprint object
-	my $eprint = $repo->dataset( 'eprint' )->create_dataobj({
-		"eprint_status" => $repo->config( "orcid_support_advance", "import_destination") || "inbox",
-		"userid" => $user->get_value( "userid" ),
-	});
+	my $eprint = $repo->dataset( 'eprint' )->create_dataobj($epdata);
+
+	if( defined( $work->{"type"} ) )
+	{
+		$eprint->set_value( "type", &{$repo->config( "plugins" )->{"Screen::ImportFromOrcid"}->{"work_type"}}( $work->{"type"} ) );
+	}
+
+	if( defined( $work->{"title"}->{"title"}->{"value"} ) )
+	{
+		$eprint->set_value( "title", $work->{"title"}->{"title"}->{"value"} );
+	}
+
+	if( defined( $work->{"journal-title"}->{"value"} ) )
+	{
+		$eprint->set_value( "publication" , $work->{"journal-title"}->{"value"} );
+	}
+
+	if( defined( $work->{"short-description"} ) )
+	{
+		$eprint->set_value( "abstract", $work->{"short-description"} );
+	}
+
+	if( defined( $work->{"url"} ) )
+	{
+		$eprint->set_value( "official_url", $work->{"url"}->{"value"} );
+	}
+
+	if( defined( $work->{"external-ids"}->{"external-id"} ) )
+	{
+		foreach my $identifier (@{$work->{"external-ids"}->{"external-id"}} )
+		{
+			if( $identifier->{"external-id-type"} eq "doi" )
+			{
+				if( $repo->dataset( 'eprint' )->has_field( "doi" ) )
+				{
+					$eprint->set_value( "doi", $identifier->{"external-id-value"} );
+				}
+				else
+				{	
+					$eprint->set_value( "id_number", "doi".$identifier->{"external-id-value"} );
+				}
+				last;
+			}
+		}
+	}
+	
+	
+	#put code
+	my @put_codes = ( $work->{"put-code"} );
+	$eprint->set_value( "orcid_put_codes", \@put_codes );
+
+	#save the record
+	$eprint->commit;
+	return $eprint;
+}
+
+sub import_via_orcid
+{
+	my( $self, $repo, $user, $work ) = @_;
+
+	#If we have a work:citation and an import plugin that can 
+	#process it, we should use that to "prime" the eprint.
+	#Parsed ORCID data will then take precedent 
+
+	my $epdata = {};
+
+	if(EPrints::Utils::is_set($work->{citation})){
+
+		my $tmpfile = File::Temp->new;
+		binmode($tmpfile, ":utf8");
+		print $tmpfile $work->{citation}->{"citation-value"};
+		seek($tmpfile, 0, 0);
+
+		if(EPrints::Utils::is_set($work->{citation}->{"citation-type"})){
+		    my $pluginid = $repo->config( "orcid_support_advance", "import_citation_type_map" )->{$work->{citation}->{"citation-type"}};
+	 	    my $plugin = $repo->plugin( "Import::".$pluginid );
+			
+		    unless( !defined $plugin )
+		    {
+			    my $parser = BibTeX::Parser->new( $tmpfile );
+			    while(my $entry = $parser->next)
+			    {
+				if( !$entry->parse_ok )
+				{
+				    $plugin->warning( "Error parsing: " . $entry->error );
+				    next;
+				}
+				$epdata = $plugin->convert_input( $entry );
+				next unless defined $epdata;
+			    }
+		    }else{
+			$plugin->warning("Plugin $pluginid (derivced from <work:citation-type>) not found.");
+  		    }
+		}		
+	}
+
+	$epdata->{eprint_status} = $repo->config( "orcid_support_advance", "import_destination") || "inbox";
+	$epdata->{userid} = $user->get_value( "userid" );
+
+	#create the eprint object
+	my $eprint = $repo->dataset( 'eprint' )->create_dataobj($epdata);
 
 	if( defined( $work->{"type"} ) )
 	{
@@ -765,18 +901,20 @@ sub import_via_orcid
 
 	#creators and editors
 	my $creators;
-	if( defined( $work->{"contributors"} ) )
+	if( defined( $work->{"contributors"} )  && scalar @{$work->{"contributors"}->{"contributor"}} )
 	{
 		foreach my $contributor (@{$work->{"contributors"}->{"contributor"}} )
 		{
-			my $username = undef;
-            my $putcode = undef;
+            my ($username,$putcode,$orcid) = undef;
+
             my $users_orcid = $user->value( "orcid" );
+
 			if( defined( $contributor->{"contributor-orcid"} ) )
 			{
 				#search for user with orcid and add username to eprint contributor if found
-				my $orcid = $contributor->{"contributor-orcid"}->{"path"};
-				my $user = EPrints::ORCID::Utils::user_with_orcid( $repo, $orcid );
+				$orcid = $contributor->{"contributor-orcid"}->{"path"};
+				$user = EPrints::ORCID::Utils::user_with_orcid( $repo, $orcid );
+
                 # Save putcode if this contributor is the importing user
                 if( $users_orcid eq $orcid )
                 {
@@ -787,38 +925,45 @@ sub import_via_orcid
                     }
                 }
 
-				#What kind of contributor is this?  Pull match from config
-				my $contrib_role = $contributor->{"contributor-attributes"}->{"contributor-role"};
-				my %contrib_config = %{$repo->config( "orcid_support_advance", "contributor_map" )};
-				foreach my $contrib_type ( keys %contrib_config )
-				{
-					if( $contrib_config{$contrib_type} eq $contrib_role )
-					{
-						$contrib_role = $contrib_type;
-					}
-				}
-				#construct a hash of appropriate info
-				my( $honourific, $given, $family ) = EPrints::ORCID::AdvanceUtils::get_name( $contributor->{"credit-name"}->{"value"} );
-				my $contributor = {
-					name => {
-						given => $given,
-						family => $family,
-					},
-					orcid => $orcid,
-					putcode => $putcode,
-				};
-				$contributor->{"id"} = $user->get_value( "email" ) if defined $user;
+			}	
 
-				#add user to appropriate field
-				if( $contrib_role eq "creators" )
+			#What kind of contributor is this?  Pull match from config
+			my $contrib_role = $contributor->{"contributor-attributes"}->{"contributor-role"};
+			my %contrib_config = %{$repo->config( "orcid_support_advance", "contributor_map" )};
+			foreach my $contrib_type ( keys %contrib_config )
+			{
+				if( $contrib_config{$contrib_type} eq $contrib_role )
 				{
-					push @{$creators}, $contributor;
+					$contrib_role = $contrib_type;
 				}
+			}
+			#construct a hash of appropriate info
+			my( $honourific, $given, $family ) = EPrints::ORCID::AdvanceUtils::get_name( $contributor->{"credit-name"}->{"value"} );
+			my $contributor = {
+				name => {
+					honourific => $honourific,
+					given => $given,
+					family => $family,
+				},
+			};
+            #putcode only or
+			$contributor->{"putcode"} = $putcode if defined $putcode;
+			#Add orcid if we have one
+			$contributor->{orcid} = $orcid if defined $orcid;
+			#Add user email if we have linked a user
+			$contributor->{"id"} = $user->get_value( "email" ) if defined $user;
+
+			#add user to appropriate field
+			if( $contrib_role eq "creators" )
+			{
+				push @{$creators}, $contributor;
 			}
 		}
 	}
 
-    # If there have been no contributors, assume the user is a creator
+
+    # If there have been no contributor AND no creators were parsed from citation...
+    # assume the user is a creator
     if( !$creators )
     {
         my $users_name = $user->get_value("name");
@@ -840,7 +985,7 @@ sub import_via_orcid
         push @{$creators}, $contributor;
     }
 
-	$eprint->set_value( "creators", $creators );
+	$eprint->set_value( "creators", $creators ) if EPrint::Utils::is_set($creators);
 
 	#save the record
 	$eprint->commit;

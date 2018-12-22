@@ -1,5 +1,3 @@
-This is a *hopefully* temporary fork to fix a few issues and create pull requests back to its parent
-
 # ORCID Support Advance Plugin
 
 The ORCID Support Advance Plugin builds upon the functionality of the 

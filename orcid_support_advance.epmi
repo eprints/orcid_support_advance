@@ -129,9 +129,9 @@
           <datasetid>document</datasetid>
           <filename>plugins/EPrints/Plugin/Screen/ExportToOrcid.pm</filename>
           <mime_type>text/plain</mime_type>
-          <hash>99ece3437550be362737a1908ca33063</hash>
+          <hash>787bc9be84bf79f691f041056f1dcdfd</hash>
           <hash_type>MD5</hash_type>
-          <filesize>30747</filesize>
+          <filesize>30628</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -235,7 +235,7 @@
       </name>
     </item>
   </creators>
-  <datestamp>2018-12-22 21:51:45</datestamp>
+  <datestamp>2018-12-23 02:13:22</datestamp>
   <title>ORCID Support Advance</title>
   <description>ORCID Support Advance offers enhanced functionality, designed to build on top of the features already present in ORCID Support. 
 

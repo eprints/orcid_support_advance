@@ -16,9 +16,9 @@ sub check_permission
 
 	my @granted_permissions = split(" ", $user->get_value( "orcid_granted_permissions" ));
 	if ( grep( /^$perm_name$/, @granted_permissions ) )
-	{	
+	{
 		return 1;
-	}	
+	}
 	return 0;
 
 }
@@ -26,46 +26,118 @@ sub check_permission
 #build an authorisation uri to request an auth code for the given permissions - will redirecto cgi/orcid/authenticate
 sub build_auth_uri
 {
-	
+
 	my( $repo, @permissions ) = @_;
 
 	my $uri =  $repo->config( "orcid_support_advance", "orcid_org_auth_uri" ) . "?";
 
         $uri .= "client_id=" . uri_escape( $repo->config( "orcid_support_advance", "client_id" ) ) . "&";
-	
+
 	my $scope = join "%20", @permissions;
         $uri .= "response_type=code&scope=$scope&";
         $uri .= "redirect_uri=" . $repo->config( "orcid_support_advance", "redirect_uri" );
-	
+
 	return $uri;
+}
+
+#check to see if this work is already in the repository
+sub check_work_presence
+{
+        my( $repo, $work ) = @_;
+
+	#get the put code
+	my $putcode = $work->{"put-code"};
+
+	#search external ids for doi and urn
+	my $doi;
+    my $urn;
+    my $ext_ids = $work->{'external-ids'}->{'external-id'};
+    foreach my $ext_id ( @$ext_ids )
+    {
+        if( $ext_id->{'external-id-type'} eq "doi" )
+        {
+            $doi = $ext_id->{'external-id-value'};
+        }
+        elsif( $ext_id->{'external-id-type'} eq "urn" )
+        {
+            $urn = $ext_id->{'external-id-value'};
+        }
+	};
+
+	#search for items that may have one of the ids
+	my $ds = $repo->dataset( "archive" );
+	my $searchexp = $ds->prepare_search( satisfy_all => 0 );
+	$searchexp->add_field(
+    		fields => [
+			$ds->field('creators_putcode')
+		],
+		value => $putcode,
+		match => "EQ", # EQuals
+	);
+
+	if( defined $doi )
+	{
+		$searchexp->add_field(
+    			fields => [
+				$ds->field('id_number')
+			],
+			value => $doi,
+			match => "EQ", # EQuals
+		);
+	}
+
+	if( defined $urn )
+	{
+		$searchexp->add_field(
+    			fields => [
+				$ds->field('id_number')
+			],
+			value => $urn,
+			match => "EQ", # EQuals
+		);
+	}
+
+	my $items = $searchexp->perform_search;
+	if( $items->count > 0 )
+	{
+		return $items->ids( 0, 1 );
+	}
+	return 0;
 }
 
 sub read_orcid_works
 {
-	my( $repo, $user ) = @_;
+	my( $repo, $user, $hide_duplicates ) = @_;
 	my @works = ();
 	my $response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/works" );
 	if( $response->is_success )
-        {
-                my $json = new JSON;
-                my $json_text = $json->utf8->decode( $response->content );
+    {
+        my $json = new JSON;
+        my $json_text = $json->utf8->decode( $response->content );
 		foreach my $work ( @{$json_text->{group}} )
-		{	
+		{
 			#get the put-code
 			my $work_summary = $work->{'work-summary'}[0];
 			my $put_code = $work_summary->{'put-code'};
+            my $existing_id = EPrints::ORCID::AdvanceUtils::check_work_presence( $repo, $work_summary );
 
-			#now make a more detailed request
-			my $work_response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/work/$put_code" );
-		        if( $response->is_success )
-			{
-				my $work_json = $json->utf8->decode( $work_response->content );
-				push @works, $work_json;
-			}
-			else
-			{
-				#couldn't retrieve work
-			}
+    		# make a more detailed request if duplicates are allowed or record is not a duplicate
+            if( !$hide_duplicates || ($hide_duplicates && !$existing_id) )
+            {
+    			my $work_response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/work/$put_code" );
+    		    if( $response->is_success )
+    			{
+    				my $work_json = $json->utf8->decode( $work_response->content );
+                    if( $existing_id ) {
+                        $work_json->{'$existing_id'} = $existing_id;
+                    }
+    				push @works, $work_json;
+    			}
+    			else
+    			{
+    				#couldn't retrieve work
+    			}
+            }
 		}
 	}
 	else
@@ -74,6 +146,23 @@ sub read_orcid_works
 	}
 	return \@works;
 
+}
+
+sub read_orcid_works_all_sources
+{
+	my( $repo, $user ) = @_;
+	my @works = ();
+	my $response = EPrints::ORCID::AdvanceUtils::read_orcid_record( $repo, $user, "/works" );
+	if( $response->is_success )
+	{
+        	my $json = new JSON;
+	        my $json_text = $json->utf8->decode( $response->content );
+		foreach my $work ( @{$json_text->{group}} )
+		{
+    			push @works, $work;
+   		}
+	}
+	return \@works;
 }
 
 sub read_orcid_record
@@ -86,18 +175,18 @@ sub read_orcid_record
 		'Accept' => 'application/json',
 		'Authorization' => 'Bearer' . $user->value( "orcid_access_token" ),
 	);
-  
+
  	my $response = $ua->get( $uri, @headers );
 	return $response;
 }
 
 sub write_orcid_record
 {
-	my( $repo, $user, $item, $content ) = @_;
+	my( $repo, $user, $method, $item, $content ) = @_;
 
 	my $uri = $repo->config( "orcid_support_advance", "orcid_apiv2") . $user->value( "orcid" ) . $item;
-	
-	my $req = HTTP::Request->new( 'POST', $uri );
+
+	my $req = HTTP::Request->new( $method, $uri );
         my @headers = (
                 'Content-type' => 'application/vnd.orcid+json',
                 'Authorization' => 'Bearer ' . $user->value( "orcid_access_token" ),
@@ -114,7 +203,7 @@ sub write_orcid_record
 #attempts to convert single string name provided by orcid.org into a creators name
 sub get_name
 {
-	
+
 	my ($in) = @_;
 
 	my $DEBUG = 0;

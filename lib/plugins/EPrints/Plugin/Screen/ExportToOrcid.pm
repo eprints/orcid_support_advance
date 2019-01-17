@@ -447,7 +447,7 @@ sub render
 	}
     else
     {
-        $frag->appendChild( $xml->create_text_node( $self->html_phrase( "no_items" ) ) );
+        $frag->appendChild( $self->html_phrase( "no_items" ) );
     }
 
 	return $frag;
@@ -502,7 +502,7 @@ sub render_filter_date_form
     $filter_date_form->appendChild( $self->html_phrase( "show_last_modified" ) );
     my $date_picker =  $xml->create_element( "input", type => "date", name => "filter_date");
     $filter_date_form->appendChild( $date_picker );
-    $filter_date_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->html_phrase( "filter" ) ) );
+    $filter_date_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->phrase( "filter" ) ) );
     $filter_div->appendChild( $filter_date_form );
     return $filter_div;
 }
@@ -540,8 +540,8 @@ sub render_filter_duplicate_form
     }
 
 
-    $filter_duplicate_form->appendChild( $xml->create_text_node($self->html_phrase( "duplicates" )) );
-    $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $xml->create_text_node($self->html_phrase( "show_hide_duplicates" )) ) );
+    $filter_duplicate_form->appendChild( $self->html_phrase( "duplicates" ) );
+    $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->phrase( "show_hide_duplicates" ) ) );
     $duplicate_div->appendChild( $filter_duplicate_form );
     return $duplicate_div;
 }
@@ -586,7 +586,7 @@ sub render_orcid_export_intro
                     onclick => "toggleOrcidCheckbox();",
                     class => "ep_form_action_button toggle_button",
     ) );
-    $toggle_button->appendChild( $xml->create_text_node( $self->html_phrase( "select" ) ) );
+    $toggle_button->appendChild( $self->html_phrase( "select" ) );
 
 	$intro_div->appendChild( $help_div );
 	$intro_div->appendChild( $btn_div );
@@ -617,7 +617,8 @@ sub render_eprint_records
 		my $tr = "";
 		my $td_citation = $session->make_element( "td", class => "export_orcid_citation" );
 		$td_citation->appendChild($eprint->render_citation_link );
-		if( $mod_date < $filter_date )
+
+		if( $filter_date && $mod_date < $filter_date )
         {
             $tr = $session->make_element( "tr", class => "filtered" );
             $td_citation->appendChild( $xml->create_text_node( "Moddate: $mod_date" ) );
@@ -665,7 +666,7 @@ sub render_orcid_export_outro
                     onclick => "toggleOrcidCheckbox();",
                     class => "ep_form_action_button toggle_button",
     ) );
-    $toggle_button->appendChild( $xml->create_text_node( $self->html_phrase( "select" ) ) );
+    $toggle_button->appendChild( $self->html_phrase( "select" ) );
 
 	return $btn_div;
 }

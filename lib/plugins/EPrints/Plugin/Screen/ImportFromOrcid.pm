@@ -325,7 +325,7 @@ sub render_filter_date_form
     $filter_date_form->appendChild( $self->html_phrase( "show_last_modified" ) );
     my $date_picker =  $xml->create_element( "input", type => "date", name => "filter_date");
     $filter_date_form->appendChild( $date_picker );
-    $filter_date_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->html_phrase( "filter" ) ) );
+    $filter_date_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->phrase( "filter" ) ) );
     $filter_div->appendChild( $filter_date_form );
     return $filter_div;
 }
@@ -363,8 +363,8 @@ sub render_filter_duplicate_form
     }
 
 
-    $filter_duplicate_form->appendChild( $xml->create_text_node($self->html_phrase( "duplicates" )) );
-    $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $xml->create_text_node($self->html_phrase( "show_hide_duplicates" )) ) );
+    $filter_duplicate_form->appendChild( $self->html_phrase( "duplicates" ) );
+    $filter_duplicate_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->phrase( "show_hide_duplicates" )));
     $duplicate_div->appendChild( $filter_duplicate_form );
     return $duplicate_div;
 }
@@ -407,7 +407,9 @@ sub render_orcid_import_intro
                         onclick => "toggleOrcidCheckbox();",
                         class => "ep_form_action_button toggle_button",
         ) );
-        $toggle_button->appendChild( $xml->create_text_node( $self->html_phrase( "select" ) ) );
+#        $toggle_button->appendChild( $xml->create_text_node( $self->html_phrase( "select" ) ) );
+        $toggle_button->appendChild( $self->html_phrase( "select" ) );
+
 
         $intro_div->appendChild( $help_div );
         $intro_div->appendChild( $btn_div );
@@ -434,7 +436,7 @@ sub render_orcid_import_outro
                     onclick => "toggleOrcidCheckbox();",
                     class => "ep_form_action_button toggle_button",
     ) );
-    $toggle_button->appendChild( $xml->create_text_node( $self->html_phrase( "select" ) ) );
+    $toggle_button->appendChild( $self->html_phrase( "select" ) );
 
 	return $btn_div;
 }
@@ -664,15 +666,50 @@ sub render_import_doi
 	return $div;
 }
 
+
 sub import_via_orcid
 {
 	my( $self, $repo, $user, $work ) = @_;
 
+	#If we have a work:citation and an import plugin that can 
+	#process it, we should use that to "prime" the eprint.
+	#Parsed ORCID data will then take precedent 
+
+	my $epdata = {};
+
+	if(EPrints::Utils::is_set($work->{citation})){
+
+		my $tmpfile = File::Temp->new;
+		binmode($tmpfile, ":utf8");
+		print $tmpfile $work->{citation}->{"citation-value"};
+		seek($tmpfile, 0, 0);
+
+		if(EPrints::Utils::is_set($work->{citation}->{"citation-type"})){
+		    my $pluginid = $repo->config( "orcid_support_advance", "import_citation_type_map" )->{$work->{citation}->{"citation-type"}};
+	 	    my $plugin = $repo->plugin( "Import::".$pluginid );
+			
+		    unless( !defined $plugin )
+		    {
+			    my $parser = BibTeX::Parser->new( $tmpfile );
+			    while(my $entry = $parser->next)
+			    {
+				if( !$entry->parse_ok )
+				{
+				    $plugin->warning( "Error parsing: " . $entry->error );
+				    next;
+				}
+				$epdata = $plugin->convert_input( $entry );
+				next unless defined $epdata;
+			    }
+  		    }
+		}		
+	}
+
+	$epdata->{eprint_status} = $repo->config( "orcid_support_advance", "import_destination") || "inbox";
+	$epdata->{userid} = $user->get_value( "userid" );
+
 	#create the eprint object
-	my $eprint = $repo->dataset( 'eprint' )->create_dataobj({
-		"eprint_status" => $repo->config( "orcid_support_advance", "import_destination") || "inbox",
-		"userid" => $user->get_value( "userid" ),
-	});
+	my $eprint = $repo->dataset( 'eprint' )->create_dataobj($epdata);
 
 	if( defined( $work->{"type"} ) )
 	{
@@ -765,18 +802,20 @@ sub import_via_orcid
 
 	#creators and editors
 	my $creators;
-	if( defined( $work->{"contributors"} ) )
+	if( defined( $work->{"contributors"} )  && scalar @{$work->{"contributors"}->{"contributor"}} )
 	{
 		foreach my $contributor (@{$work->{"contributors"}->{"contributor"}} )
 		{
-			my $username = undef;
-            my $putcode = undef;
+            my ($username,$putcode,$orcid) = undef;
+
             my $users_orcid = $user->value( "orcid" );
+
 			if( defined( $contributor->{"contributor-orcid"} ) )
 			{
 				#search for user with orcid and add username to eprint contributor if found
-				my $orcid = $contributor->{"contributor-orcid"}->{"path"};
-				my $user = EPrints::ORCID::Utils::user_with_orcid( $repo, $orcid );
+				$orcid = $contributor->{"contributor-orcid"}->{"path"};
+				$user = EPrints::ORCID::Utils::user_with_orcid( $repo, $orcid );
+
                 # Save putcode if this contributor is the importing user
                 if( $users_orcid eq $orcid )
                 {
@@ -787,39 +826,46 @@ sub import_via_orcid
                     }
                 }
 
-				#What kind of contributor is this?  Pull match from config
-				my $contrib_role = $contributor->{"contributor-attributes"}->{"contributor-role"};
-				my %contrib_config = %{$repo->config( "orcid_support_advance", "contributor_map" )};
-				foreach my $contrib_type ( keys %contrib_config )
-				{
-					if( $contrib_config{$contrib_type} eq $contrib_role )
-					{
-						$contrib_role = $contrib_type;
-					}
-				}
-				#construct a hash of appropriate info
-				my( $honourific, $given, $family ) = EPrints::ORCID::AdvanceUtils::get_name( $contributor->{"credit-name"}->{"value"} );
-				my $contributor = {
-					name => {
-						given => $given,
-						family => $family,
-					},
-					orcid => $orcid,
-					putcode => $putcode,
-				};
-				$contributor->{"id"} = $user->get_value( "email" ) if defined $user;
+			}	
 
-				#add user to appropriate field
-				if( $contrib_role eq "creators" )
+			#What kind of contributor is this?  Pull match from config
+			my $contrib_role = $contributor->{"contributor-attributes"}->{"contributor-role"};
+			my %contrib_config = %{$repo->config( "orcid_support_advance", "contributor_map" )};
+			foreach my $contrib_type ( keys %contrib_config )
+			{
+				if( $contrib_config{$contrib_type} eq $contrib_role )
 				{
-					push @{$creators}, $contributor;
+					$contrib_role = $contrib_type;
 				}
+			}
+			#construct a hash of appropriate info
+			my( $honourific, $given, $family ) = EPrints::ORCID::AdvanceUtils::get_name( $contributor->{"credit-name"}->{"value"} );
+			my $contributor = {
+				name => {
+					honourific => $honourific,
+					given => $given,
+					family => $family,
+				},
+			};
+            #putcode only or
+			$contributor->{"putcode"} = $putcode if defined $putcode;
+			#Add orcid if we have one
+			$contributor->{orcid} = $orcid if defined $orcid;
+			#Add user email if we have linked a user
+			$contributor->{"id"} = $user->get_value( "email" ) if defined $user;
+
+			#add user to appropriate field
+			if( $contrib_role eq "creators" )
+			{
+				push @{$creators}, $contributor;
 			}
 		}
 	}
 
-    # If there have been no contributors, assume the user is a creator
-    if( !$creators )
+
+    # If there have been no contributor AND no creators were parsed from citation...
+    # assume the user is a creator
+    if( !$creators  && !$eprint->is_set("creators") )
     {
         my $users_name = $user->get_value("name");
         my $putcode = undef;
@@ -839,8 +885,8 @@ sub import_via_orcid
 		};
         push @{$creators}, $contributor;
     }
-
-	$eprint->set_value( "creators", $creators );
+    #If creators set then this takes precednce over what's been gleaned from citation
+	$eprint->set_value( "creators", $creators ) if EPrints::Utils::is_set($creators);
 
 	#save the record
 	$eprint->commit;

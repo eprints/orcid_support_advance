@@ -704,7 +704,6 @@ sub import_via_orcid
   		    }
 		}		
 	}
-
 	$epdata->{eprint_status} = $repo->config( "orcid_support_advance", "import_destination") || "inbox";
 	$epdata->{userid} = $user->get_value( "userid" );
 
@@ -778,8 +777,8 @@ sub import_via_orcid
 					$eprint->set_value( "id_number", "doi".$identifier->{"external-id-value"} );
 				}
 			}
-            elsif ( $identifier->{"external-id-type"} eq "urn" )
-            {
+		        elsif ( $identifier->{"external-id-type"} eq "urn" )
+            		{
 				if( $repo->dataset( 'eprint' )->has_field( "urn" ) )
 				{
 					$eprint->set_value( "urn", $identifier->{"external-id-value"} );
@@ -788,15 +787,15 @@ sub import_via_orcid
 				{
 					$eprint->set_value( "id_number", $identifier->{"external-id-value"} );
 				}
-            }
-            elsif ( $identifier->{"external-id-type"} eq "issn" )
-            {
+            		}
+            		elsif ( $identifier->{"external-id-type"} eq "issn" )
+            		{
 				$eprint->set_value( "issn", $identifier->{"external-id-value"} );
-            }
-            elsif ( $identifier->{"external-id-type"} eq "isbn" )
-            {
+            		}
+            		elsif ( $identifier->{"external-id-type"} eq "isbn" )
+            		{
 				$eprint->set_value( "isbn", $identifier->{"external-id-value"} );
-            }
+            		}
 		}
 	}
 
@@ -806,25 +805,25 @@ sub import_via_orcid
 	{
 		foreach my $contributor (@{$work->{"contributors"}->{"contributor"}} )
 		{
-            my ($username,$putcode,$orcid) = undef;
+            		my ($username,$putcode,$orcid) = undef;
 
-            my $users_orcid = $user->value( "orcid" );
-
+            		my $users_orcid = $user->value( "orcid" );
+			my $c_user; # a user object derived from creator object, additional to the logged in one
 			if( defined( $contributor->{"contributor-orcid"} ) )
 			{
 				#search for user with orcid and add username to eprint contributor if found
 				$orcid = $contributor->{"contributor-orcid"}->{"path"};
-				$user = EPrints::ORCID::Utils::user_with_orcid( $repo, $orcid );
+				$c_user = EPrints::ORCID::Utils::user_with_orcid( $repo, $orcid );
 
-                # Save putcode if this contributor is the importing user
-                if( $users_orcid eq $orcid )
-                {
-                    my @work_putcodes = ( $work->{"put-code"} );
-                    foreach my $work_putcode (@work_putcodes)
-                    {
-                        $putcode = $work_putcode;
-                    }
-                }
+                		# Save putcode if this contributor is the importing user
+                		if( $users_orcid eq $orcid )
+                		{
+                    			my @work_putcodes = ( $work->{"put-code"} );
+                    			foreach my $work_putcode (@work_putcodes)
+                    			{
+                        			$putcode = $work_putcode;
+                    			}
+                		}
 
 			}	
 
@@ -847,12 +846,12 @@ sub import_via_orcid
 					family => $family,
 				},
 			};
-            #putcode only or
+            		#putcode only or
 			$contributor->{"putcode"} = $putcode if defined $putcode;
 			#Add orcid if we have one
 			$contributor->{orcid} = $orcid if defined $orcid;
 			#Add user email if we have linked a user
-			$contributor->{"id"} = $user->get_value( "email" ) if defined $user;
+			$contributor->{"id"} = $c_user->get_value( "email" ) if defined $c_user;
 
 			#add user to appropriate field
 			if( $contrib_role eq "creators" )
@@ -862,33 +861,36 @@ sub import_via_orcid
 		}
 	}
 
-
-    # If there have been no contributor AND no creators were parsed from citation...
-    # assume the user is a creator
-    if( !$creators  && !$eprint->is_set("creators") )
-    {
-        my $users_name = $user->get_value("name");
-        my $putcode = undef;
-        my @work_putcodes = ( $work->{"put-code"} );
-        foreach my $work_putcode (@work_putcodes)
-        {
-            $putcode = $work_putcode;
-        }
+   	# If there have been no contributor AND no creators were parsed from citation...
+    	# assume the user is a creator
+    	if( !$creators  && !$eprint->is_set("creators") )
+    	{
+        	my $users_name = $user->get_value("name");
+        	my $putcode = undef;
+        	my @work_putcodes = ( $work->{"put-code"} );
+        	foreach my $work_putcode (@work_putcodes)
+        	{
+            		$putcode = $work_putcode;
+        	}
 		my $contributor = {
 			name => {
 				given => $users_name->{given},
 				family => $users_name->{family},
 			},
-            id => $user->get_value( "email" ),
+            		id => $user->get_value( "email" ),
 			orcid => $user->value( "orcid" ),
 			putcode => $putcode,
 		};
-        push @{$creators}, $contributor;
-    }
-    #If creators set then this takes precednce over what's been gleaned from citation
+        	push @{$creators}, $contributor;
+    	}
+#	use Data::Dumper;
+#	print STDERR "creators from orcid.contributirs: ".Dumper($creators)."\n";
+
+    	#If creators set then this takes precednce over what's been gleaned from citation
 	$eprint->set_value( "creators", $creators ) if EPrints::Utils::is_set($creators);
 
 	#save the record
 	$eprint->commit;
+#	print STDERR "creators in eprint: ".Dumper($eprint->value( "creators"))."\n";
 	return $eprint;
 }

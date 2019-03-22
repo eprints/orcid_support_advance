@@ -152,6 +152,9 @@ tr.filtered{
 }
 
 /*Put Code Field*/
-th[epsection="creators_putcode"], input.ep_eprint_creators_putcode{
+th[epsection="creators_putcode"],
+input.ep_eprint_creators_putcode,
+th[epsection="editors_putcode"],
+input.ep_eprint_editors_putcode {
 	display: none;
 }

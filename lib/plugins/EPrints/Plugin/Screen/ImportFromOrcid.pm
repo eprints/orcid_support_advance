@@ -454,7 +454,7 @@ sub render_orcid_records
         $import_count++;
 	}
     if( $import_count == 0 ) {
-        $ul->appendChild( $xml->create_text_node( $self->html_phrase( "no_items" ) ) );
+        $ul->appendChild( $self->html_phrase( "no_items" ) );
     }
 	return $ul;
 }

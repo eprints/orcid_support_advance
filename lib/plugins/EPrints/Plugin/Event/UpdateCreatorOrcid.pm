@@ -22,31 +22,39 @@ sub update_creators
         {
                 my $email = $user->get_value( "email" );
 
-                #get all records with this user's email listed as a creator
+                #get all records with this user's email listed as a contributor
                 my $ds = $repo->get_repository->get_dataset("eprint");
-                my $search_exp = $ds->prepare_search();
-                $search_exp->add_field(
-                        fields => [ $ds->field( 'creators_id' ) ],
-                        value => $email,
-                );
+                my $search_exp = $ds->prepare_search( satisfy_all => 0 );
+
+                foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
+                {
+                    $search_exp->add_field(
+                            fields => [ $ds->field( $role.'_id' ) ],
+                            value => $email,
+                    );
+                }
+
                 my $list = $search_exp->perform_search;
                 $list->map(sub{
-                        my($session, $dataset, $eprint) = @_;
-
-                        my $creators = $eprint->get_value( 'creators' );
-                        my @new_creators = ();
-                        foreach my $c ( @{ $creators } )
+                    my($session, $dataset, $eprint) = @_;
+                    foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
+                    {
+                        my $contributors = $eprint->get_value( $role );
+                        my @new_contributors = ();
+                        foreach my $c ( @{ $contributors } )
                         {
-                                if( EPrints::Utils::is_set( $c->{id} ) && $c->{id} eq $email ) #add orcid if creator email matches user email
-                                {
-                                        $c->{orcid} = $user->get_value( 'orcid' );
-                                }
-                                push @new_creators, $c;
+                            #add orcid if contributor email matches user email
+                            if( EPrints::Utils::is_set( $c->{id} ) && $c->{id} eq $email )
+                            {
+                                $c->{orcid} = $user->get_value( 'orcid' );
+                            }
+                            push @new_contributors, $c;
                         }
 
-                        #update creators field
-                        $eprint->set_value( "creators", \@new_creators );
-                        $eprint->commit;
+                        #update contributor field
+                        $eprint->set_value( $role, \@new_contributors );
+                    }
+                    $eprint->commit;
                 });
         }
         else

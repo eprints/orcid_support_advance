@@ -115,136 +115,146 @@ sub action_export{
 	foreach my $id ( @{$eprintids} )
 	{
         $count_all++;
-	my $eprint = $ds->dataobj( $id );
+        my $eprint = $ds->dataobj( $id );
         #convert eprint to orcid json
         my $work = $self->eprint_to_orcid_work( $repo, $eprint );
         # Use POST for unpublished and PUT with putcode for published records and write json to orcid profile activities
-        my @creators = @{ $eprint->value( "creators" ) };
+        my %eprint_contribs;
+        foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
+        {
+            $eprint_contribs{$role} = $eprint->value( $role );
+        }
+
         my $users_orcid = $user->value( "orcid" );
         my $method = "POST";
         my $putcode = undef;
         my $result = undef;
 
-        foreach my $creator (@creators)
+        for my $key (keys %eprint_contribs)
         {
-            if( ($creator->{orcid} eq $users_orcid) && defined($creator->{putcode}) )
-            {
-                $putcode = $creator->{putcode};
-                $method = "PUT";
-                last;
+            foreach my $contributor (@{$eprint_contribs{$key}}){
+                if( ($contributor->{orcid} eq $users_orcid) && defined($contributor->{putcode}) )
+                {
+                    $putcode = $contributor->{putcode};
+                    $method = "PUT";
+                    last;
+                }
             }
         }
 
         if( $method eq "POST")
         {
-	    $result = $self->_post( $repo, $user, $work, $users_orcid, \@creators, $eprint );
-	    if( $result->is_success )
-            {
-                $count_successful++;
-	    }
+            $result = $self->_post( $repo, $user, $work, $users_orcid, \%eprint_contribs, $eprint );
+            if( $result->is_success ){ $count_successful++; }
         }
         elsif( $method eq "PUT" )
         {
             $result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, $method, "/work/$putcode", $work );
-            if( $result->is_success ) {
-                $count_overwrite++;
-            }
+            if( $result->is_success ) { $count_overwrite++; }
         }
 
-	if( $result->is_error ) #first check orcid error code
-	{
-    	    # Identify response code by parsing XML with ORCID namespace
+        if( $result->is_error ) #first check orcid error code
+        {
+            # Identify response code by parsing XML with ORCID namespace
             my $dom = XML::LibXML->load_xml( string => $result->content() );
             my $xpc = XML::LibXML::XPathContext->new($dom);
             $xpc->registerNs('orcid_error', 'http://www.orcid.org/ns/error');
             my($error_nodes) = $xpc->findnodes('//orcid_error:error');
 
-	    #get orcid error code
-	    my $error_code = $xpc->findvalue('.//orcid_error:error-code', $error_nodes);
-	    if( ( $error_code eq "9010" || $error_code eq "9016" ) && $method eq "PUT" )
-	    {
-		# Error code 9010: The client application is not the source of the resource it is trying to access.
-		# Therefore we should POST the record to add a new source to the ORCID profile
-		# Error code 9016: The work has been removed from orcid.org since original export and so we need to POST it again
-		delete $work->{"put-code"};
-		$result = $self->_post( $repo, $user, $work, $users_orcid, \@creators, $eprint );
-	        if( $result->is_success )
+            #get orcid error code
+            my $error_code = $xpc->findvalue('.//orcid_error:error-code', $error_nodes);
+            if( ( $error_code eq "9010" || $error_code eq "9016" ) && $method eq "PUT" )
+            {
+                # Error code 9010: The client application is not the source of the resource it is trying to access.
+                # Therefore we should POST the record to add a new source to the ORCID profile
+                # Error code 9016: The work has been removed from orcid.org since original export and so we need to POST it again
+                delete $work->{"put-code"};
+                $result = $self->_post( $repo, $user, $work, $users_orcid, \%eprint_contribs, $eprint );
+                if( $result->is_success ) { $count_successful++; }
+            }
+            elsif( $error_code eq "9021" && $method eq "POST" )
+            {
+                # This record already exists in ORCID, but we've lost our PUT code for it - lets see if we can retrieve it
+                my $new_putcode = undef;
+
+                #first retrieve the external ids that we've got on record
+                my %work_ids;
+                foreach my $work_ext_id ( @{$work->{'external-ids'}->{'external-id'}} )
                 {
-                    $count_successful++;
-	        }
-	    }
-	    elsif( $error_code eq "9021" && $method eq "POST" )
-	    {
-		# This record already exists in ORCID, but we've lost our PUT code for it - lets see if we can retrieve it
-		my $new_putcode = undef;
+                    $work_ids{$work_ext_id->{'external-id-type'}} = $work_ext_id->{'external-id-value'};
+                }
 
-		#first retrieve the external ids that we've got on record
-		my %work_ids;
-		foreach my $work_ext_id ( @{$work->{'external-ids'}->{'external-id'}} )
-		{
-			$work_ids{$work_ext_id->{'external-id-type'}} = $work_ext_id->{'external-id-value'};
-		}
+                #get all the works, including the different versions from different sources
+                my $orcid_works = EPrints::ORCID::AdvanceUtils::read_orcid_works_all_sources( $repo, $user );
+                foreach my $orcid_work ( @{$orcid_works} )
+                {
+                    foreach my $work_item ( @{$orcid_work->{'work-summary'}} )
+                    {
+                        my $ext_ids = $work_item->{'external-ids'}->{'external-id'};
+                        my $match = 0;
+                        foreach my $ext_id ( @$ext_ids )
+                        {
+                            if( exists $work_ids{$ext_id->{'external-id-type'}} && $work_ids{$ext_id->{'external-id-type'}} eq $ext_id->{'external-id-value'} )
+                            {
+                                $match = 1;
+                                last;
+                            }
+                        }
 
-		#get all the works, including the different versions from different sources
-		my $orcid_works = EPrints::ORCID::AdvanceUtils::read_orcid_works_all_sources( $repo, $user );
-		foreach my $orcid_work ( @{$orcid_works} )
-		{
-			foreach my $work_item ( @{$orcid_work->{'work-summary'}} )
-			{
-				my $ext_ids = $work_item->{'external-ids'}->{'external-id'};
-				my $match = 0;
-				foreach my $ext_id ( @$ext_ids )
-				{
-					if( exists $work_ids{$ext_id->{'external-id-type'}} && $work_ids{$ext_id->{'external-id-type'}} eq $ext_id->{'external-id-value'} )
-					{
-						$match = 1;
-						last;
-					}
-				}
-				if( $match )
-				{
-					#this is the work-summary we need, but which put-code do we need...
-					$new_putcode = $work_item->{'put-code'} if !defined $new_putcode; #get the first put-code we come across
-					if( $work_item->{'source'}->{'source-client-id'}->{'path'} eq $repo->config( "orcid_support_advance", "client_id" ) )
-					{
-						#this source came from the repository - this is the put-code we really want
-						$new_putcode = $work_item->{'put-code'};
-					}
-				}
-			}
-		}
-		if( defined $new_putcode )
-		{
-			#update the put-code for the work we're trying to export
-			my @new_creators;
-			my $update = 0;
-			foreach my $c ( @{$eprint->value( "creators" )} )
-			{
-				my $new_c = $c;
-				if( $c->{orcid} eq $users_orcid ) #we have the matching user
-				{
-					$new_c->{putcode} = $new_putcode;
-					$update = 1;
-				}
-				push( @new_creators, $new_c );
-			}
-			if( $update )
-			{
-				$eprint->{orcid_update} = 1;
-				$eprint->set_value("creators", \@new_creators);
-				$eprint->commit;
+                        if( $match )
+                        {
+                            #this is the work-summary we need, but which put-code do we need...
+                            $new_putcode = $work_item->{'put-code'} if !defined $new_putcode; #get the first put-code we come across
+                            if( $work_item->{'source'}->{'source-client-id'}->{'path'} eq $repo->config( "orcid_support_advance", "client_id" ) )
+                            {
+                                #this source came from the repository - this is the put-code we really want
+                                $new_putcode = $work_item->{'put-code'};
+                            }
+                        }
+                    }
+                }
 
-				#now we have an updated eprint with a new put code, try to PUT the record again
-				my $new_work = $self->eprint_to_orcid_work( $repo, $eprint );
-				$result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, "PUT", "/work/$new_putcode", $new_work );
-			        if( $result->is_success )
-				{
-					$count_overwrite++;
-			        }
-			}
-		}
-	    }
-	}
+                if( defined $new_putcode )
+                {
+                    #update the put-code for the work we're trying to export
+                    my %new_contribs;
+                    foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
+                    {
+                        $new_contribs{$role} = [];
+                    }
+
+                    my $update = 0;
+
+                    for my $key (keys %new_contribs)
+                    {
+                        foreach my $c ( @{$eprint->value( $key )} )
+                        {
+                            my $new_c = $c;
+                            if( $c->{orcid} eq $users_orcid ) #we have the matching user
+                            {
+                                $new_c->{putcode} = $new_putcode;
+                                $update = 1;
+                            }
+                            push( @{$new_contribs{$key}}, $new_c );
+                        }
+                    }
+
+                    if( $update )
+                    {
+                        for my $key (keys %new_contribs) {
+                            $eprint->set_value($key, %new_contribs{$key})
+                        }
+                        $eprint->{orcid_update} = 1;
+                        $eprint->commit;
+
+                        #now we have an updated eprint with a new put code, try to PUT the record again
+                        my $new_work = $self->eprint_to_orcid_work( $repo, $eprint );
+                        $result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, "PUT", "/work/$new_putcode", $new_work );
+                        if( $result->is_success ) { $count_overwrite++; }
+                    }
+                }
+            }
+        }
 
         if( $result->is_error ) #still getting an error or one we're not actively handling
         {
@@ -361,24 +371,24 @@ sub render
 {
 	my( $self ) = @_;
 
-        my $repo = $self->{repository};
+	my $repo = $self->{repository};
 	my $xml = $repo->xml;
 
-        my $user = $self->{processor}->{orcid_user};
+	my $user = $self->{processor}->{orcid_user};
 	my $orcid = $user->value( "orcid" );
 
 	my $frag = $xml->create_document_fragment();
 
-    $frag->appendChild( $self->render_toggle_function( $xml ) );
+	$frag->appendChild( $self->render_toggle_function( $xml ) );
 
 	#display user's name
-        my $user_title = $xml->create_element( "h3", class => "orcid_subheading" );
-        $user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
-        $frag->appendChild( $user_title );
+	my $user_title = $xml->create_element( "h3", class => "orcid_subheading" );
+	$user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
+	$frag->appendChild( $user_title );
 
 	#display user's orcid
 	my $div = $xml->create_element( "div", class => "orcid_id_display" );
-        $div->appendChild( $user->render_value( "orcid" ) );
+	$div->appendChild( $user->render_value( "orcid" ) );
 	$frag->appendChild( $div );
 
     # add filters
@@ -395,28 +405,36 @@ sub render
 
 	#display records that might be exported
 	my $dataset = $repo->dataset( "archive" );
-	my $results = $dataset->search(
-			filters => [
-				{
-					meta_fields => [qw( creators_orcid )],
-					value => $orcid, match => "EX",
-				}
-                ]);
+
+	my $searchexp = $dataset->prepare_search( satisfy_all => 0 );
+    foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
+    {
+        $searchexp->add_field(
+                fields => [
+                $dataset->field($role.'_orcid')
+            ],
+            value => $orcid,
+            match => "EX",
+        );
+    }
+    my $results = $searchexp->perform_search;
 
     # Create a new list of items without a putcode for this user.
-    # (Would be more elgant to just add a field to the search expressions to look for empty creators_putcode fields, but I couldn't manage to it.)
     if( $hide_duplicates )
     {
         my $ids = "";
         $results->map(sub{
             my( $session, $dataset, $eprint ) = @_;
-            my @creators = @{ $eprint->value( "creators" ) };
-            foreach my $creator (@creators)
+
+            foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
             {
-                if( $creator->{orcid} eq $user->value( "orcid" ) && !defined($creator->{putcode}) )
+                foreach my $c (@{ $eprint->value( $role ) })
                 {
-                    $ids .= $eprint->id;
-                    $ids .= " ";
+                    if( $c->{orcid} eq $user->value( "orcid" ) && !defined($c->{putcode}) )
+                    {
+                        $ids .= $eprint->id;
+                        $ids .= " ";
+                    }
                 }
             }
         });
@@ -708,13 +726,15 @@ sub eprint_to_orcid_work
 
     #put-code
     my $user = $self->{processor}->{orcid_user};
-    my @creators = @{ $eprint->value( "creators" ) };
-    foreach my $creator (@creators)
+    foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
     {
-        if( $creator->{orcid} eq $user->value("orcid") )
+        foreach my $c (@{ $eprint->value( $role ) })
         {
-            $work->{"put-code"} = $creator->{putcode};
-            last;
+            if( $c->{orcid} eq $user->value("orcid") )
+            {
+                $work->{"put-code"} = $c->{putcode};
+                last;
+            }
         }
     }
 
@@ -856,7 +876,7 @@ sub curtail_abstract
 
 sub _post
 {
-	my ( $self, $repo, $user, $work, $users_orcid, $creators, $eprint ) = @_;
+	my ( $self, $repo, $user, $work, $users_orcid, $contributors, $eprint ) = @_;
 
         my $result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, "POST", "/work", $work );
         if( $result->is_success )
@@ -867,17 +887,23 @@ sub _post
                 if( $result->header("Location") =~ m/^*\/$users_orcid\/work\/([0-9]*)$/ )
                 {
                     my $pc = $1;
-                    my @new_creators = ();
-                    foreach my $creator (@{$creators})
+
+                    my %new_contributors;
+                    for my $key (keys %{$contributors})
                     {
-                        if( $creator->{orcid} eq $users_orcid )
+                        $new_contributors{$key} = [];
+                        foreach my $contributor (@{$contributors->{$key}})
                         {
-                            $creator->{putcode} = $pc;
+                            if( $contributor->{orcid} eq $users_orcid )
+                            {
+                                $contributor->{putcode} = $pc;
+                            }
+                            push (@{$new_contributors{$key}}, $contributor);
                         }
-                        push (@new_creators, $creator);
+                        $eprint->set_value( $key, $new_contributors{$key} );
                     }
-	            $eprint->{orcid_update} = 1;
-                    $eprint->set_value( "creators", \@new_creators );
+
+                    $eprint->{orcid_update} = 1;
                     $eprint->commit;
                 }
 	}

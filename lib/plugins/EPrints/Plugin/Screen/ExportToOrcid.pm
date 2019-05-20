@@ -156,7 +156,7 @@ sub action_export{
     	    # Identify response code by parsing XML with ORCID namespace
             my $dom = XML::LibXML->load_xml( string => $result->content() );
             my $xpc = XML::LibXML::XPathContext->new($dom);
-            $xpc->registerNs('orcid_error', 'http://www.orcid.org/ns/error');
+            $xpc->registerNs('orcid_error', 'http://www.' . $repo->config( "orcid_support", "orcid_domain" ) . '/ns/error');
             my($error_nodes) = $xpc->findnodes('//orcid_error:error');
 
 	    #get orcid error code
@@ -824,9 +824,9 @@ sub eprint_to_orcid_work
 				if( defined( $contributor->{"orcid"} ))
 				{
 					my $orcid_details = {
-						"uri" => "http://orcid.org/" . $contributor->{"orcid"},
+						"uri" => "http://" . $repo->config( "orcid_support", "orcid_domain" ) . "/" . $contributor->{"orcid"},
 						"path" => $contributor->{"orcid"},
-						"host" => "orcid.org",
+						"host" => $repo->config( "orcid_support", "orcid_domain" ),
 					};
 					$orcid_contributor->{"contributor-orcid"} = $orcid_details;
 				}

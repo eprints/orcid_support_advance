@@ -93,7 +93,7 @@ $c->add_dataset_trigger( "eprint", EP_TRIGGER_RDF, sub {
 		my $e_given = $all_people->{$person_uri}->{name}->{given} || "";
 		my $e_family = $all_people->{$person_uri}->{name}->{family} || "";
 		my $e_orcid = "";
-                $e_orcid = "http://orcid.org/" . $all_people->{$person_uri}->{orcid} if defined $all_people->{$person_uri}->{orcid};
+        $e_orcid = "http://" . $c->{orcid_support}->{orcid_domain} . "/" . $all_people->{$person_uri}->{orcid} if defined $all_people->{$person_uri}->{orcid};
 
 		$o{"graph"}->add(
 			secondary_resource => $person_uri,

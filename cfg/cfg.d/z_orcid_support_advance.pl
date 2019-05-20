@@ -6,9 +6,12 @@ $c->{ORCID_contact_email} = $c->{adminemail};
 $c->{orcid_support_advance}->{client_id} = "XXXX";
 $c->{orcid_support_advance}->{client_secret} = "YYYY";
 
-$c->{orcid_support_advance}->{orcid_apiv2} = "https://api.sandbox.orcid.org/v2.0/";
-$c->{orcid_support_advance}->{orcid_org_auth_uri} = "https://sandbox.orcid.org/oauth/authorize";
-$c->{orcid_support_advance}->{orcid_org_exch_uri} = "https://api.sandbox.orcid.org/oauth/token";
+# Use sandbox.orcid.org for testing or orcid.org for production
+# Overwrites value in z_orcid_support.pl
+$c->{orcid_support}->{orcid_domain} = "sandbox.orcid.org";
+$c->{orcid_support_advance}->{orcid_apiv2} = "https://api." . $c->{orcid_support}->{orcid_domain} . "/v2.0/";
+$c->{orcid_support_advance}->{orcid_org_auth_uri} = "https://" . $c->{orcid_support}->{orcid_domain} . "/oauth/authorize";
+$c->{orcid_support_advance}->{orcid_org_exch_uri} = "https://" . $c->{orcid_support}->{orcid_domain} . "/oauth/token";
 $c->{orcid_support_advance}->{redirect_uri} = $c->{"perl_url"} . "/orcid/authenticate";
 
 # Decide if the pre-commit trigger should keep (0) or delete (1) non authenticated orcid ids,

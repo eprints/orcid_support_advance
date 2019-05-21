@@ -1,7 +1,7 @@
-package EPrints::Plugin::Screen::Report::Orcid::CheckName;
+package EPrints::Plugin::Screen::Report::User::Orcid::CheckName;
 
-use EPrints::Plugin::Screen::Report::Orcid;
-our @ISA = ( 'EPrints::Plugin::Screen::Report::Orcid' );
+use EPrints::Plugin::Screen::Report::User::Orcid;
+our @ISA = ( 'EPrints::Plugin::Screen::Report::User::Orcid' );
 
 use strict;
 
@@ -11,25 +11,10 @@ sub new
 
         my $self = $class->SUPER::new( %params );
 
-        $self->{datasetid} = 'user';
-        $self->{custom_order} = '-name';
         $self->{report} = 'orcid-user';
 
-	$self->{show_compliance} = 0;
-
-	$self->{labels} = {
-                outputs => "users"
-        };
-
         $self->{exportfields} = {
-                check_name => [ qw(
-                        userid
-                        username
-                        email
-                        name
-                        orcid
-			orcid_name
-                )],
+                check_name => [ qw( orcid_name )],
         };
 
         return $self;
@@ -115,7 +100,3 @@ sub validate_dataobj
 
         return @problems;
 }
-
-
-
-

@@ -83,7 +83,7 @@ Upon allowing this permission, <epc:phrase ref="archive_name" /> will also attem
 <epp:phrase id="Plugin/Screen/ManageOrcid:confirm_erase_dialog">Are you sure?\nOnce removed we will not be able to maintain the user&apos;s ORCID record until they reauthenticate with ORCID</epp:phrase>
 
 <!-- Name Report -->
-<epp:phrase id="Plugin/Screen/Report/Orcid/CheckName:title">orcid.org Name Mismatch</epp:phrase>
+<epp:phrase id="Plugin/Screen/Report/User/Orcid/CheckName:title">orcid.org Name Mismatch</epp:phrase>
 <epp:phrase id="given_name_mismatch">Name does not match given name on orcid.org: <epc:pin name="given" /></epp:phrase>
 <epp:phrase id="family_name_mismatch">Name does not match family name on orcid.org: <epc:pin name="family" /></epp:phrase>
 <epp:phrase id="exportfields:check_name">User</epp:phrase>

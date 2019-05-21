@@ -1,7 +1,7 @@
-package EPrints::Plugin::Screen::Report::Orcid::UserPermsOrcid;
+package EPrints::Plugin::Screen::Report::User::Orcid::UserPermsOrcid;
 
-use EPrints::Plugin::Screen::Report::Orcid::UserOrcid;
-our @ISA = ( 'EPrints::Plugin::Screen::Report::Orcid::UserOrcid' );
+use EPrints::Plugin::Screen::Report::User::Orcid::UserOrcid;
+our @ISA = ( 'EPrints::Plugin::Screen::Report::User::Orcid::UserOrcid' );
 
 use strict;
 
@@ -30,5 +30,3 @@ sub bullet_points
 
         return @bullets;
 }
-
-                       

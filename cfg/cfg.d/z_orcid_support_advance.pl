@@ -380,10 +380,13 @@ $c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
                 my $seen = 0;
                 foreach my $new_c( @new_contributors )
                 {
-                    if( $old_c->{putcode} eq $new_c->{putcode} )
+                    if( (defined $old_c->{putcode}) && (defined $new_c->{putcode}) )
                     {
-                        $seen = 1;
-                        last;
+                        if( $old_c->{putcode} eq $new_c->{putcode} )
+                        {
+                            $seen = 1;
+                            last;
+                        }
                     }
                 }
                 if( !$seen )

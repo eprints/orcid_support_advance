@@ -28,5 +28,9 @@ sub bullet_points
 		}
 	}
 
+    if( $user->is_set( "orcid_token_expires" ) ){
+        push @bullets, EPrints::XML::to_string( $repo->html_phrase( "report/userperms:token_expiry", token => $repo->xml->create_text_node( $user->get_value( "orcid_token_expires" ) ) ) );
+    }
+
         return @bullets;
 }

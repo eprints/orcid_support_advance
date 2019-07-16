@@ -7,7 +7,7 @@ $c->{orcid_support_advance}->{client_id} = "XXXX";
 $c->{orcid_support_advance}->{client_secret} = "YYYY";
 
 $c->{orcid_support_advance}->{orcid_apiv2} = "https://api.sandbox.orcid.org/v2.0/";
-$c->{orcid_support_advance}->{orcid_org_auth_uri} = "https://sandbox.orcipd.org/oauth/authorize";
+$c->{orcid_support_advance}->{orcid_org_auth_uri} = "https://sandbox.orcid.org/oauth/authorize";
 $c->{orcid_support_advance}->{orcid_org_exch_uri} = "https://api.sandbox.orcid.org/oauth/token";
 $c->{orcid_support_advance}->{redirect_uri} = $c->{"perl_url"} . "/orcid/authenticate";
 

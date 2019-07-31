@@ -236,6 +236,24 @@ $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"params"}->{"work_type"} = {
 		"other"			=> "OTHER",
 };
 
+$c->{"plugins"}->{"Screen::ImportFromOrcid"}->{"params"}->{"work_type"} = {
+    "ARTISTIC_PERFORMANCE" => "performance",
+    "BOOK_CHAPTER" => "book_section",
+    "BOOK" => "monograph",
+    "CONFERENCE_ABSTRACT" => "conference_item",
+    "CONFERENCE_PAPER" => "conference_item",
+    "CONFERENCE_POSTER" => "conference_item",
+    "DATA_SET" => "dataset",
+    "DISSERTATION" => "thesis",
+    "EDITED_BOOK" => "book",
+    "JOURNAL_ARTICLE" => "article",
+    "MAGAZINE_ARTICLE" => "article",
+    "NEWSLETTER_ARTICLE" => "article",
+    "NEWSPAPER_ARTICLE" => "article",
+    "OTHER" => "other",
+    "PATENT" => "patent",
+};
+
 $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
 #return the ORCID work-type based on the EPrints item type.
 ##default EPrints item types mapped in $c->{"plugins"}{"Event::OrcidSync"}{"params"}{"work_type"} above.
@@ -261,7 +279,7 @@ $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
 $c->{"plugins"}->{"Screen::ImportFromOrcid"}->{"work_type"} = sub {
 	my ( $type ) = @_;
 
-	my %work_types = reverse %{$c->{"plugins"}{"Screen::ExportToOrcid"}{"params"}{"work_type"}};
+	my %work_types = %{$c->{"plugins"}{"Screen::ImportFromOrcid"}{"params"}{"work_type"}};
 
 	if( defined( $type ) )
 	{

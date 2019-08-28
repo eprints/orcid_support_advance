@@ -55,8 +55,9 @@ sub can_be_viewed{
                 return 1;
         }
 
-        if( $screenid eq "Workflow::View") #user profile screen
-        {
+     my $dataset = $self->{repository}->param( "dataset" );
+     if( $screenid eq "Workflow::View" && $dataset eq 'user') #user profile screen
+     {
                 my $userid = $self->{repository}->param( "dataobj" );
                 if( defined $userid )
                 {

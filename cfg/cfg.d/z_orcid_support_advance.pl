@@ -28,9 +28,9 @@ $c->{"plugins"}->{"Event::CheckOrcidName"}->{"params"}->{"disable"} = 0;
 $c->{"plugins"}->{"Event::UpdateCreatorOrcid"}->{"params"}->{"disable"} = 0;
 
 ####Enable Report Plugins###
-$c->{plugins}{"Screen::Report::Orcid::CheckName"}{params}{disable} = 0;
-$c->{plugin_alias_map}->{"Screen::Report::Orcid::UserOrcid"} = "Screen::Report::Orcid::UserPermsOrcid";
-$c->{plugin_alias_map}->{"Screen::Report::Orcid::UserPermsOrcid"} = undef;
+$c->{plugins}{"Screen::Report::User::Orcid::CheckName"}{params}{disable} = 0;
+$c->{plugin_alias_map}->{"Screen::Report::User::Orcid::UserOrcid"} = "Screen::Report::User::Orcid::UserPermsOrcid";
+$c->{plugin_alias_map}->{"Screen::Report::User::Orcid::UserPermsOrcid"} = undef;
 
 ###Override DOI Import plugin###
 $c->{plugin_alias_map}->{"Import::DOI"} = "Import::OrcidDOI";

@@ -167,6 +167,7 @@ foreach my $field( @{$c->{fields}->{eprint}} )
                     allow_null => 1,
                     show_in_html => 0, #we don't need this field to appear in the workflow
                     export_as_xml => 0, #nor do we want it appearing in exports
+		    can_clone => 0, #don't copy when using item as a template
                 }
             ));
             # Possible to do: If that was successful, find and save putcodes of all items that have been exported in previous versions of this plugin.

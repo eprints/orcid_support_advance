@@ -4,9 +4,6 @@
 
 <epp:phrase id="Plugin/Screen/ManageOrcid:orcid_info"><p>Für weitere Informationen über die Einbindung an ORCID, <a href="/orcid_support_advance.html" target="_blank">klicken Sie hier</a>.</p></epp:phrase>
 
-<!-- Institution Name -->
-<epp:phrase id="orcid_support_advance:institution">Ihre Institution</epp:phrase>
-
 <!-- New Fields -->
 <epp:phrase id="user_fieldname_orcid_name">orcid.org Name</epp:phrase>
 <epp:phrase id="user_fieldname_orcid_token_expires">ORCID Token Expiry</epp:phrase>

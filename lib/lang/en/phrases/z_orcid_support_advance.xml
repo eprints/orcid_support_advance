@@ -9,6 +9,7 @@
 <epp:phrase id="user_fieldname_orcid_token_expires">ORCID Token Expiry</epp:phrase>
 
 <epp:phrase id="eprint_fieldname_creators_putcode">ORCID Put Code</epp:phrase>
+<epp:phrase id="eprint_fieldname_editors_putcode">ORCID Put Code</epp:phrase>
 
 <!-- Authenticate ORCID -->
 <epp:phrase id="Plugin/Screen/AuthenticateOrcid:title"><img class="orcid-icon" src="/images/orcid_16x16.png"/>Create or Connect your ORCID iD</epp:phrase>

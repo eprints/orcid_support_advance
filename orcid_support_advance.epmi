@@ -49,9 +49,9 @@
           <datasetid>document</datasetid>
           <filename>lang/en/phrases/z_orcid_support_advance.xml</filename>
           <mime_type>application/xml</mime_type>
-          <hash>ea60df8f2a7607be9288bcf3239e07db</hash>
+          <hash>6b22d4f0c819cb0d8bd8a0403c1d4d91</hash>
           <hash_type>MD5</hash_type>
-          <filesize>12692</filesize>
+          <filesize>12770</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -137,9 +137,9 @@
           <datasetid>document</datasetid>
           <filename>plugins/EPrints/Plugin/Screen/ManageOrcid.pm</filename>
           <mime_type>text/plain</mime_type>
-          <hash>1113243ca14a5eeb7d137ccf18a1512c</hash>
+          <hash>74928a20a0e3c68aecd89b4365706d95</hash>
           <hash_type>MD5</hash_type>
-          <filesize>9600</filesize>
+          <filesize>9641</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>

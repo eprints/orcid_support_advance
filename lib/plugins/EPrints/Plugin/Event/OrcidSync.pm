@@ -17,8 +17,17 @@ sub update_employment
 
 	#get user object for relevant details - check it exists and has appropriate fields
 	my $repo = $self->{repository};
-	die "Repository or User object not defined" unless (defined( $repo ) && defined( $user ));
-	die "Orcid id or authorisation code not set for user ". $user->get_value( "userid" ) unless( $user->exists_and_set( "orcid" ) && $user->exists_and_set( "orcid_access_token" ) );
+    unless (defined( $repo ) && defined( $user ))
+    {   
+            $repo->log( "Repository or User object not defined" );
+            return EPrints::Const::HTTP_INTERNAL_SERVER_ERROR;
+    }
+   
+	unless( $user->exists_and_set( "orcid" ) && $user->exists_and_set( "orcid_access_token" ) )
+    {
+        $repo->log( "Orcid id or authorisation code not set for user ". $user->get_value( "userid" ) );
+        return EPrints::Const::HTTP_INTERNAL_SERVER_ERROR;
+    }
 
 	my $user_type = $user->get_value( "usertype" );
 	my $affiliation = "employment";
@@ -29,7 +38,11 @@ sub update_employment
 
 	#get details for the communication from config - check they exist
 	my $organisation = $repo->config( "plugins" )->{"Event::OrcidSync"}->{"params"}->{"affiliation"};
-	die "Organization not defined correctly in configuration"  unless ( defined( $organisation ));
+    unless ( defined( $organisation ))
+    {
+    	$repo->log( "Organization not defined correctly in configuration" );
+        return EPrints::Const::HTTP_INTERNAL_SERVER_ERROR;
+    }
 
 	#check if we have already created a profile on the ORCID record to determine whether to create or update the profile
 	#NOTE: Assuming we are only maintaining one affiliation record as we have no historical detail over role / deparmental changes
@@ -72,19 +85,21 @@ sub update_employment
 			else
 			{
 				#problem with the communication
-				die "Response from ORCID:".$response->code." ".$response->content;
+				$repo->log( "Response from ORCID:".$response->code." ".$response->content );
+                return EPrints::Const::HTTP_INTERNAL_SERVER_ERROR;
 			}
                 }
 		else
 		{
 			#no need to add institution
 			$repo->log( "[Event::OrcidSync::update_employment]Institution present in ORCID record. \n" );
-			return;
+			return EPrints::Const::HTTP_OK;
 		}
         }
         else
         {
                 #problem with the communication
-		die "Response from ORCID:".$response->code." ".$response->content;
+        		$repo->log( "Response from ORCID:".$response->code." ".$response->content );
+                return EPrints::Const::HTTP_INTERNAL_SERVER_ERROR;
         }	
 }

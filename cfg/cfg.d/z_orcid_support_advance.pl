@@ -363,7 +363,7 @@ $c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
                         #we have an orcid, so see if this orcid had a put code attached previously
                         foreach my $old_c ( @{$old_contributors} )
                         {
-                            if( $old_c->{orcid} eq $new_c->{orcid} && defined $old_c->{putcode} )
+                            if( defined $old_c->{putcode} && $old_c->{orcid} eq $new_c->{orcid} )
                             {
                                 $new_c->{putcode} = $old_c->{putcode};
                             }
@@ -381,7 +381,7 @@ $c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
                 my $seen = 0;
                 foreach my $new_c( @new_contributors )
                 {
-                    if( $old_c->{putcode} eq $new_c->{putcode} )
+                    if( defined $old_c->{putcode} && defined $new_c->{putcode} && $old_c->{putcode} eq $new_c->{putcode} )
                     {
                         $seen = 1;
                         last;
@@ -399,3 +399,27 @@ $c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
 
 
 }, priority => 60 );
+
+# Update EPrint ORCID metadata when a user connects/disconnects their user account with orcid.org
+$c->add_dataset_trigger( 'user', EPrints::Const::EP_TRIGGER_AFTER_COMMIT, sub
+{
+        my( %args ) = @_;
+        my( $repo, $user, $changed ) = @args{qw( repository dataobj changed )};
+
+        if( exists $changed->{orcid} && $user->is_set( "email" ) )
+        {       
+            my $email = $user->value( "email" );
+            my $ds = $repo->get_repository->get_dataset( "eprint" ); 
+            my $search_exp = $ds->prepare_search();
+            $search_exp->add_field(
+                fields => [ $ds->field( 'creators_id' ) ],
+                value => $email,
+            );
+            my $list = $search_exp->perform_search;
+
+            $list->map( sub{
+                my( $session, $dataset, $eprint ) = @_;
+                $eprint->commit( 1 );
+            } );
+        }
+}, priority => 50 );

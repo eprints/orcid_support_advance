@@ -7,32 +7,26 @@ use strict;
 
 sub new
 {
-        my( $class, %params ) = @_;
+    my( $class, %params ) = @_;
 
-        my $self = $class->SUPER::new( %params );
+    my $self = $class->SUPER::new( %params );
 
-        $self->{datasetid} = 'user';
-        $self->{custom_order} = '-name';
-        $self->{report} = 'orcid-user';
-
-	$self->{show_compliance} = 0;
+    $self->{datasetid} = 'user';
+    $self->{custom_order} = '-name';
+    $self->{report} = 'orcid_check_name';
+    $self->{searchdatasetid} = 'user';
+    $self->{show_compliance} = 0;
 
 	$self->{labels} = {
-                outputs => "users"
-        };
+        outputs => "users"
+    };
 
-        $self->{exportfields} = {
-                check_name => [ qw(
-                        userid
-                        username
-                        email
-                        name
-                        orcid
-			orcid_name
-                )],
-        };
+    $self->{sconf} = 'orcid_check_name';
+    $self->{export_conf} = 'orcid_check_name';
+    $self->{sort_conf} = 'orcid_check_name';
+    $self->{group_conf} = 'orcid_check_name';
 
-        return $self;
+    return $self;
 }
 
 sub items

@@ -23,6 +23,14 @@
         </file>
         <file>
           <datasetid>document</datasetid>
+          <filename>epm/orcid_support_advance/cfg/cfg.d/zzz_orcid_support_advance_reports.pl</filename>
+          <mime_type>text/plain</mime_type>
+          <hash>8f372652bfb8c8a75d69801849e024c2</hash>
+          <hash_type>MD5</hash_type>
+          <filesize>2122</filesize>
+        </file>
+        <file>
+          <datasetid>document</datasetid>
           <filename>epm/orcid_support_advance/cgi/orcid/authenticate</filename>
           <mime_type>text/plain</mime_type>
           <hash>f7d5ad404884ee820f7c624480c48956</hash>
@@ -49,9 +57,9 @@
           <datasetid>document</datasetid>
           <filename>lang/en/phrases/z_orcid_support_advance.xml</filename>
           <mime_type>application/xml</mime_type>
-          <hash>6b22d4f0c819cb0d8bd8a0403c1d4d91</hash>
+          <hash>eed84ba4740eecca7c0b5329a63174ee</hash>
           <hash_type>MD5</hash_type>
-          <filesize>12770</filesize>
+          <filesize>13031</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -137,9 +145,9 @@
           <datasetid>document</datasetid>
           <filename>plugins/EPrints/Plugin/Screen/Report/Orcid/CheckName.pm</filename>
           <mime_type>text/plain</mime_type>
-          <hash>df7d13b6473921951794a19f0cea4717</hash>
+          <hash>66da32e96f5057048f89b11a39e7ed01</hash>
           <hash_type>MD5</hash_type>
-          <filesize>2993</filesize>
+          <filesize>2915</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -211,7 +219,7 @@
       <content>coverimage</content>
     </document>
   </documents>
-  <version>1.5.2</version>
+  <version>1.6</version>
   <controller>EPMC::OrcidSupportAdvance</controller>
   <creators>
     <item>

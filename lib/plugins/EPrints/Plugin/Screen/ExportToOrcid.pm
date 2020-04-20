@@ -71,7 +71,7 @@ sub can_be_viewed{
                                 #has the subject user given permission to read their orcid.org profile?
                                 my $ds = $repo->get_dataset( "user" );
                                 my $user = $ds->dataobj( $userid );
-				if( EPrints::Utils::is_set( $user->value( "orcid" ) ) )
+				if( defined $user && EPrints::Utils::is_set( $user->value( "orcid" ) ) )
                                 {
                                 	return 1;
 				}

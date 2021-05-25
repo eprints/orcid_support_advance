@@ -98,7 +98,7 @@ li.orcid_item .subtitle{
 
 li.orcid_item .date-type{
 	margin-bottom: 5px;
-}	
+}
 
 ul.external_identifiers{
 	list-style: none;
@@ -134,6 +134,7 @@ li.duplicate, li.filtered{
     margin: 5px 0;
 }
 
+.delete_button,
 .toggle_button{
     margin-left: 5px;
 }

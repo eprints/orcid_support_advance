@@ -578,7 +578,7 @@ sub render_duplicate_record
 	my $div = $xml->create_element( "div", class => "duplicate_record" );
 
 	#get duplicate record
-	my $ds = $repo->dataset( "archive" );
+	my $ds = $repo->dataset( "eprint" );
 	my $eprint = $ds->dataobj( @{$existing_id}[0] );
 	$div->appendChild( $self->html_phrase(
 		"orcid_duplicate_record",
@@ -672,9 +672,9 @@ sub import_via_orcid
 {
 	my( $self, $repo, $user, $work ) = @_;
 
-	#If we have a work:citation and an import plugin that can 
+	#If we have a work:citation and an import plugin that can
 	#process it, we should use that to "prime" the eprint.
-	#Parsed ORCID data will then take precedent 
+	#Parsed ORCID data will then take precedent
 
 	my $epdata = {};
 
@@ -688,7 +688,7 @@ sub import_via_orcid
 		if(EPrints::Utils::is_set($work->{citation}->{"citation-type"})){
 		    my $pluginid = $repo->config( "orcid_support_advance", "import_citation_type_map" )->{$work->{citation}->{"citation-type"}};
 	 	    my $plugin = $repo->plugin( "Import::".$pluginid );
-			
+
 		    unless( !defined $plugin )
 		    {
 			    my $parser = BibTeX::Parser->new( $tmpfile );
@@ -703,7 +703,7 @@ sub import_via_orcid
 				next unless defined $epdata;
 			    }
   		    }
-		}		
+		}
 	}
 	$epdata->{eprint_status} = $repo->config( "orcid_support_advance", "import_destination") || "inbox";
 	$epdata->{userid} = $user->get_value( "userid" );
@@ -826,7 +826,7 @@ sub import_via_orcid
                     			}
                 		}
 
-			}	
+			}
 
 			#What kind of contributor is this?  Pull match from config
 			my $contrib_role = $contributor->{"contributor-attributes"}->{"contributor-role"};

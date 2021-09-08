@@ -47,7 +47,7 @@ $c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_STATUS_CHANGE, sub
 
     if( defined $eprint && $new_status eq "archive" )
     {
-        print STDERR "we've just gone live!!!\n";
+        EPrints::ORCID::AdvanceUtils::auto_export_eprint( $repo, $eprint );
     }
 }, priority => 100 );
 
@@ -87,5 +87,7 @@ $c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
 
     return unless $update_orcid;
 
-    print STDERR "we want to update this on orcid!!!\n";
+    # we've updated this eprint with something we can export to orcid.org... so call the auto export function
+    EPrints::ORCID::AdvanceUtils::auto_export_eprint( $repo, $eprint );
+
 }, priority => 70 );

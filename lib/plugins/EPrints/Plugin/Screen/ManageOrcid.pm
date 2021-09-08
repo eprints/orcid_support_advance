@@ -96,8 +96,8 @@ sub action_connect_to_orcid
             push @request_permissions, $perm_name;
         }
     }
-    my $uri = EPrints::ORCID::AdvanceUtils::build_auth_uri( $repo, @request_permissions );
 
+    my $uri = EPrints::ORCID::AdvanceUtils::build_auth_uri( $repo, @request_permissions );
     $repo->redirect( $uri );
     $repo->terminate();
     exit(0);
@@ -305,6 +305,12 @@ sub render_local_permissions
             my $description = $repo->xml->create_element( "div", class => "permission_description" );
             $description->appendChild( $self->html_phrase( $permission->{"permission"}."_select_description" ) );
             $local_perms_div->appendChild( $description );
+
+            # display extra subfields
+            if( $permission->{"permission"} eq "/activities/update" )
+            {
+                $local_perms_div->appendChild( $self->render_permission_sub_field( $repo, $user, $permission ) );
+            }
         }
     }
     
@@ -344,4 +350,55 @@ sub render_local_permissions
     $local_frag->appendChild($local_perms_form);
 
     return $local_frag;
+}
+
+sub render_permission_sub_field
+{
+    my( $self, $repo, $user, $permission ) = @_;
+
+    my $sub_field_div = $repo->xml->create_element( "div", "class" => "sub_field_div" );
+
+    my $sub_field = $permission->{sub_field};
+    my $parent_permission = $permission->{permission};
+
+    my $selected = 0;
+    my $disabled = 0;
+
+    # check the field is editable
+    if( !$permission->{user_edit} )
+    {
+        $disabled = 1;
+    }
+
+    # check if the field is set
+    if( $user->value( $sub_field ) )
+    {
+        $selected = 1;
+    }
+
+    # construct input
+    my $input = $repo->xml->create_element( "input",
+        class => "ep_form_input_checkbox",
+        name => $sub_field,
+        type => "checkbox",
+        value => 1,
+    );
+
+    if( $selected || !$user->exists_and_set( "orcid_granted_permissions" ) ) # set true if selected or connecting for first time
+    {
+        $input->setAttribute( "checked", "checked" );
+    }
+
+    $sub_field_div->appendChild( $input );
+
+    # title and description of sub field
+    my $permission_title = $repo->xml->create_element( "span", "class" => "orcid_permission_title" );
+    $permission_title->appendChild( $self->html_phrase( $parent_permission."_".$sub_field."_select_text" ) );
+    $sub_field_div->appendChild( $permission_title ); 
+
+    my $description = $repo->xml->create_element( "div", class => "permission_description" );
+    $description->appendChild( $self->html_phrase( $parent_permission."_".$sub_field."_select_description" ) );
+    $sub_field_div->appendChild( $description );
+
+    return $sub_field_div;
 }

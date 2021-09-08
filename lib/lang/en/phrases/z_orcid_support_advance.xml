@@ -73,6 +73,11 @@
 Allows <epc:phrase ref="archive_name" /> to add details of your publications to your ORCID record and update the details of publications which have already been added to your ORCID record by <epc:phrase ref="archive_name" />.<br/><br/>
 Upon allowing this permission, <epc:phrase ref="archive_name" /> will also attempt to update your employment or education acitivities. Please see <a href="/orcid_support_advance.html#updating-affiliation" target="_blank">Updating Employment/Education Activities</a> for more information.
 </epp:phrase>
+
+<epp:phrase id="Plugin/Screen/ManageOrcid:/activities/update_auto_update_select_text">Allow <epc:phrase ref="archive_name" /> to automatically update activities on your ORCID record</epp:phrase>
+<epp:phrase id="Plugin/Screen/ManageOrcid:/activities/update_auto_update_select_description">
+Allows <epc:phrase ref="archive_name" /> to update your ORCID record automatically each time a new publication is added to the repository, or when an existing publication is updated.</epp:phrase>
+
 <epp:phrase id="Plugin/Screen/ManageOrcid:/person/update_select_text">Add and update affiliation details on your ORCID record</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:/person/update_select_description">Allows <epc:phrase ref="archive_name" /> to add information about your institutional affiliaton to your ORCID record and update your affiliation information which has already been added by <epc:phrase ref="archive_name" /></epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:/read-limited_select_text">Retrieve restricted details from your ORCID profile</epp:phrase>

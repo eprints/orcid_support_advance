@@ -62,7 +62,9 @@ input[value="orcid"] ~ input[value="Edit"] {
 	float: right;
 }
 
-
+.sub_field_div{
+    padding-left: 20px;
+}
 
 /*Import from ORCID*/
 ul.orcid_imports{

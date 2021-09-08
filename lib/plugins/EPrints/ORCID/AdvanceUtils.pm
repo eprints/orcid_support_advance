@@ -278,4 +278,27 @@ sub get_name
 	return ($honourific, $given, $family);
 }
 
+# loop through all of the orcidfor this eprint
+# check if they've given permission to export
+# start the export
+sub auto_export_eprint
+{
+    my( $repo, $eprint ) = @_;
+
+    # TODO: Other orcids beyond creators!!!!
+    my @creators_orcids = @{$eprint->value( "creators_orcid" )};
+    foreach my $creator_orcid( @creators_orcids )
+    {
+        my $user = EPrints::ORCID::Utils::user_with_orcid( $repo, $creator_orcid );
+        if( defined $user && EPrints::ORCID::AdvanceUtils::check_permission( $user, "/activities/update" ) && $user->is_set( "auto_update" ) && $user->value( "auto_update" ) == 1 )
+        {
+            print STDERR "we can export this!!\n";
+        }
+        else
+        {
+            print STDERR "don't yet have permission to auto update\n";
+        }
+    }
+}
+
 1;

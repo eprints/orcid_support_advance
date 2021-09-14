@@ -78,6 +78,7 @@ sub action_manage
     my( $self ) = @_;
 }
 
+# called when first connecting to ORCID or when updating permissions
 sub action_connect_to_orcid
 {
     my( $self ) = @_;
@@ -85,22 +86,42 @@ sub action_connect_to_orcid
     my $repo = $self->{repository};
     my $user = $repo->current_user;
 
-    my @permissions = @{$repo->config( "ORCID_requestable_permissions" )};
-
-    my @request_permissions = ( "/authenticate" );
-    foreach my $permission ( @permissions )
+    # check to see if we already hold permissions and if so revoke them before setting the new ones
+    my $proceed = 1;
+    if( $user->exists_and_set( "orcid_granted_permissions" ) )
     {
-        my $perm_name = $permission->{ "permission" };
-        if( defined( $repo->param( $perm_name ) ) )
-        {
-            push @request_permissions, $perm_name;
-        }
+        my $response = $self->revoke_permissions( $user );
+        $proceed = 0 if !$response->is_success;
     }
 
-    my $uri = EPrints::ORCID::AdvanceUtils::build_auth_uri( $repo, @request_permissions );
-    $repo->redirect( $uri );
-    $repo->terminate();
-    exit(0);
+    if( $proceed )
+    {
+        my @permissions = @{$repo->config( "ORCID_requestable_permissions" )};
+
+        my @request_permissions = ( "/authenticate" );
+        foreach my $permission ( @permissions )
+        {
+            my $perm_name = $permission->{ "permission" };
+            if( defined( $repo->param( $perm_name ) ) )
+            {
+                push @request_permissions, $perm_name;
+            }
+        }
+        my $uri = EPrints::ORCID::AdvanceUtils::build_auth_uri( $repo, @request_permissions );
+
+        $repo->redirect( $uri );
+        $repo->terminate();
+        exit(0);
+    }
+    else
+    {
+        # we had problems dealing with revoking existing permissions
+        my $db = $repo->database;
+        $db->save_user_message( $user->get_value( "userid" ),
+            "error",
+            $repo->html_phrase( "Plugin/Screen/ManageOrcid:failed_pre_connection" )
+        );
+    }
 }
 
 sub action_disconnect
@@ -114,27 +135,9 @@ sub action_disconnect
     {
         my $db = $repo->database;
 
-        # before we remove our codes and permissions, we need to revoke the repository as a trusted organization
-        my $uri = $repo->config( "orcid_support_advance", "orcid_org_revoke_uri" );
-        my $ua = LWP::UserAgent->new;
-        my $params = {
-            "client_id" => $repo->config( "orcid_support_advance", "client_id" ),
-            "client_secret" => $repo->config( "orcid_support_advance", "client_secret" ),
-            "token" => $user->value( "orcid_access_token" ),
-        };
-    
-        my $response = $ua->post( $uri, $params );
+        my $response = $self->revoke_permissions( $user );
         if( $response->is_success )
         {
-            # we can wipe the details from the user
-            $user->set_value( "orcid", undef );
-            $user->set_value( "orcid_auth_code", undef );
-            $user->set_value( "orcid_token_expires", undef );
-            $user->set_value( "orcid_granted_permissions", undef );
-            $user->set_value( "orcid_access_token", undef );
-            $user->set_value( "orcid_name", undef );
-            $user->commit();
-
             $db->save_user_message( $user->get_value( "userid" ),
                 "message",
                 $repo->html_phrase( "Plugin/Screen/ManageOrcid:disconnected" )
@@ -142,13 +145,42 @@ sub action_disconnect
         }
         else
         {
-            # we haven't delisted the organization as a trusted user yet, so keep details so we can try again some time
+            # we haven't delisted the organization as a trusted user yet
             $db->save_user_message( $user->get_value( "userid" ),
                 "error",
                 $repo->html_phrase( "Plugin/Screen/ManageOrcid:failed_disconnecting_orcid" )
             );
         }
     }
+}
+
+sub revoke_permissions
+{
+    my( $self, $user ) = @_;
+
+    my $repo = $self->{repository};
+
+    # before we remove our codes and permissions, we need to revoke the repository as a trusted organization
+    my $uri = $repo->config( "orcid_support_advance", "orcid_org_revoke_uri" );
+    my $ua = LWP::UserAgent->new;
+    my $params = {
+        "client_id" => $repo->config( "orcid_support_advance", "client_id" ),
+        "client_secret" => $repo->config( "orcid_support_advance", "client_secret" ),
+        "token" => $user->value( "orcid_access_token" ),
+    };        
+
+    my $response = $ua->post( $uri, $params );
+    if( $response->is_success ) # only remove user's details if we have successfully revoked - otherwise hang on to them to try again later
+    {
+        $user->set_value( "orcid", undef );
+        $user->set_value( "orcid_auth_code", undef );
+        $user->set_value( "orcid_token_expires", undef );
+        $user->set_value( "orcid_granted_permissions", undef );
+        $user->set_value( "orcid_access_token", undef );
+        $user->set_value( "orcid_name", undef );
+        $user->commit();
+    }
+    return $response;
 }
 
 sub render

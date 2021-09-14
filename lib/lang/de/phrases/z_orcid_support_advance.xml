@@ -11,7 +11,7 @@
 <epp:phrase id="eprint_fieldname_creators_putcode">ORCID Put Code</epp:phrase>
 
 <!-- Authenticate ORCID -->
-<epp:phrase id="Plugin/Screen/AuthenticateOrcid:title"><img class="orcid-icon" src="/images/orcid_16x16.png"/>ORCID einrichten oder verbinden</epp:phrase>
+<epp:phrase id="Plugin/Screen/AuthenticateOrcid:title"><img class="orcid-icon" src="/images/orcid_id.svg"/>ORCID einrichten oder verbinden</epp:phrase>
 
 <epp:phrase id="Plugin/Screen/AuthenticateOrcid:created_orcid_link">Profil erfolgreich mit ORCID verknüpft für Nutzer: <epc:pin name="name" /></epp:phrase>
 <epp:phrase id="Plugin/Screen/AuthenticateOrcid:updated_orcid_link">Berechtigungen für Nutzer erfolgreich aktualisiert: <epc:pin name="name" /></epp:phrase>
@@ -54,8 +54,8 @@
 <epp:phrase id="Plugin/Screen/ExportToOrcid:no_items">Es gibt keine zu exportierenden Einträge.</epp:phrase>
 
 <!-- Manage ORCID -->
-<epp:phrase id="Plugin/Screen/ManageOrcid:title"><img class="orcid-icon" src="/images/orcid_16x16.png"/>ORCID-Berechtigungen verwalten</epp:phrase>
-<epp:phrase id="Plugin/Screen/ManageOrcid:orcid/connect"><img class="orcid-icon" src="/images/orcid_16x16.png"/>Mit ORCID verbinden</epp:phrase>
+<epp:phrase id="Plugin/Screen/ManageOrcid:title"><img class="orcid-icon" src="/images/orcid_id.svg"/>ORCID-Berechtigungen verwalten</epp:phrase>
+<epp:phrase id="Plugin/Screen/ManageOrcid:orcid/connect"><img class="orcid-icon" src="/images/orcid_id.svg"/>Mit ORCID verbinden</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:orcid_initial_connect">Bevor Sie Ihre ORCID verwenden können, müssen Sie zuerst entweder Ihr <epc:phrase ref="archive_name" /> Konto mit Ihrem ORCID-Eintrag verbinden bzw. eine ORCID erstellen, falls Sie noch keine haben.</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:user_header">ORCID Details für <epc:pin name="user_name" /></epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:granted_permissions">Die Berechtigungen für den Zugriff auf Ihren ORCID-Datensatz, die Sie <epc:phrase ref="archive_name" /> über das ORCID-System erteilt haben, sind hier aufgelistet: </epp:phrase>

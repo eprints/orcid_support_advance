@@ -12,7 +12,7 @@
 <epp:phrase id="eprint_fieldname_editors_putcode">ORCID Put Code</epp:phrase>
 
 <!-- Authenticate ORCID -->
-<epp:phrase id="Plugin/Screen/AuthenticateOrcid:title"><img class="orcid-icon" src="/images/orcid_16x16.png"/>Create or Connect your ORCID iD</epp:phrase>
+<epp:phrase id="Plugin/Screen/AuthenticateOrcid:title"><img class="orcid-icon" src="/images/orcid.svg"/>Create or Connect your ORCID iD®</epp:phrase>
 
 <epp:phrase id="Plugin/Screen/AuthenticateOrcid:created_orcid_link">Profile successfully linked to ORCID for user: <epc:pin name="name" /></epp:phrase>
 <epp:phrase id="Plugin/Screen/AuthenticateOrcid:updated_orcid_link">Permissions successfully updated for user: <epc:pin name="name" /></epp:phrase>
@@ -55,29 +55,24 @@
 <epp:phrase id="Plugin/Screen/ExportToOrcid:no_items">There are no works to be exported.</epp:phrase>
 
 <!-- Manage ORCID -->
-<epp:phrase id="Plugin/Screen/ManageOrcid:title"><img class="orcid-icon" src="/images/orcid_16x16.png"/>Manage ORCID Permissions</epp:phrase>
-<epp:phrase id="Plugin/Screen/ManageOrcid:orcid/connect"><img class="orcid-icon" src="/images/orcid_16x16.png"/>Connect to ORCID</epp:phrase>
-<epp:phrase id="Plugin/Screen/ManageOrcid:orcid_initial_connect">Before you can use your ORCID you must first either connect your <epc:phrase ref="archive_name" /> account to your ORCID record, or create an ORCID if you do not already have one.</epp:phrase>
+<epp:phrase id="Plugin/Screen/ManageOrcid:title"><img class="orcid-icon" src="/images/orcid_id.svg"/>Manage ORCID Permissions</epp:phrase>
+<epp:phrase id="Plugin/Screen/ManageOrcid:orcid/connect"><img class="orcid-icon" src="/images/orcid_id.svg"/>Connect to ORCID<span class="trademark">®</span></epp:phrase>
+<epp:phrase id="Plugin/Screen/ManageOrcid:orcid_initial_connect">Before you can use your ORCID iD you must first either connect your <epc:phrase ref="archive_name" /> account to your ORCID record, or create an ORCID iD if you do not already have one.</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:user_header">ORCID details for <epc:pin name="user_name" /></epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:granted_permissions">The permissions to access your ORCID record that you have granted to <epc:phrase ref="archive_name" /> via the ORCID system are listed here: </epp:phrase>
-<epp:phrase id="Plugin/Screen/ManageOrcid:permission:/authenticate">Retrieve your ORCID id only</epp:phrase>
+<epp:phrase id="Plugin/Screen/ManageOrcid:permission:/authenticate">Retrieve your ORCID iD only</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:permission:/person/update">Create and update existing biographical (affiliation) details already added to your ORCID record by <epc:phrase ref="archive_name" /></epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:permission:/activities/update">Create and update details of your research activities (publications, and education or employment) already added to your ORCID record by <epc:phrase ref="archive_name" /></epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:permission:/read-limited">Retrieve details from your ORCID profile restricted to trusted parties only</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:permissions_instructions">These permissions are due to expire on <span class="expiry_date"><epc:pin name="expiry_date" /></span>.<br /><strong>Please Note:</strong> You can remove the granted permissions at any time from within your ORCID account or by changing the selected permissions below and re-connecting to ORCID.<br /><br />We will only use these granted permissions as indicated below. To change how we use these conditions please contact <a href="mailto:{$config{ORCID_contact_email}}"><epc:print expr="$config{ORCID_contact_email}"/></a><br /><br />Select the permissions you would like to grant to the repository below. Once selected, click the 'Create or Connect your ORCID iD' button to update your permissions.</epp:phrase>
 
 <epp:phrase id="Plugin/Screen/ManageOrcid:/authenticate_select_text">Connect to ORCID</epp:phrase>
-<epp:phrase id="Plugin/Screen/ManageOrcid:/authenticate_select_description">Allows <epc:phrase ref="archive_name" /> to link your ORCID id with your <epc:phrase ref="archive_name" /> record. This is the minimum permission required and is therefore uneditable</epp:phrase>
+<epp:phrase id="Plugin/Screen/ManageOrcid:/authenticate_select_description">Allows <epc:phrase ref="archive_name" /> to link your ORCID iD with your <epc:phrase ref="archive_name" /> record. This is the minimum permission required and is therefore uneditable</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:/activities/update_select_text">Create and update activities on your ORCID record</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:/activities/update_select_description">
 Allows <epc:phrase ref="archive_name" /> to add details of your publications to your ORCID record and update the details of publications which have already been added to your ORCID record by <epc:phrase ref="archive_name" />.<br/><br/>
 Upon allowing this permission, <epc:phrase ref="archive_name" /> will also attempt to update your employment or education acitivities. Please see <a href="/orcid_support_advance.html#updating-affiliation" target="_blank">Updating Employment/Education Activities</a> for more information.
 </epp:phrase>
-
-<epp:phrase id="Plugin/Screen/ManageOrcid:/activities/update_auto_update_select_text">Allow <epc:phrase ref="archive_name" /> to automatically update activities on your ORCID record</epp:phrase>
-<epp:phrase id="Plugin/Screen/ManageOrcid:/activities/update_auto_update_select_description">
-Allows <epc:phrase ref="archive_name" /> to update your ORCID record automatically each time a new publication is added to the repository, or when an existing publication is updated.</epp:phrase>
-
 <epp:phrase id="Plugin/Screen/ManageOrcid:/person/update_select_text">Add and update affiliation details on your ORCID record</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:/person/update_select_description">Allows <epc:phrase ref="archive_name" /> to add information about your institutional affiliaton to your ORCID record and update your affiliation information which has already been added by <epc:phrase ref="archive_name" /></epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:/read-limited_select_text">Retrieve restricted details from your ORCID profile</epp:phrase>
@@ -87,6 +82,8 @@ Allows <epc:phrase ref="archive_name" /> to update your ORCID record automatical
 <epp:phrase id="Plugin/Screen/ManageOrcid:local_user_connect_orcid_button">Create or Connect your ORCID iD</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:disconnected">You are not currently connected to ORCID</epp:phrase>
 <epp:phrase id="Plugin/Screen/ManageOrcid:confirm_erase_dialog">Are you sure?\nOnce removed we will not be able to maintain the user&apos;s ORCID record until they reauthenticate with ORCID</epp:phrase>
+
+<epp:phrase id="Plugin/Screen/ManageOrcid:failed_pre_connection">ORCID CONNECT ERROR<br />We have been unable to to update the existing permissions held by <epc:phrase ref="archive_name" />.<br />Please contact <a href="mailto:{$config{ORCID_contact_email}}"><epc:print expr="$config{ORCID_contact_email}"/></a> for assistance.</epp:phrase>
 
 <epp:phrase id="Plugin/Screen/ManageOrcid:failed_disconnecting_orcid">ORCID DISCONNECT ERROR<br />We have been unable to disconnect your <epc:phrase ref="archive_name" /> account with your ORCID account.<br />Please contact <a href="mailto:{$config{ORCID_contact_email}}"><epc:print expr="$config{ORCID_contact_email}"/></a> for assistance.</epp:phrase>
 
@@ -98,7 +95,7 @@ Allows <epc:phrase ref="archive_name" /> to update your ORCID record automatical
 <epp:phrase id="orcid_check_name:sort:byname">Name</epp:phrase>
 
 <!-- UserPerms Report -->
-<epp:phrase id="report/userperms:/authenticate">Retrieve your ORCID id granted</epp:phrase>
+<epp:phrase id="report/userperms:/authenticate">Retrieve your ORCID iD granted</epp:phrase>
 <epp:phrase id="report/userperms:/activities/update">Create and update details of your research activities granted</epp:phrase>
 <epp:phrase id="report/userperms:/read-limited">Retrieve details from your ORCID profile restricted to trusted parties only granted</epp:phrase>
 <epp:phrase id="exportfieldoptions:authenticate">Authenticate</epp:phrase>

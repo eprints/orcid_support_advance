@@ -145,7 +145,7 @@ sub action_disconnect
         }
         else
         {
-            # we haven't delisted the organization as a trusted user yet
+            # we haven't delisted the organization as a trusted user yet, so keep details so we can try again some time
             $db->save_user_message( $user->get_value( "userid" ),
                 "error",
                 $repo->html_phrase( "Plugin/Screen/ManageOrcid:failed_disconnecting_orcid" )
@@ -170,8 +170,9 @@ sub revoke_permissions
     };        
 
     my $response = $ua->post( $uri, $params );
-    if( $response->is_success ) # only remove user's details if we have successfully revoked - otherwise hang on to them to try again later
+    if( $response->is_success )
     {
+        # we can wipe the details from the user
         $user->set_value( "orcid", undef );
         $user->set_value( "orcid_auth_code", undef );
         $user->set_value( "orcid_token_expires", undef );
@@ -337,12 +338,6 @@ sub render_local_permissions
             my $description = $repo->xml->create_element( "div", class => "permission_description" );
             $description->appendChild( $self->html_phrase( $permission->{"permission"}."_select_description" ) );
             $local_perms_div->appendChild( $description );
-
-            # display extra subfields
-            if( $permission->{"permission"} eq "/activities/update" )
-            {
-                $local_perms_div->appendChild( $self->render_permission_sub_field( $repo, $user, $permission ) );
-            }
         }
     }
     
@@ -356,7 +351,7 @@ sub render_local_permissions
         id=>"connect-orcid-button",
     );
 
-    $connect_button->appendChild( $repo->xml->create_element( "img", src=>"/images/orcid_24x24.png", id=>"orcid-id-logo", width=>24, height=>24, alt=>"ORCID logo" ) );
+    $connect_button->appendChild( $repo->xml->create_element( "img", src=>"/images/orcid_id.svg", id=>"orcid-id-logo", width=>24, height=>24, alt=>"ORCID logo" ) );
     $connect_button->appendChild($self->html_phrase( "local_user_connect_orcid_button" ));
     $local_perms_form->appendChild($connect_button);
     
@@ -382,55 +377,4 @@ sub render_local_permissions
     $local_frag->appendChild($local_perms_form);
 
     return $local_frag;
-}
-
-sub render_permission_sub_field
-{
-    my( $self, $repo, $user, $permission ) = @_;
-
-    my $sub_field_div = $repo->xml->create_element( "div", "class" => "sub_field_div" );
-
-    my $sub_field = $permission->{sub_field};
-    my $parent_permission = $permission->{permission};
-
-    my $selected = 0;
-    my $disabled = 0;
-
-    # check the field is editable
-    if( !$permission->{user_edit} )
-    {
-        $disabled = 1;
-    }
-
-    # check if the field is set
-    if( $user->value( $sub_field ) )
-    {
-        $selected = 1;
-    }
-
-    # construct input
-    my $input = $repo->xml->create_element( "input",
-        class => "ep_form_input_checkbox",
-        name => $sub_field,
-        type => "checkbox",
-        value => 1,
-    );
-
-    if( $selected || !$user->exists_and_set( "orcid_granted_permissions" ) ) # set true if selected or connecting for first time
-    {
-        $input->setAttribute( "checked", "checked" );
-    }
-
-    $sub_field_div->appendChild( $input );
-
-    # title and description of sub field
-    my $permission_title = $repo->xml->create_element( "span", "class" => "orcid_permission_title" );
-    $permission_title->appendChild( $self->html_phrase( $parent_permission."_".$sub_field."_select_text" ) );
-    $sub_field_div->appendChild( $permission_title ); 
-
-    my $description = $repo->xml->create_element( "div", class => "permission_description" );
-    $description->appendChild( $self->html_phrase( $parent_permission."_".$sub_field."_select_description" ) );
-    $sub_field_div->appendChild( $description );
-
-    return $sub_field_div;
 }

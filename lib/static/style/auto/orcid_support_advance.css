@@ -1,7 +1,21 @@
+.trademark{
+    vertical-align: super;
+}
+
 .orcid-icon{
 	vertical-align: bottom;
-	padding-right: 5px;
+	margin-right: 5px;
+    padding-right: 0px;
+    width: 16px;
 }
+
+h1 .orcid-icon{
+	vertical-align: bottom;
+	margin-right: 5px;
+    padding-right: 0px;
+    width: 24px;
+}
+
 
 .ep_tm_pagetitle .orcid-icon{
 	vertical-align: text-top;
@@ -62,9 +76,7 @@ input[value="orcid"] ~ input[value="Edit"] {
 	float: right;
 }
 
-.sub_field_div{
-    padding-left: 20px;
-}
+
 
 /*Import from ORCID*/
 ul.orcid_imports{

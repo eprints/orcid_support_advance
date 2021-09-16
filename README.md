@@ -1,5 +1,7 @@
 # ORCID Support Advance Plugin
 
+<img alt="ORCID Certified Service Provider" src="https://github.com/eprints/orcid_support_advance/blob/auto-exports/lib/static/images/ORCID_Cert_Service_Provider_logo.png?raw=true" width=33%/>
+
 The ORCID Support Advance Plugin builds upon the functionality of the 
 [ORCID Support Plugin](https://github.com/eprints/orcid_support). It allows
 to import to the user's work area and export to their orcid.org profile.

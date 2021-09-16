@@ -9,9 +9,9 @@
           <datasetid>document</datasetid>
           <filename>epm/orcid_support_advance/cfg/cfg.d/z_orcid_support_advance.pl</filename>
           <mime_type>text/plain</mime_type>
-          <hash>9374a4aa9d760188da9d2b04d2f01423</hash>
+          <hash>e7423b070c1a3fecbdcd44965e9d0a6e</hash>
           <hash_type>MD5</hash_type>
-          <filesize>16009</filesize>
+          <filesize>15921</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -20,6 +20,14 @@
           <hash>b4fc3887de5b4580ec9a0ff0ea62ec04</hash>
           <hash_type>MD5</hash_type>
           <filesize>4641</filesize>
+        </file>
+        <file>
+          <datasetid>document</datasetid>
+          <filename>epm/orcid_support_advance/cfg/cfg.d/zzz_orcid_support_advance_auto.pl</filename>
+          <mime_type>text/plain</mime_type>
+          <hash>dbc091ad95d593cecfdfa6e3325094c1</hash>
+          <hash_type>MD5</hash_type>
+          <filesize>2449</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -41,9 +49,9 @@
           <datasetid>document</datasetid>
           <filename>lang/de/phrases/z_orcid_support_advance.xml</filename>
           <mime_type>application/xml</mime_type>
-          <hash>1de7cfc0efa612d7695911ec7b882ade</hash>
+          <hash>0065cbb215f4c6e454595b4a54e6518b</hash>
           <hash_type>MD5</hash_type>
-          <filesize>13790</filesize>
+          <filesize>13781</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -57,25 +65,25 @@
           <datasetid>document</datasetid>
           <filename>lang/en/phrases/z_orcid_support_advance.xml</filename>
           <mime_type>application/xml</mime_type>
-          <hash>968719892f17b7d475f2c62b455141b9</hash>
+          <hash>df0cacc0769ab3caa2076f8398aba048</hash>
           <hash_type>MD5</hash_type>
-          <filesize>13386</filesize>
+          <filesize>13757</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
           <filename>lang/en/static/orcid_support_advance.xpage</filename>
           <mime_type>application/xml</mime_type>
-          <hash>3ef27a8d89faa01099f9aed3846e7808</hash>
+          <hash>965e91dbe9cc1fba5cfafc9aa389f53a</hash>
           <hash_type>MD5</hash_type>
-          <filesize>4725</filesize>
+          <filesize>4738</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
           <filename>plugins/EPrints/ORCID/AdvanceUtils.pm</filename>
           <mime_type>text/plain</mime_type>
-          <hash>8783987546e5ad728efa974d310c05ed</hash>
+          <hash>e1d255feb8b2877733bf58982d748589</hash>
           <hash_type>MD5</hash_type>
-          <filesize>7622</filesize>
+          <filesize>8406</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -137,9 +145,9 @@
           <datasetid>document</datasetid>
           <filename>plugins/EPrints/Plugin/Screen/ManageOrcid.pm</filename>
           <mime_type>text/plain</mime_type>
-          <hash>756a0470ba12365b7b0858be3418df0d</hash>
+          <hash>fe3a221f942420bca53635bcb2bec3e0</hash>
           <hash_type>MD5</hash_type>
-          <filesize>11727</filesize>
+          <filesize>12641</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -156,6 +164,14 @@
           <hash>14c67d4746200742fa97be441705f28e</hash>
           <hash_type>MD5</hash_type>
           <filesize>992</filesize>
+        </file>
+        <file>
+          <datasetid>document</datasetid>
+          <filename>static/images/ORCID_Cert_Service_Provider_logo.png</filename>
+          <mime_type>image/png</mime_type>
+          <hash>7a51909aeebc182a110315adb4cde2a1</hash>
+          <hash_type>MD5</hash_type>
+          <filesize>106165</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -183,6 +199,14 @@
         </file>
         <file>
           <datasetid>document</datasetid>
+          <filename>static/images/orcid_id.svg</filename>
+          <mime_type>image/svg+xml</mime_type>
+          <hash>9467c77e7a6426087722c0712ed02b17</hash>
+          <hash_type>MD5</hash_type>
+          <filesize>983</filesize>
+        </file>
+        <file>
+          <datasetid>document</datasetid>
           <filename>static/javascript/auto/90_orcid_support_advance.js</filename>
           <mime_type>text/plain</mime_type>
           <hash>0382009769f12d9400b22fd35590ea75</hash>
@@ -193,9 +217,9 @@
           <datasetid>document</datasetid>
           <filename>static/style/auto/orcid_support_advance.css</filename>
           <mime_type>text/x-asm</mime_type>
-          <hash>20624fe977a9d4dcde7518a15da33b90</hash>
+          <hash>13b541cdfbe4b5ef4a79eb30366af0da</hash>
           <hash_type>MD5</hash_type>
-          <filesize>2466</filesize>
+          <filesize>2654</filesize>
         </file>
       </files>
       <mime_type>text/x-asm</mime_type>
@@ -219,7 +243,7 @@
       <content>coverimage</content>
     </document>
   </documents>
-  <version>1.7</version>
+  <version>1.8</version>
   <controller>EPMC::OrcidSupportAdvance</controller>
   <creators>
     <item>
@@ -227,7 +251,7 @@
         <family>Fyson</family>
         <given>Will</given>
       </name>
-      <id>rwf1v07@soton.ac.uk</id>
+      <id>will.fyson@cosector.com</id>
     </item>
     <item>
       <name>

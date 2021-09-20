@@ -107,9 +107,31 @@ sub action_connect_to_orcid
                 push @request_permissions, $perm_name;
             }
         }
-        my $uri = EPrints::ORCID::AdvanceUtils::build_auth_uri( $repo, @request_permissions );
+
+        # build a state value from the userid and the current timestamp
+        my $state = substr( "00000000".$user->get_value( "userid" ), -8 );
+        my $timestamp = EPrints::Time::datetime_utc( EPrints::Time::utc_datetime() );
+        $state .= $timestamp;
+        $state = uri_escape( dec_to_base_36( $state ) ); # converted to base36 for a shorter string and less apparent what the data is
+
+        my $uri = EPrints::ORCID::AdvanceUtils::build_auth_uri( $repo, $state, @request_permissions );
 
         $repo->redirect( $uri );
+
+        # create a log record for this authentication request
+        my $log_ds = $repo->dataset( "orcid_log" );
+        my $log_data = {};
+        $log_data->{"user"} = $user->get_value( "userid" );
+        $log_data->{"state"} = $state;
+        $log_data->{"request_time"} = $timestamp;
+        $log_data->{"query"} = $uri;
+
+        # include any local repository permissions
+        $log_data->{"auto_update"} = 1 if defined $repo->param( "orcid_auto_update" );
+
+        my $log_entry = $log_ds->create_dataobj( $log_data );
+        $log_entry->commit();
+
         $repo->terminate();
         exit(0);
     }
@@ -179,6 +201,7 @@ sub revoke_permissions
         $user->set_value( "orcid_granted_permissions", undef );
         $user->set_value( "orcid_access_token", undef );
         $user->set_value( "orcid_name", undef );
+        $user->set_value( "orcid_auto_update", undef );
         $user->commit();
     }
     return $response;
@@ -338,6 +361,12 @@ sub render_local_permissions
             my $description = $repo->xml->create_element( "div", class => "permission_description" );
             $description->appendChild( $self->html_phrase( $permission->{"permission"}."_select_description" ) );
             $local_perms_div->appendChild( $description );
+
+            # display extra subfields
+            if( $permission->{"permission"} eq "/activities/update" )
+            {
+                $local_perms_div->appendChild( $self->render_permission_sub_field( $repo, $user, $permission ) );
+            }
         }
     }
     
@@ -377,4 +406,70 @@ sub render_local_permissions
     $local_frag->appendChild($local_perms_form);
 
     return $local_frag;
+}
+
+sub render_permission_sub_field
+{
+    my( $self, $repo, $user, $permission ) = @_;
+
+    my $sub_field_div = $repo->xml->create_element( "div", "class" => "sub_field_div" );
+
+    my $sub_field = $permission->{sub_field};
+    my $parent_permission = $permission->{permission};
+
+    my $selected = 0;
+    my $disabled = 0;
+
+    # check the field is editable
+    if( !$permission->{user_edit} )
+    {
+        $disabled = 1;
+    }
+
+    # check if the field is set
+    if( $user->value( $sub_field ) )
+    {
+        $selected = 1;
+    }
+
+    # construct input
+    my $input = $repo->xml->create_element( "input",
+        class => "ep_form_input_checkbox",
+        name => $sub_field,
+        type => "checkbox",
+        value => 1,
+    );
+
+    if( $selected || !$user->exists_and_set( "orcid_granted_permissions" ) ) # set true if selected or connecting for first time
+    {
+        $input->setAttribute( "checked", "checked" );
+    }
+
+    $sub_field_div->appendChild( $input );
+
+    # title and description of sub field
+    my $permission_title = $repo->xml->create_element( "span", "class" => "orcid_permission_title" );
+    $permission_title->appendChild( $self->html_phrase( $parent_permission."_".$sub_field."_select_text" ) );
+    $sub_field_div->appendChild( $permission_title ); 
+
+    my $description = $repo->xml->create_element( "div", class => "permission_description" );
+    $description->appendChild( $self->html_phrase( $parent_permission."_".$sub_field."_select_description" ) );
+    $sub_field_div->appendChild( $description );
+
+    return $sub_field_div;
+}
+
+sub dec_to_base_36
+{
+    # convert an integer from base 10 to base 36
+    my ( $value ) = @_;
+    return 0 unless ($value > 0);
+    my @nums = (0..9,'a'..'z');
+    my $retval = "";
+    while ( $value > 0 )
+    {
+        $retval = $nums[$value % 36] .$retval;
+        $value = int( $value / 36 );
+    }
+    return $retval;
 }

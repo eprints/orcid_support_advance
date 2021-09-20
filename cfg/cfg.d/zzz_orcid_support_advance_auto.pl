@@ -30,7 +30,7 @@ $c->{orcid_support_advance}->{update_fields} = [qw(
 # auto-export permission field
 $c->add_dataset_field('user',
     {
-        name => 'auto_update',
+        name => 'orcid_auto_update',
         type => 'boolean',
         show_in_html => 0,
         export_as_xml => 0,

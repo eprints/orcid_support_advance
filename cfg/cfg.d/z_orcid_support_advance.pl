@@ -202,6 +202,7 @@ $c->{ORCID_requestable_permissions} = [
         "user_edit" => 1,
         "use_value" => "self",
         "field" => "orcid_update_works",
+       "sub_field" => "orcid_auto_update",
     },
     {
     "permission" => "/read-limited", # read information from ORCID profile which the user has set to trusted parties only
@@ -424,3 +425,78 @@ $c->add_dataset_trigger( 'user', EPrints::Const::EP_TRIGGER_AFTER_COMMIT, sub
         } );
     }
 }, priority => 50 );
+
+# Adapted from: https://github.com/Ainmhidh/ORCID_Connect
+# create a dataset for storing log information about orcid communications
+# used to store and then check the state when making the OAuth connection
+# and used to store repository based permissions (e.g. auto-exporting)
+{
+no warnings;
+
+package EPrints::DataObj::OrcidLog;
+
+@EPrints::DataObj::OrcidLog::ISA = qw( EPrints::DataObj );
+
+sub get_dataset_id { "orcid_log" }
+
+sub get_url { shift->uri }
+
+sub get_defaults
+{
+        my( $class, $session, $data, $dataset ) = @_;
+
+        $data = $class->SUPER::get_defaults( @_[1..$#_] );
+
+        return $data;
+}
+
+}
+
+$c->{datasets}->{orcid_log} = {
+    sqlname => "orcid_log",
+    class => "EPrints::DataObj::OrcidLog",
+    index => 0,
+};
+
+$c->add_dataset_field('orcid_log',
+    {
+        name => 'id',
+        type => "counter",
+        sql_counter => "orcid_log",
+    }
+);
+
+$c->add_dataset_field('orcid_log',
+    {
+        name => 'user',
+        type => "int", 
+    }
+);
+
+$c->add_dataset_field('orcid_log',
+    {
+        name => 'state',
+        type => "text", 
+    }
+);
+
+$c->add_dataset_field('orcid_log',
+    {
+        name => 'request_time',
+        type => "int", 
+    }
+);
+
+$c->add_dataset_field('orcid_log',
+    {
+        name => 'query',
+        type => "longtext", 
+    }
+);
+
+$c->add_dataset_field('orcid_log',
+    {
+        name => 'auto_update',
+        type => "boolean", 
+    }
+);

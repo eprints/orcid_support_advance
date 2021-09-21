@@ -217,7 +217,7 @@ $c->{ORCID_requestable_permissions} = [
 
 # work types mapping from EPrints to ORCID
 # defined separately from the called function to enable easy overriding.
-$c->{"plugins"}->{"Screen::ExportToOrcid"}->{"params"}->{"work_type"} = {
+$c->{orcid_support_advance}->{"eprint_to_work_type"} = {
     "article" => "JOURNAL_ARTICLE",
     "book_section" => "BOOK_CHAPTER",
     "monograph" => "BOOK",
@@ -238,7 +238,7 @@ $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"params"}->{"work_type"} = {
     "other" => "OTHER",
 };
 
-$c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
+$c->{orcid_support_advance}->{"work_type_to_eprint"} = sub {
 #return the ORCID work-type based on the EPrints item type.
 ##default EPrints item types mapped in $c->{"plugins"}{"Event::OrcidSync"}{"params"}{"work_type"} above.
 ##ORCID acceptable item types listed here: https://members.orcid.org/api/supported-work-types
@@ -246,7 +246,7 @@ $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
 ##based on other-types or conference_item sub-fields
     my ( $eprint ) = @_;
 
-    my %work_types = %{$c->{"plugins"}{"Screen::ExportToOrcid"}{"params"}{"work_type"}};
+    my %work_types = %{$c->{orcid_support_advance}{eprint_to_work_type}};
 
     if( defined( $eprint ) && $eprint->exists_and_set( "type" ))
     {
@@ -264,7 +264,7 @@ $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
 $c->{"plugins"}->{"Screen::ImportFromOrcid"}->{"work_type"} = sub {
     my ( $type ) = @_;
 
-    my %work_types = reverse %{$c->{"plugins"}{"Screen::ExportToOrcid"}{"params"}{"work_type"}};
+    my %work_types = reverse %{$c->{orcid_support_advance}{"eprint_to_work_type"}};
 
     if( defined( $type ) )
     {

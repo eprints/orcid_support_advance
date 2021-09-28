@@ -596,11 +596,19 @@ sub render_filtered_record
 {
 	my( $self, $repo, $xml, $work_date, $filter_date ) = @_;
 	my $div = $xml->create_element( "div", class => "filtered_record_info" );
+ 
+    my $date_format = $repo->config( "orcid_support_advance", "filter_format" ) || "%d/%m/%Y";
+
+    # work date
     my $date_type = $repo->config( "orcid_support_advance", "filter_date" ) || "last-modified-date";
-    $work_date = strftime "%d/%m/%Y", gmtime( $work_date );
+    $work_date = strftime $date_format, gmtime( $work_date );
     $div->appendChild( $self->html_phrase( $date_type ) );
     $div->appendChild( $xml->create_text_node( $work_date ) );
+
     $div->appendChild( $xml->create_element( "br" ) );
+ 
+    # filter date
+    $filter_date = strftime $date_format, gmtime( $filter_date->epoch );
     $div->appendChild( $xml->create_text_node( "Filter date: $filter_date" ) );
     $div->appendChild( $xml->create_element( "br" ) );
 	return $div;

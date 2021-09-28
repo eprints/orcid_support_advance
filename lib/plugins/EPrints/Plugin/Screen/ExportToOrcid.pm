@@ -421,6 +421,8 @@ sub render_eprint_records
 {
 	my( $self, $xml, $records ) = @_;
 
+    my $repo = $self->{repository};
+
 	my $table = $xml->create_element( "table", class => "export_orcid_records" );
 
 	$records->map(sub{
@@ -443,10 +445,16 @@ sub render_eprint_records
 
 		if( $filter_date && $mod_date < $filter_date )
         {
+            my $date_format = $repo->config( "orcid_support_advance", "filter_format" ) || "%d/%m/%Y";
             $tr = $session->make_element( "tr", class => "filtered" );
-            $td_citation->appendChild( $xml->create_text_node( "Moddate: $mod_date" ) );
+
+            # work date
+            $mod_date = strftime $date_format, gmtime( $mod_date->epoch );
+            $td_citation->appendChild( $xml->create_text_node( "Last Modified: $mod_date" ) );
             $td_citation->appendChild( $xml->create_element("br"));
-            $td_citation->appendChild( $xml->create_text_node( "Filterdate: $filter_date" ) );
+
+            $filter_date = strftime $date_format, gmtime( $filter_date->epoch );
+            $td_citation->appendChild( $xml->create_text_node( "Filter date: $filter_date" ) );
             $td_citation->appendChild( $xml->create_element("br"));
             $tr->appendChild( $td_citation );
         }

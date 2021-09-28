@@ -137,17 +137,17 @@
           <datasetid>document</datasetid>
           <filename>plugins/EPrints/Plugin/Screen/ExportToOrcid.pm</filename>
           <mime_type>text/plain</mime_type>
-          <hash>0752d3eb550d9520b0f84bfc739aee00</hash>
+          <hash>4445c0fcb5e2749efd500109db05059e</hash>
           <hash_type>MD5</hash_type>
-          <filesize>17596</filesize>
+          <filesize>17925</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
           <filename>plugins/EPrints/Plugin/Screen/ImportFromOrcid.pm</filename>
           <mime_type>text/plain</mime_type>
-          <hash>2a682e999f64de153ecda8e4be62629a</hash>
+          <hash>cf3f2f98f1d29b4d6028e904b00c0ab9</hash>
           <hash_type>MD5</hash_type>
-          <filesize>30394</filesize>
+          <filesize>30604</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -251,7 +251,7 @@
       <content>coverimage</content>
     </document>
   </documents>
-  <version>1.9.1</version>
+  <version>1.9.2</version>
   <controller>EPMC::OrcidSupportAdvance</controller>
   <creators>
     <item>

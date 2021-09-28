@@ -17,6 +17,13 @@ $c->{orcid_support_advance}->{redirect_uri} = $c->{"perl_url"} . "/orcid/authent
 # Set to 1 if (and only if!) repository user profiles (connected to orcid.org) are the sole source of ORCID data.
 $c->{orcid_support_advance}->{destructive_trigger} = 0;
 
+# The date to use when filtering works to import. 
+# Should be one of the following options
+# - last-modified-date
+# - created-date
+# - publication-date
+$c->{orcid_support_advance}->{filter_date} = "publication-date";
+
 ###Enable Screens###
 $c->{"plugins"}->{"Screen::AuthenticateOrcid"}->{"params"}->{"disable"} = 0;
 $c->{"plugins"}->{"Screen::ManageOrcid"}->{"params"}->{"disable"} = 0;

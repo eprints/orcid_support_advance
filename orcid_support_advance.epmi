@@ -9,9 +9,9 @@
           <datasetid>document</datasetid>
           <filename>epm/orcid_support_advance/cfg/cfg.d/z_orcid_support_advance.pl</filename>
           <mime_type>text/plain</mime_type>
-          <hash>b0d043ed1be1e0eaa602833a375b22c1</hash>
+          <hash>1b59ce197a845ffc2c52d919f2120c39</hash>
           <hash_type>MD5</hash_type>
-          <filesize>17311</filesize>
+          <filesize>17530</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -65,9 +65,9 @@
           <datasetid>document</datasetid>
           <filename>lang/en/phrases/z_orcid_support_advance.xml</filename>
           <mime_type>application/xml</mime_type>
-          <hash>8f115d09a5a96e6fecd6834841118fe6</hash>
+          <hash>898f79b8cba89186fddbc91695849c5e</hash>
           <hash_type>MD5</hash_type>
-          <filesize>14710</filesize>
+          <filesize>15213</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -145,9 +145,9 @@
           <datasetid>document</datasetid>
           <filename>plugins/EPrints/Plugin/Screen/ImportFromOrcid.pm</filename>
           <mime_type>text/plain</mime_type>
-          <hash>fd4fd6d00c0196bca32972865fc7fb95</hash>
+          <hash>2a682e999f64de153ecda8e4be62629a</hash>
           <hash_type>MD5</hash_type>
-          <filesize>29036</filesize>
+          <filesize>30394</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -251,7 +251,7 @@
       <content>coverimage</content>
     </document>
   </documents>
-  <version>1.9</version>
+  <version>1.9.1</version>
   <controller>EPMC::OrcidSupportAdvance</controller>
   <creators>
     <item>

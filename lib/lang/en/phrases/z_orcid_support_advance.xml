@@ -107,6 +107,8 @@ Upon allowing this permission, <epc:phrase ref="archive_name" /> will also attem
 <epp:phrase id="exportfields:check_name">User</epp:phrase>
 <epp:phrase id="orcid_check_name:sort:byname">Name</epp:phrase>
 
+<epp:phrase id="flag_name_mismatch">Ignore mismatch: </epp:phrase>
+
 <!-- UserPerms Report -->
 <epp:phrase id="report/userperms:/authenticate">Retrieve your ORCID iD granted</epp:phrase>
 <epp:phrase id="report/userperms:/activities/update">Create and update details of your research activities granted</epp:phrase>
@@ -117,5 +119,9 @@ Upon allowing this permission, <epc:phrase ref="archive_name" /> will also attem
 
 <!-- ORCID Field -->
 <epp:phrase id="user_fieldhelp_orcid">Use 'Connect to ORCID' link to set your ORCID.</epp:phrase>
+
+<!-- Mismatch Field -->
+<epp:phrase id="user_fieldname_orcid_name_flag">Ignore Name Mismatch</epp:phrase>
+<epp:phrase id="user_fieldhelp_orcid_name_flag">Tick the checkbox to ignore the mismatch between the the user's repository account name and their orcid.org name. Once set, these users will no longer appear in the 'orcid.org Name Mismatch' report.</epp:phrase>
 
 </epp:phrases>

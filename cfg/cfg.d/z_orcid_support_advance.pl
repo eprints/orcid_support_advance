@@ -148,6 +148,18 @@ $c->add_dataset_field('user',
     reuse => 1
 );
 
+$c->add_dataset_field('user',
+    {
+        name => 'orcid_name_flag',
+        type => 'boolean',
+        show_in_html => 0,
+        export_as_xml => 0,
+        import => 0,
+    },
+    reuse => 1
+);
+
+
 ###EPrint Fields###
 #add put-code as a subfield to appropriate eprint fields
 my $putcode_present = 0;

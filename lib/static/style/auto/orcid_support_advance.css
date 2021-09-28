@@ -174,3 +174,9 @@ th[epsection="editors_putcode"],
 input.ep_eprint_editors_putcode {
 	display: none;
 }
+
+/*** Name Mismatch Report ***/
+.ep_report_row_problems .flag_name_mismatch{
+    display: inline-block;
+    vertical-align: middle;
+}

@@ -61,23 +61,31 @@ sub _export_eprint_to_orcid
 
     # first of all, is this going to be a POST or a PUT?
     # Use POST for unpublished and PUT with putcode for published records
-    my @creators = @{ $eprint->value( "creators" ) };
+    my %eprint_contribs;
+    foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
+    {
+        $eprint_contribs{$role} = $eprint->value( $role );
+    }
+
     my $users_orcid = $user->value( "orcid" );
     my $method = "POST";
 
-    foreach my $creator (@creators)
+    for my $key (keys %eprint_contribs)
     {
-        if( ($creator->{orcid} eq $users_orcid) && defined($creator->{putcode}) )
+        foreach my $contributor ( @{$eprint_contribs{$key}} )
         {
-            $putcode = $creator->{putcode};
-            $method = "PUT";
-            last;
+            if( ($contributor->{orcid} eq $users_orcid) && defined( $contributor->{putcode} ) )
+            {
+                $putcode = $contributor->{putcode};
+                $method = "PUT";
+                last;
+            }
         }
     }
 
     if( $method eq "POST")
     {
-        $result = _post( $repo, $user, $work, $users_orcid, \@creators, $eprint );
+        $result = _post( $repo, $user, $work, $users_orcid, \%eprint_contribs, $eprint );
         if( $result->is_success )
         {
             return "new";
@@ -108,7 +116,7 @@ sub _export_eprint_to_orcid
             # Therefore we should POST the record to add a new source to the ORCID profile
             # Error code 9016: The work has been removed from orcid.org since original export and so we need to POST it again
             delete $work->{"put-code"};
-            $result = _post( $repo, $user, $work, $users_orcid, \@creators, $eprint );
+            $result = _post( $repo, $user, $work, $users_orcid, \%eprint_contribs, $eprint );
             if( $result->is_success )
             {
                 return "new";
@@ -158,22 +166,34 @@ sub _export_eprint_to_orcid
             if( defined $new_putcode )
             {
                 # update the put-code for the work we're trying to export
-                my @new_creators;
-                my $update = 0;
-                foreach my $c ( @{$eprint->value( "creators" )} )
+                my %new_contribs;
+                foreach my $role ( @{$repo->config( "orcid", "eprint_fields" )} )
                 {
-                    my $new_c = $c;
-                    if( $c->{orcid} eq $users_orcid ) # we have the matching user
+                    $new_contribs{$role} = [];
+                }
+
+                my $update = 0;
+
+                for my $key ( keys %new_contribs )
+                {
+                    foreach my $c ( @{$eprint->value( $key )} )
                     {
-                        $new_c->{putcode} = $new_putcode;
-                        $update = 1;
+                        my $new_c = $c;
+                        if( $c->{orcid} eq $users_orcid ) # we have the matching user
+                        {
+                            $new_c->{putcode} = $new_putcode;
+                            $update = 1;
+                        }
+                        push( @{$new_contribs{$key}}, $new_c );
                     }
-                    push( @new_creators, $new_c );
                 }
                 if( $update )
                 {
+                    for my $key ( keys %new_contribs )
+                    {
+                        $eprint->set_value( $key, $new_contribs{$key} );
+                    }
                     $eprint->{orcid_update} = 1;
-                    $eprint->set_value( "creators", \@new_creators );
                     $eprint->commit;
 
                     # now we have an updated eprint with a new put code, try to PUT the record again
@@ -233,13 +253,15 @@ sub _eprint_to_orcid_work
     }
 
     # put-code
-    my @creators = @{ $eprint->value( "creators" ) };
-    foreach my $creator (@creators)
+    foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
     {
-        if( $creator->{orcid} eq $user->value( "orcid" ) )
+        foreach my $c (@{ $eprint->value( $role ) })
         {
-            $work->{"put-code"} = $creator->{putcode};
-            last;
+            if( $c->{orcid} eq $user->value( "orcid" ) )
+            {
+                $work->{"put-code"} = $c->{putcode};
+                last;
+            }
         }
     }
 
@@ -363,7 +385,7 @@ sub _curtail_abstract
 # a POST call is it's own function (as opposed to a PUT call which is more straightforward) because we have some follow work to do, namely save a PUT code to the eprint's creator
 sub _post
 {
-    my( $repo, $user, $work, $users_orcid, $creators, $eprint ) = @_;
+    my( $repo, $user, $work, $users_orcid, $contributors, $eprint ) = @_;
 
     my $result = EPrints::ORCID::AdvanceUtils::write_orcid_record( $repo, $user, "POST", "/work", $work );
     if( $result->is_success )
@@ -374,17 +396,21 @@ sub _post
         if( $result->header("Location") =~ m/^*\/$users_orcid\/work\/([0-9]*)$/ )
         {
             my $pc = $1;
-            my @new_creators = ();
-            foreach my $creator (@{$creators})
+            my %new_contributors;
+            for my $key ( keys %{$contributors} )
             {
-                if( $creator->{orcid} eq $users_orcid )
+                $new_contributors{$key} = [];
+                foreach my $contributor ( @{$contributors->{$key}} )
                 {
-                    $creator->{putcode} = $pc;
+                    if( $contributor->{orcid} eq $users_orcid )
+                    {
+                        $contributor->{putcode} = $pc;
+                    }
+                    push( @{$new_contributors{$key}}, $contributor );
                 }
-                push (@new_creators, $creator);
+                $eprint->set_value( $key, $new_contributors{$key} );
             }
             $eprint->{orcid_update} = 1;
-            $eprint->set_value( "creators", \@new_creators );
             $eprint->commit;
         }
     }

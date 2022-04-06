@@ -184,24 +184,24 @@ sub render
 {
 	my( $self ) = @_;
 
-        my $repo = $self->{repository};
+	my $repo = $self->{repository};
 	my $xml = $repo->xml;
 
-        my $user = $self->{processor}->{orcid_user};
+	my $user = $self->{processor}->{orcid_user};
 	my $orcid = $user->value( "orcid" );
 
 	my $frag = $xml->create_document_fragment();
 
-    $frag->appendChild( $self->render_toggle_function( $xml ) );
+	$frag->appendChild( $self->render_toggle_function( $xml ) );
 
 	#display user's name
-        my $user_title = $xml->create_element( "h3", class => "orcid_subheading" );
-        $user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
-        $frag->appendChild( $user_title );
+	my $user_title = $xml->create_element( "h3", class => "orcid_subheading" );
+	$user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
+	$frag->appendChild( $user_title );
 
 	#display user's orcid
 	my $div = $xml->create_element( "div", class => "orcid_id_display" );
-        $div->appendChild( $user->render_value( "orcid" ) );
+	$div->appendChild( $user->render_value( "orcid" ) );
 	$frag->appendChild( $div );
 
     # add filters
@@ -218,28 +218,36 @@ sub render
 
 	#display records that might be exported
 	my $dataset = $repo->dataset( "archive" );
-	my $results = $dataset->search(
-			filters => [
-				{
-					meta_fields => [qw( creators_orcid )],
-					value => $orcid, match => "EX",
-				}
-                ]);
+
+	my $searchexp = $dataset->prepare_search( satisfy_all => 0 );
+    foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
+    {
+        $searchexp->add_field(
+                fields => [
+                $dataset->field($role.'_orcid')
+            ],
+            value => $orcid,
+            match => "EX",
+        );
+    }
+    my $results = $searchexp->perform_search;
 
     # Create a new list of items without a putcode for this user.
-    # (Would be more elgant to just add a field to the search expressions to look for empty creators_putcode fields, but I couldn't manage to it.)
     if( $hide_duplicates )
     {
         my $ids = "";
         $results->map(sub{
             my( $session, $dataset, $eprint ) = @_;
-            my @creators = @{ $eprint->value( "creators" ) };
-            foreach my $creator (@creators)
+
+            foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
             {
-                if( $creator->{orcid} eq $user->value( "orcid" ) && !defined($creator->{putcode}) )
+                foreach my $c (@{ $eprint->value( $role ) })
                 {
-                    $ids .= $eprint->id;
-                    $ids .= " ";
+                    if( $c->{orcid} eq $user->value( "orcid" ) && !defined($c->{putcode}) )
+                    {
+                        $ids .= $eprint->id;
+                        $ids .= " ";
+                    }
                 }
             }
         });

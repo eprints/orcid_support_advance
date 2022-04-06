@@ -13,6 +13,8 @@ use JSON;
 use POSIX qw(strftime);
 use CGI;
 use Time::Piece;
+use Data::Dumper;
+
 
 @ISA = ( 'EPrints::Plugin::Screen' );
 
@@ -307,6 +309,9 @@ sub render_toggle_function
 sub render_filter_date_form
 {
     my( $self, $xml, $query ) = @_;
+
+    my $repo = $self->{repository};
+
     my $filter_div = $xml->create_element( "div", class => "filter_date" );
     my $filter_date_form = $xml->create_element( "form", method => "get", action => "/cgi/users/home" );
     $filter_date_form->appendChild( $xml->create_element( "input", type => "hidden", name => "screen", id => "screen", value => "ImportFromOrcid") );
@@ -322,8 +327,9 @@ sub render_filter_date_form
     if( defined($query_duplicate) ){
         $filter_date_form->appendChild( $xml->create_element( "input", type => "hidden", name => "hide_duplicates", value => $query_duplicate) );
     }
-
-    $filter_date_form->appendChild( $self->html_phrase( "show_last_modified" ) );
+ 
+    my $date_type = $repo->config( "orcid_support_advance", "filter_date" ) || "last-modified-date";
+    $filter_date_form->appendChild( $self->html_phrase( "show_$date_type" ) );
     my $date_picker =  $xml->create_element( "input", type => "date", name => "filter_date");
     $filter_date_form->appendChild( $date_picker );
     $filter_date_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->phrase( "filter" ) ) );
@@ -513,23 +519,22 @@ sub render_orcid_item
     #modification date (divided by 1000 because of different time handling seconds/milliseconds by epoch/unix)
     my $cgi = CGI->new();
     my $filter_date = 0;
-    my $mod_date = ($work->{'last-modified-date'}->{'value'} / 1000);
+    my $work_date = $self->get_work_date( $repo, $work );
     if( defined $cgi->param('filter_date'))
     {
         $filter_date = $cgi->param('filter_date');
         $filter_date = Time::Piece->strptime( $filter_date, '%Y-%m-%d' );
     }
-
 	if( $existing_id )
 	{
 		$import->setAttribute( "class", "orcid_import warning" );
 		$import->appendChild( $self->render_duplicate_record( $repo, $xml, $existing_id ) );
         $li->setAttribute( "class", "orcid_item duplicate" );
 	}
-    elsif( $mod_date < $filter_date )
+    elsif( $work_date < $filter_date )
     {
 		$import->setAttribute( "class", "orcid_import warning" );
-		$import->appendChild( $self->render_filtered_record( $repo, $xml, $mod_date, $filter_date ) );
+		$import->appendChild( $self->render_filtered_record( $repo, $xml, $work_date, $filter_date ) );
         $li->setAttribute( "class", "orcid_item filtered" );
     }
 	else
@@ -589,11 +594,21 @@ sub render_duplicate_record
 
 sub render_filtered_record
 {
-	my( $self, $repo, $xml, $mod_date, $filter_date ) = @_;
+	my( $self, $repo, $xml, $work_date, $filter_date ) = @_;
 	my $div = $xml->create_element( "div", class => "filtered_record_info" );
-    $mod_date = strftime "%a %b %d %H:%M:%S %Y", gmtime($mod_date);
-    $div->appendChild( $xml->create_text_node( "Moddate: $mod_date" ) );
+ 
+    my $date_format = $repo->config( "orcid_support_advance", "filter_format" ) || "%d/%m/%Y";
+
+    # work date
+    my $date_type = $repo->config( "orcid_support_advance", "filter_date" ) || "last-modified-date";
+    $work_date = strftime $date_format, gmtime( $work_date );
+    $div->appendChild( $self->html_phrase( $date_type ) );
+    $div->appendChild( $xml->create_text_node( $work_date ) );
+
     $div->appendChild( $xml->create_element( "br" ) );
+ 
+    # filter date
+    $filter_date = strftime $date_format, gmtime( $filter_date->epoch );
     $div->appendChild( $xml->create_text_node( "Filter date: $filter_date" ) );
     $div->appendChild( $xml->create_element( "br" ) );
 	return $div;
@@ -884,6 +899,7 @@ sub import_via_orcid
 		};
         	push @{$creators}, $contributor;
     	}
+
 #	use Data::Dumper;
 #	print STDERR "creators from orcid.contributirs: ".Dumper($creators)."\n";
 
@@ -894,4 +910,31 @@ sub import_via_orcid
 	$eprint->commit;
 #	print STDERR "creators in eprint: ".Dumper($eprint->value( "creators"))."\n";
 	return $eprint;
+}
+
+# return a date for the filtering process - depending on the type of date we're after we'll need to retrieve it in different ways
+sub get_work_date
+{
+    my( $self, $repo, $work ) = @_;
+
+    my $date_type = $repo->config( "orcid_support_advance", "filter_date" ) || "last-modified-date";
+
+    if( $date_type eq "last-modified-date" || $date_type eq "created-date" )
+    {
+        return $work->{$date_type}->{'value'} / 1000;
+    }
+    elsif( $date_type eq "publication-date" )
+    {       
+        my $date_string = "";
+        $date_string = $work->{$date_type}->{year}->{value} if( defined $work->{$date_type}->{year}->{value} );
+        $date_string .= "-".$work->{$date_type}->{month}->{value} if( defined $work->{$date_type}->{month}->{value} );
+        $date_string .= "-".$work->{$date_type}->{day}->{value} if( defined $work->{$date_type}->{day}->{value} );
+        if( $date_string ne "" )
+        {
+            return Time::Piece->strptime( $date_string, '%Y-%m-%d' )->epoch;
+        }
+    }
+
+    # nothing we can really work with... :(
+    return undef;
 }

@@ -21,99 +21,129 @@ my $current_user = $repo->current_user();
 
 if( defined( $error ) && $error eq "access_denied" )
 {
-	$db->save_user_message($current_user->get_value( "userid" ),
-		"warning",
-		$repo->html_phrase("Plugin/Screen/AuthenticateOrcid:denied_creating_orcid_link",
-			("message"=>$repo->xml->create_text_node("'" . $error_desc . "'"))
-		)
-	);
+    $db->save_user_message($current_user->get_value( "userid" ),
+        "warning",
+        $repo->html_phrase("Plugin/Screen/AuthenticateOrcid:denied_creating_orcid_link",
+            ("message"=>$repo->xml->create_text_node("'" . $error_desc . "'"))
+        )
+    );
 
-	#no orcid - go home
-	$repo->redirect( $repo->config( 'userhome' ) );
-	exit;
+    # no orcid - go home
+    $repo->redirect( $repo->config( 'userhome' ) );
+    exit;
 }
 
-if( defined( $authcode ) )
+if( defined( $authcode ) && defined( $state ) )
 {
+    # check the response against the orcid_log record using the returned state
+    my $sth = $db->prepare_select( "SELECT id FROM orcid_log WHERE user =".$db->quote_int( $current_user->get_value( "userid" ) )." AND state =".$db->quote_value( $state ) );
+    my $success = $sth->execute;
+    if( $success ne "1" )
+    {
+        $db->save_user_message($current_user->get_value( "userid" ),
+            "error",
+            $repo->html_phrase( "Plugin/Screen/AuthenticateOrcid:unexpected_state" )
+        );
+        
+        $repo->redirect( $repo->config( 'userhome' ) );
+        exit;
+    }
 
-	my $uri = $repo->config( "orcid_support_advance", "orcid_org_exch_uri" );
-	my $ua = LWP::UserAgent->new;
-	my $params = {
-		"client_id"	=> $repo->config( "orcid_support_advance", "client_id" ),
-		"client_secret"	=> $repo->config( "orcid_support_advance", "client_secret" ),
-		"grant_type"	=> "authorization_code",
-		"code"		=> $authcode,
-		"redirect_uri"	=> $repo->config( "orcid_support_advance", "redirect_uri" ),
-	};
-	my $response = $ua->post( $uri, $params );
-	if( $response->is_success )
-	{
-		my $json = new JSON;
-		my $json_text = $json->utf8->decode($response->content);
+    # get the log object, get any local permissions we might need... and then remove the log object
+    my $log_ds = $repo->dataset( "orcid_log" );
+    my $log = $log_ds->dataobj( $sth->fetchrow_arrayref->[0] );
+    my $auto_update = $log->value( "auto_update" );
+    
+    $log->remove;
 
-		#new connection or updating existing connection?
-		my $update = 0;
-		if( $current_user->is_set( "orcid_granted_permissions" ) )
-		{
-			$update = 1;
-		}
+    my $uri = $repo->config( "orcid_support_advance", "orcid_org_exch_uri" );
+    my $ua = LWP::UserAgent->new;
+    my $params = {
+        "client_id" => $repo->config( "orcid_support_advance", "client_id" ),
+        "client_secret" => $repo->config( "orcid_support_advance", "client_secret" ),
+        "grant_type"    => "authorization_code",
+        "code"  => $authcode,
+        "redirect_uri"  => $repo->config( "orcid_support_advance", "redirect_uri" ),
+    };
+    my $response = $ua->post( $uri, $params );
+    if( $response->is_success )
+    {
+        my $json = new JSON;
+        my $json_text = $json->utf8->decode($response->content);
 
-		#save the orcid, auth code and granted permissions
-		$current_user->set_value( "orcid", $json_text->{"orcid"});
-		$current_user->set_value( "orcid_access_token", $json_text->{"access_token"});
-		$current_user->set_value( "orcid_granted_permissions", $json_text->{"scope"});
+        # new connection or updating existing connection?
+        my $update = 0;
+        if( $current_user->is_set( "orcid_granted_permissions" ) )
+        {
+            $update = 1;
+        }
 
-		#set the expiry time for the autho code
-		my $expiry_date = EPrints::Time::datetime_utc(EPrints::Time::utc_datetime());
-		$expiry_date += $json_text->{"expires_in"};
-		$current_user->set_value( "orcid_token_expires", EPrints::Time::iso_datetime($expiry_date));
+        # save the orcid, auth code and granted permissions
+        $current_user->set_value( "orcid", $json_text->{"orcid"});
+        $current_user->set_value( "orcid_access_token", $json_text->{"access_token"});
+        $current_user->set_value( "orcid_granted_permissions", $json_text->{"scope"});
 
-		$current_user->commit();
+        # set the expiry time for the autho code
+        my $expiry_date = EPrints::Time::datetime_utc( EPrints::Time::utc_datetime() );
+        $expiry_date += $json_text->{"expires_in"};
+        $current_user->set_value( "orcid_token_expires", EPrints::Time::iso_datetime( $expiry_date ) );
 
-		#Flag a message to the user to indicate the success of linking to ORCID
-		if( $update )
-		{
-			$db->save_user_message($current_user->get_value( "userid" ),
-				"message", 
-				$repo->html_phrase("Plugin/Screen/AuthenticateOrcid:updated_orcid_link",
-					("name"=>$current_user->render_value( "name" ))
-				)
-			);	
-		}
-		else
-		{
-			$db->save_user_message($current_user->get_value( "userid" ),
-				"message", 
-				$repo->html_phrase("Plugin/Screen/AuthenticateOrcid:created_orcid_link",
-					("name"=>$current_user->render_value( "name" ))
-				)
-			);	
-		}
+        # set the local permissions
+        if( defined $auto_update )
+        {
+            $current_user->set_value( "orcid_auto_update", "TRUE" ); 
+        }
+        else
+        {
+            $current_user->set_value( "orcid_auto_update", undef ); 
+        }
 
-		#Create an Event to update user employment details to ORCID, if we have the granted permission
-		if( $json_text->{"scope"} =~ m#/activities/update# )
-		{
-			$repo->dataset( "event_queue" )->create_dataobj({
-				pluginid => "Event::OrcidSync",
-				action => "update_employment",
-				params => ["/id/user/".$current_user->get_value( "userid" )],
-			});
-		}
+        $current_user->commit();
 
-		#we have an authorized orcid - now manage permissions
-		$repo->redirect( $repo->config( 'userhome' )."?screen=ManageOrcid" );
-	}
-	else
-	{
-		$db->save_user_message($current_user->get_value( "userid" ),
-			"error",
-			$repo->html_phrase("Plugin/Screen/AuthenticateOrcid:failed_creating_orcid_link",
-				("message"=>$repo->xml->create_text_node("Could not find matching unprocessed request sent to ORCID"))
-			)
-		);
-		
-		#no orcid - go home
-		$repo->redirect( $repo->config( 'userhome' ) );
-		exit;
-	}
+        # Flag a message to the user to indicate the success of linking to ORCID
+        if( $update )
+        {
+            $db->save_user_message($current_user->get_value( "userid" ),
+                "message", 
+                $repo->html_phrase("Plugin/Screen/AuthenticateOrcid:updated_orcid_link",
+                    ("name"=>$current_user->render_value( "name" ))
+                )
+            );
+        }
+        else
+        {
+            $db->save_user_message($current_user->get_value( "userid" ),
+                "message", 
+                $repo->html_phrase("Plugin/Screen/AuthenticateOrcid:created_orcid_link",
+                    ("name"=>$current_user->render_value( "name" ))
+                )
+            );
+        }
+
+        # Create an Event to update user employment details to ORCID, if we have the granted permission
+        if( $json_text->{"scope"} =~ m#/activities/update# )
+        {
+            $repo->dataset( "event_queue" )->create_dataobj({
+                pluginid => "Event::OrcidSync",
+                action => "update_employment",
+                params => ["/id/user/".$current_user->get_value( "userid" )],
+            });
+        }
+
+        # we have an authorized orcid - now manage permissions
+        $repo->redirect( $repo->config( 'userhome' )."?screen=ManageOrcid" );
+    }
+    else
+    {
+        $db->save_user_message($current_user->get_value( "userid" ),
+            "error",
+            $repo->html_phrase("Plugin/Screen/AuthenticateOrcid:failed_creating_orcid_link",
+                ("message"=>$repo->xml->create_text_node("Could not find matching unprocessed request sent to ORCID"))
+            )
+        );
+
+        # no orcid - go home
+        $repo->redirect( $repo->config( 'userhome' ) );
+        exit;
+    }
 }

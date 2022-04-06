@@ -12,32 +12,31 @@ use Encode;
 sub check_permission
 {
 
-	my( $user, $perm_name ) = @_;
+    my( $user, $perm_name ) = @_;
 
-	my @granted_permissions = split(" ", $user->get_value( "orcid_granted_permissions" ));
-	if ( grep( /^$perm_name$/, @granted_permissions ) )
-	{
-		return 1;
-	}
-	return 0;
-
+    my @granted_permissions = split(" ", $user->get_value( "orcid_granted_permissions" ));
+    if ( grep( /^$perm_name$/, @granted_permissions ) )
+    {
+        return 1;
+    }
+    return 0;
 }
 
 #build an authorisation uri to request an auth code for the given permissions - will redirecto cgi/orcid/authenticate
 sub build_auth_uri
 {
 
-	my( $repo, @permissions ) = @_;
+    my( $repo, $state, @permissions ) = @_;
 
-	my $uri =  $repo->config( "orcid_support_advance", "orcid_org_auth_uri" ) . "?";
+    my $uri =  $repo->config( "orcid_support_advance", "orcid_org_auth_uri" ) . "?";
 
-        $uri .= "client_id=" . uri_escape( $repo->config( "orcid_support_advance", "client_id" ) ) . "&";
+    $uri .= "client_id=" . uri_escape( $repo->config( "orcid_support_advance", "client_id" ) );
 
-	my $scope = join "%20", @permissions;
-        $uri .= "response_type=code&scope=$scope&";
-        $uri .= "redirect_uri=" . $repo->config( "orcid_support_advance", "redirect_uri" );
-
-	return $uri;
+    my $scope = join "%20", @permissions;
+    $uri .= "&response_type=code&scope=$scope";
+    $uri .= "&redirect_uri=" . $repo->config( "orcid_support_advance", "redirect_uri" );
+    $uri .= "&state=$state";
+    return $uri;
 }
 
 #check to see if this work is already in the repository

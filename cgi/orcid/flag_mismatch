@@ -1,0 +1,32 @@
+use EPrints;
+
+use strict;
+
+my $eprints = EPrints->new;
+my $session = $eprints->current_repository;
+exit( 0 ) unless( defined $session );
+
+$session->send_http_header( content_type=>"text/html; charset=UTF-8" );
+
+my $user = $session->current_user;
+exit( 0 ) unless( defined $user );
+exit( 0 ) unless $user->value( "usertype" ) eq "admin" || $user->value( "usertype" ) eq "local_admin";
+
+my $user_ds = $session->dataset( "user" );
+
+my $user_id = $session->param( "userid" );
+die( "No User ID provided" ) if !defined $user_id;
+
+my $checked = $session->param( "checked" );
+die( "No flag value provided" ) if !defined $checked;
+die( "Flag must be 'true' or 'false'") if $checked ne "true" && $checked ne "false";
+
+my $user = $user_ds->dataobj( $user_id );
+die( "No user found with User ID: $user_id" ) if !defined $user;
+
+$user->set_value( "orcid_name_flag", uc $checked );
+$user->commit;
+
+$session->terminate;
+
+exit;

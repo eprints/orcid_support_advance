@@ -104,8 +104,8 @@ sub action_import
 
 	my $dataset = $repo->get_dataset( "inbox" );
 
-        #get the user
-        my $user = $self->{processor}->{orcid_user};
+	#get the user
+	my $user = $self->{processor}->{orcid_user};
 	my $current_user = $repo->current_user();
 
 	my $put_codes =	$self->{processor}->{put_codes};
@@ -687,9 +687,9 @@ sub import_via_orcid
 {
 	my( $self, $repo, $user, $work ) = @_;
 
-	#If we have a work:citation and an import plugin that can 
+	#If we have a work:citation and an import plugin that can
 	#process it, we should use that to "prime" the eprint.
-	#Parsed ORCID data will then take precedent 
+	#Parsed ORCID data will then take precedent
 
 	my $epdata = {};
 
@@ -703,7 +703,7 @@ sub import_via_orcid
 		if(EPrints::Utils::is_set($work->{citation}->{"citation-type"})){
 		    my $pluginid = $repo->config( "orcid_support_advance", "import_citation_type_map" )->{$work->{citation}->{"citation-type"}};
 	 	    my $plugin = $repo->plugin( "Import::".$pluginid );
-			
+
 		    unless( !defined $plugin )
 		    {
 			    my $parser = BibTeX::Parser->new( $tmpfile );
@@ -718,7 +718,7 @@ sub import_via_orcid
 				next unless defined $epdata;
 			    }
   		    }
-		}		
+		}
 	}
 	$epdata->{eprint_status} = $repo->config( "orcid_support_advance", "import_destination") || "inbox";
 	$epdata->{userid} = $user->get_value( "userid" );
@@ -815,8 +815,12 @@ sub import_via_orcid
 		}
 	}
 
-	#creators and editors
-	my $creators;
+	#contributors
+	my %eprint_contribs;
+    foreach my $role ( @{$repo->config( "orcid", "eprint_fields" )} )
+    {
+        $eprint_contribs{$role} = [];
+    }
 	if( defined( $work->{"contributors"} )  && scalar @{$work->{"contributors"}->{"contributor"}} )
 	{
 		foreach my $contributor (@{$work->{"contributors"}->{"contributor"}} )
@@ -841,7 +845,7 @@ sub import_via_orcid
                     			}
                 		}
 
-			}	
+			}
 
 			#What kind of contributor is this?  Pull match from config
 			my $contrib_role = $contributor->{"contributor-attributes"}->{"contributor-role"};
@@ -870,41 +874,52 @@ sub import_via_orcid
 			$contributor->{"id"} = $c_user->get_value( "email" ) if defined $c_user;
 
 			#add user to appropriate field
-			if( $contrib_role eq "creators" )
-			{
-				push @{$creators}, $contributor;
-			}
+			for my $key (keys %eprint_contribs)
+            {
+                if( $contrib_role eq $key ){
+                    push @{$eprint_contribs{$key}}, $contributor;
+                }
+            }
 		}
 	}
 
-   	# If there have been no contributor AND no creators were parsed from citation...
-    	# assume the user is a creator
-    	if( !$creators  && !$eprint->is_set("creators") )
-    	{
-        	my $users_name = $user->get_value("name");
-        	my $putcode = undef;
-        	my @work_putcodes = ( $work->{"put-code"} );
-        	foreach my $work_putcode (@work_putcodes)
-        	{
-            		$putcode = $work_putcode;
-        	}
+    # If there are no contributors whatsoever...
+    my $no_contribs = 1;
+    for my $key (keys %eprint_contribs)
+    {
+        if( @{$eprint_contribs{$key}} || $eprint->is_set($key) )
+        {
+            $no_contribs = 0;
+            last;
+        }
+    }
+    # ...assume the user is a creator
+    if( $no_contribs )
+    {
+        my $users_name = $user->get_value("name");
+        my $putcode = undef;
+        my @work_putcodes = ( $work->{"put-code"} );
+        foreach my $work_putcode (@work_putcodes)
+        {
+            $putcode = $work_putcode;
+        }
 		my $contributor = {
 			name => {
 				given => $users_name->{given},
 				family => $users_name->{family},
 			},
-            		id => $user->get_value( "email" ),
+       		id => $user->get_value( "email" ),
 			orcid => $user->value( "orcid" ),
 			putcode => $putcode,
 		};
-        	push @{$creators}, $contributor;
-    	}
+        push @{$eprint_contribs{creators}}, $contributor;
+    }
 
-#	use Data::Dumper;
-#	print STDERR "creators from orcid.contributirs: ".Dumper($creators)."\n";
-
-    	#If creators set then this takes precednce over what's been gleaned from citation
-	$eprint->set_value( "creators", $creators ) if EPrints::Utils::is_set($creators);
+    # Set the contributors (overwrites what might have been gleaned from citation)
+    for my $key (keys %eprint_contribs)
+    {
+        $eprint->set_value( $key, $eprint_contribs{$key} ) if EPrints::Utils::is_set(@{$eprint_contribs{$key}});
+    }
 
 	#save the record
 	$eprint->commit;

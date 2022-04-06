@@ -66,13 +66,15 @@ sub check_work_presence
 	#search for items that may have one of the ids
 	my $ds = $repo->dataset( "archive" );
 	my $searchexp = $ds->prepare_search( satisfy_all => 0 );
-	$searchexp->add_field(
-    		fields => [
-			$ds->field('creators_putcode')
-		],
-		value => $putcode,
-		match => "EQ", # EQuals
-	);
+
+    foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
+    {
+        $searchexp->add_field(
+                fields => [ $ds->field($role.'_putcode') ],
+            value => $putcode,
+            match => "EQ", # EQuals
+        );
+    }
 
 	if( defined $doi )
 	{

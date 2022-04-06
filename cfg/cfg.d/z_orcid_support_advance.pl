@@ -329,14 +329,15 @@ $c->add_dataset_trigger( "user", EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub {
     }
 } );
 
-# automatic update of eprint creator field - orcid should be set to user's orcid value
+#automatic update of eprint contributor fields - orcid should be set to user's orcid value
 $c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
 {
     my( %args ) = @_;
     my( $repo, $eprint, $changed ) = @args{qw( repository dataobj changed )};
 
     #$c->{orcid}->{eprint_fields} defined in z_orcid_support.pl
-    # should normally contain "creators" and "editors"
+ 
+    #contains "creators" and "editors" by default
     foreach my $role (@{$c->{orcid}->{eprint_fields}})
     {
         # Set some variables
@@ -355,7 +356,7 @@ $c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
 
             my $prev_ids = $changed->{"$contributors_id"};
 
-            #loop through the existing creators/editors and update them
+            #loop through the existing contributors and update them
             foreach my $c (@{$contributors})
             {
                 my $new_c = $c;
@@ -392,12 +393,12 @@ $c->add_dataset_trigger( 'eprint', EPrints::Const::EP_TRIGGER_BEFORE_COMMIT, sub
                         }
                     }
                 }
-                # Drop creator/editor without name or id.
+                # Drop contributors without name or id.
                 # Effectively removes manually deleted entries where the orcid couldn't be removed since it's read-only
                 push( @new_contributors, $new_c ) unless !$new_c->{id} && !$new_c->{name}->{family} && !$new_c->{name}->{given};
             }
 
-            # now we have a list of new and old creators/editors, see if any put-codes have been removed and if so, remove those records from ORCID
+            #now we have a list of new and old contributors, see if any put-codes have been removed and if so, remove those records from ORCID
             foreach my $old_c ( @{$old_contributors} )
             {
                 my $seen = 0;
@@ -430,11 +431,15 @@ $c->add_dataset_trigger( 'user', EPrints::Const::EP_TRIGGER_AFTER_COMMIT, sub
     {       
         my $email = $user->value( "email" );
         my $ds = $repo->get_repository->get_dataset( "eprint" ); 
-        my $search_exp = $ds->prepare_search();
-        $search_exp->add_field(
-            fields => [ $ds->field( 'creators_id' ) ],
-            value => $email,
-        );
+
+        my $search_exp = $ds->prepare_search( satisfy_all => 0 );
+        foreach my $role (@{$repo->config( "orcid", "eprint_fields" )} )
+        {
+            $search_exp->add_field(
+                fields => [ $ds->field( $role.'_id' ) ],
+                value => $email,
+            );
+        }
         
         my $list = $search_exp->perform_search;
 

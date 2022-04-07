@@ -64,8 +64,17 @@ sub check_work_presence
 	};
 
 	#search for items that may have one of the ids
-	my $ds = $repo->dataset( "archive" );
-	my $searchexp = $ds->prepare_search( satisfy_all => 0 );
+	my $ds = $repo->dataset( "eprint" );
+
+    my $searchexp = $ds->prepare_search(
+        satisfy_all => 0,
+        filters => [{
+            meta_fields => [qw( eprint_status )],
+            value => "archive buffer",
+            match => "IN",
+            merge => "ANY",
+        }],
+    );
 
     foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
     {

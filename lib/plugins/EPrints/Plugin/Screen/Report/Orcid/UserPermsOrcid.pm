@@ -7,28 +7,31 @@ use strict;
 
 sub bullet_points
 {
-        my( $self, $user ) = @_;
+    my( $self, $user ) = @_;
 
-        my $repo = $self->{repository};
+    my $repo = $self->{repository};
 
-        my @bullets;
+    my @bullets;
 
-        if( $user->is_set( "orcid" ) )
+    if( $user->is_set( "orcid" ) )
+    {
+        push @bullets, EPrints::XML::to_string( $repo->html_phrase( "user_with_orcid", orcid => $repo->xml->create_text_node( $user->get_value( "orcid" ) ) ) );
+    }
+
+    # check through each permission defined in config
+    foreach my $permission ( @{$repo->config( "ORCID_requestable_permissions" )} )
+    {
+        my $perm_name = $permission->{"permission"};
+        if( $user->get_value( "orcid_granted_permissions" ) =~ m#$perm_name# )
         {
-                push @bullets, EPrints::XML::to_string( $repo->html_phrase( "user_with_orcid", orcid => $repo->xml->create_text_node( $user->get_value( "orcid" ) ) ) );
+            push @bullets, EPrints::XML::to_string( $repo->html_phrase( "report/userperms:$perm_name" ) );
         }
+    }
 
-	#check through each permission defined in config
-	foreach my $permission ( @{$repo->config( "ORCID_requestable_permissions" )} )
-	{
-		my $perm_name = $permission->{"permission"};
-                if( $user->get_value( "orcid_granted_permissions" ) =~ m#$perm_name# )
-                {
-			 push @bullets, EPrints::XML::to_string( $repo->html_phrase( "report/userperms:$perm_name" ) );
-		}
-	}
+    if( $user->is_set( "orcid_token_expires" ) )
+    {
+        push @bullets, EPrints::XML::to_string( $repo->html_phrase( "report/userperms:token_expiry", token => $repo->xml->create_text_node( $user->get_value( "orcid_token_expires" ) ) ) );
+    }
 
-        return @bullets;
-}
-
-                       
+    return @bullets;
+}                      

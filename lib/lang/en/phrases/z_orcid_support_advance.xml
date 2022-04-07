@@ -114,9 +114,11 @@ Upon allowing this permission, <epc:phrase ref="archive_name" /> will also attem
 <epp:phrase id="report/userperms:/authenticate">Retrieve your ORCID iD granted</epp:phrase>
 <epp:phrase id="report/userperms:/activities/update">Create and update details of your research activities granted</epp:phrase>
 <epp:phrase id="report/userperms:/read-limited">Retrieve details from your ORCID profile restricted to trusted parties only granted</epp:phrase>
+<epp:phrase id="report/userperms:token_expiry">ORCID token expiry date: <epc:pin name="token" /></epp:phrase>
 <epp:phrase id="exportfieldoptions:authenticate">Authenticate</epp:phrase>
 <epp:phrase id="exportfieldoptions:update">Update</epp:phrase>
 <epp:phrase id="exportfieldoptions:read">Read</epp:phrase>
+
 
 <!-- ORCID Field -->
 <epp:phrase id="user_fieldhelp_orcid">Use 'Connect to ORCID' link to set your ORCID.</epp:phrase>

@@ -583,7 +583,7 @@ sub render_duplicate_record
 	my $div = $xml->create_element( "div", class => "duplicate_record" );
 
 	#get duplicate record
-	my $ds = $repo->dataset( "archive" );
+	my $ds = $repo->dataset( "eprint" );
 	my $eprint = $ds->dataobj( @{$existing_id}[0] );
 	$div->appendChild( $self->html_phrase(
 		"orcid_duplicate_record",

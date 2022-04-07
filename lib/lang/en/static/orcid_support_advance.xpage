@@ -30,9 +30,9 @@
 <h2>A note about permissions</h2>
 <p>You are able to change the permissions that you grant to <epc:phrase ref="archive_name" /> using the Manage my ORCID permissions menu option.  This menu option will become available once you connect to ORCID. <epc:phrase ref="archive_name" /> will request permission while connecting to ORCID to do the following:
 <ul>
-<ol>Connect your ORCID iD to<epc:phrase ref="archive_name" /> </ol>
-<ol>Add and update activities to your ORCID record</ol>
-<ol>Retrieve read limited information from your ORCID record</ol>
+    <li>Connect your ORCID iD to <epc:phrase ref="archive_name" />, linking your ORCID iD with your <epc:phrase ref="archive_name" /> record </li>
+    <li>Add details of your publications to your ORCID record and update the details of publications which have already been added to your ORCID record by <epc:phrase ref="archive_name" />. You will also be asked separately if you would like <epc:phrase ref="archive_name"/> to update your ORCID record automatically when you publish new items or update existing publications.</li>
+    <li>Retrieve details from your ORCID profile that are restricted to your trusted parties only.</li>
 </ul>
 You may revoke or re-instate these permissions at any time after first making the connection with ORCID, either using the ORCID web interface at ORCID.org, or through <epc:phrase ref="archive_name" /> using the Manage ORCID permissions tab.  If you would like to import activities (including publications) from ORCID into <epc:phrase ref="archive_name" /> you need to give permission to <epc:phrase ref="archive_name" /> to retrieve your limited access items.  If you wish to export items from <epc:phrase ref="archive_name" /> to ORCID, you need to enable the permission to create or update ORCID.  You are also able to disconnect from ORCID from the Manage ORCID Permissions page.</p>
 

@@ -237,26 +237,26 @@ sub properties_from
 
 sub render
 {
-	my( $self ) = @_;
+    my( $self ) = @_;
 
-        my $repo = $self->{repository};
-	my $xml = $repo->xml;
+    my $repo = $self->{repository};
+    my $xml = $repo->xml;
 
-        my $user = $self->{processor}->{orcid_user};
+    my $user = $self->{processor}->{orcid_user};
 
-	my $frag = $repo->xml->create_document_fragment();
+    my $frag = $repo->xml->create_document_fragment();
 
     $frag->appendChild( $self->render_toggle_function( $xml ) );
 
-	#display user's name
-        my $user_title = $repo->xml->create_element( "h3", class => "orcid_subheading" );
-        $user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
-        $frag->appendChild( $user_title );
+    # display user's name
+    my $user_title = $repo->xml->create_element( "h3", class => "orcid_subheading" );
+    $user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
+    $frag->appendChild( $user_title );
 
-	#display user's orcid
-	my $div = $repo->xml->create_element( "div", class => "orcid_id_display" );
-        $div->appendChild( $user->render_value( "orcid" ) );
-	$frag->appendChild( $div );
+    # display user's orcid
+    my $div = $repo->xml->create_element( "div", class => "orcid_id_display" );
+    $div->appendChild( $self->html_phrase( "intro", "orcid" => $user->render_value( "orcid" ) ) );
+    $frag->appendChild( $div );
 
     # Add filters
     # Get URL query (important, if editor/admin wants to filter import page of another user)

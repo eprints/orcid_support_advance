@@ -45,6 +45,12 @@
 <epp:phrase id="Plugin/Screen/ImportFromOrcid:last-modified-date">Last Modified: </epp:phrase>
 <epp:phrase id="Plugin/Screen/ImportFromOrcid:created-date">Created: </epp:phrase>
 
+<epp:phrase id="Plugin/Screen/ImportFromOrcid:intro">
+    <p>Use this screen to import items from your ORCID profile page into <epc:phrase ref="archive_name" />. Newly imported items will be added to your user work area, ready to edit and submit for review.</p>
+    <p><strong>Your ORCID: </strong><epc:pin name="orcid"/></p>
+</epp:phrase>
+
+
 <!-- Export to ORCID -->
 <epp:phrase id="Plugin/Screen/ExportToOrcid:title">Export to orcid.org</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:user_header">Export to orcid.org for <epc:pin name="user_name" /></epp:phrase>
@@ -68,6 +74,11 @@
 <epp:phrase id="Plugin/Screen/ExportToOrcid:select">Select/Unselect all</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:delete">Remove from orcid.org profile</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:no_items">There are no works to be exported.</epp:phrase>
+
+<epp:phrase id="Plugin/Screen/ExportToOrcid:intro">
+    <p>Use this screen to export items from the repository to your ORCID profile page. Only items with your ORCID listed as a contributor are available for export.</p>
+    <p><strong>Your ORCID: </strong><epc:pin name="orcid"/></p>
+</epp:phrase>
 
 <!-- Manage ORCID -->
 <epp:phrase id="Plugin/Screen/ManageOrcid:title"><img class="orcid-icon" src="/images/orcid_id.svg"/>Manage ORCID Permissions</epp:phrase>

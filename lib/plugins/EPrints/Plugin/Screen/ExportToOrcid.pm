@@ -303,9 +303,9 @@ sub render
 	$user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
 	$frag->appendChild( $user_title );
 
-	#display user's orcid
+	#display intro
 	my $div = $xml->create_element( "div", class => "orcid_id_display" );
-	$div->appendChild( $user->render_value( "orcid" ) );
+	$div->appendChild( $self->html_phrase( "intro", "orcid" => $user->render_value( "orcid" ) ) );
 	$frag->appendChild( $div );
 
     # add filters

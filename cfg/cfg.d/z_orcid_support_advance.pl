@@ -257,7 +257,25 @@ $c->{orcid_support_advance}->{"eprint_to_work_type"} = {
     "other" => "OTHER",
 };
 
-$c->{orcid_support_advance}->{"work_type_to_eprint"} = sub {
+$c->{orcid_support_advance}->{"work_type_to_eprint"} = {
+    "ARTISTIC_PERFORMANCE" => "performance",
+    "BOOK_CHAPTER" => "book_section",
+    "BOOK" => "monograph",
+    "CONFERENCE_ABSTRACT" => "conference_item",
+    "CONFERENCE_PAPER" => "conference_item",
+    "CONFERENCE_POSTER" => "conference_item",
+    "DATA_SET" => "dataset",
+    "DISSERTATION" => "thesis",
+    "EDITED_BOOK" => "book",
+    "JOURNAL_ARTICLE" => "article",
+    "MAGAZINE_ARTICLE" => "article",
+    "NEWSLETTER_ARTICLE" => "article",
+    "NEWSPAPER_ARTICLE" => "article",
+    "OTHER" => "other",
+    "PATENT" => "patent",
+};
+
+$c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
 #return the ORCID work-type based on the EPrints item type.
 ##default EPrints item types mapped in $c->{"plugins"}{"Event::OrcidSync"}{"params"}{"work_type"} above.
 ##ORCID acceptable item types listed here: https://members.orcid.org/api/supported-work-types
@@ -282,8 +300,8 @@ $c->{orcid_support_advance}->{"work_type_to_eprint"} = sub {
 
 $c->{"plugins"}->{"Screen::ImportFromOrcid"}->{"work_type"} = sub {
     my ( $type ) = @_;
-
-    my %work_types = reverse %{$c->{orcid_support_advance}{"eprint_to_work_type"}};
+	
+    my %work_types = %{$c->{orcid_support_advance}{work_type_to_eprint}};
 
     if( defined( $type ) )
     {

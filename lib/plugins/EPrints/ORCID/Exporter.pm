@@ -223,7 +223,7 @@ sub _eprint_to_orcid_work
 
     my $work = { "title" => { "title" => { "value" => $eprint->get_value( "title" ) } } };
 
-    $work->{"type"} = &{$repo->config( "orcid_support_advance", "work_type_to_eprint" )}( $eprint );
+    $work->{"type"} = &{$repo->config( "orcid_support_advance", "eprint_to_work_type" )}( $eprint );
 
     # set journal title, if relevant
     if( $eprint->exists_and_set( "type" ) && $eprint->get_value( "type" ) eq "article" && $eprint->exists_and_set( "publication" ) )

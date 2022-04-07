@@ -728,7 +728,7 @@ sub import_via_orcid
 
 	if( defined( $work->{"type"} ) )
 	{
-		$eprint->set_value( "type", &{$repo->config( "plugins" )->{"Screen::ImportFromOrcid"}->{"work_type"}}( $work->{"type"} ) );
+		$eprint->set_value( "type", &{$repo->config( "orcid_support_advance", "work_type_to_eprint" )}( $work->{"type"} ) );
 	}
 
 	if( defined( $work->{"title"}->{"title"}->{"value"} ) )

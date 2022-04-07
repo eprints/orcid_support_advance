@@ -236,7 +236,7 @@ $c->{ORCID_requestable_permissions} = [
 
 # work types mapping from EPrints to ORCID
 # defined separately from the called function to enable easy overriding.
-$c->{orcid_support_advance}->{"eprint_to_work_type"} = {
+$c->{orcid_support_advance}->{"eprint_to_work_type_mapping"} = {
     "article" => "JOURNAL_ARTICLE",
     "book_section" => "BOOK_CHAPTER",
     "monograph" => "BOOK",
@@ -257,7 +257,7 @@ $c->{orcid_support_advance}->{"eprint_to_work_type"} = {
     "other" => "OTHER",
 };
 
-$c->{orcid_support_advance}->{"work_type_to_eprint"} = {
+$c->{orcid_support_advance}->{"work_type_to_eprint_mapping"} = {
     "ARTISTIC_PERFORMANCE" => "performance",
     "BOOK_CHAPTER" => "book_section",
     "BOOK" => "monograph",
@@ -275,7 +275,7 @@ $c->{orcid_support_advance}->{"work_type_to_eprint"} = {
     "PATENT" => "patent",
 };
 
-$c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
+$c->{orcid_support_advance}->{"eprint_to_work_type"} = sub {
 #return the ORCID work-type based on the EPrints item type.
 ##default EPrints item types mapped in $c->{"plugins"}{"Event::OrcidSync"}{"params"}{"work_type"} above.
 ##ORCID acceptable item types listed here: https://members.orcid.org/api/supported-work-types
@@ -283,7 +283,7 @@ $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
 ##based on other-types or conference_item sub-fields
     my ( $eprint ) = @_;
 
-    my %work_types = %{$c->{orcid_support_advance}{eprint_to_work_type}};
+    my %work_types = %{$c->{orcid_support_advance}{eprint_to_work_type_mapping}};
 
     if( defined( $eprint ) && $eprint->exists_and_set( "type" ))
     {
@@ -294,14 +294,14 @@ $c->{"plugins"}->{"Screen::ExportToOrcid"}->{"work_type"} = sub {
         }
     }
 
-    # if no mapping found, call it 'other'
+    # if no mapping found, call it 'OTHER'
     return "OTHER";
 };
 
-$c->{"plugins"}->{"Screen::ImportFromOrcid"}->{"work_type"} = sub {
+$c->{orcid_support_advance}->{"work_type_to_eprint"} = sub {
     my ( $type ) = @_;
 	
-    my %work_types = %{$c->{orcid_support_advance}{work_type_to_eprint}};
+    my %work_types = %{$c->{orcid_support_advance}{work_type_to_eprint_mapping}};
 
     if( defined( $type ) )
     {

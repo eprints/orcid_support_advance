@@ -26,7 +26,7 @@ sub new
 
         my $self = $class->SUPER::new(%params);
 
-	$self->{actions} = [qw/ export /];
+	$self->{actions} = [qw/ export delete /];
 
         $self->{appears} = [
 		{
@@ -117,6 +117,110 @@ sub action_export{
     EPrints::ORCID::Exporter::export_user_eprints( $repo, $user, @eprints );   
 
 	# finished so go home
+	$repo->redirect( $repo->config( 'userhome' ) );
+	exit;
+
+}
+
+sub allow_delete{ shift->can_be_viewed }
+
+sub action_delete{
+    my( $self ) = @_;
+
+    my $repo = $self->{repository};
+
+    #get the user
+    my $user = $self->{processor}->{orcid_user};
+    my $current_user = $repo->current_user();
+
+    #get the eprint ids
+    my $eprintids = $self->{processor}->{eprintids};
+
+    #initialize some variables
+    my $ds = $repo->dataset( "archive" );
+    my $db = $repo->database;
+    my $count_all = 0;
+    my $count_successful = 0;
+    my $count_failed = 0;
+
+    foreach my $id ( @{$eprintids} )
+    {
+        $count_all++;
+        my $eprint = $ds->dataobj( $id );
+        my %eprint_contribs;
+        foreach my $role (@{$repo->config( "orcid","eprint_fields" )})
+        {
+            $eprint_contribs{$role} = $eprint->value( $role );
+        }
+
+        my $users_orcid = $user->value( "orcid" );
+        my $putcode = undef;
+        my $result = undef;
+
+        for my $key (keys %eprint_contribs)
+        {
+            foreach my $contributor (@{$eprint_contribs{$key}}){
+                if( ($contributor->{orcid} eq $users_orcid) && defined($contributor->{putcode}) )
+                {
+                    $putcode = $contributor->{putcode};
+                    last;
+                }
+            }
+        }
+
+        $result = EPrints::ORCID::AdvanceUtils::delete_orcid_record( $repo, $user, "DELETE", "/work/$putcode" );
+
+        if( $result->is_success ) {
+            # Remove putcode from eprint
+            my %new_contributors;
+            for my $key (keys %eprint_contribs)
+            {
+                $new_contributors{$key} = [];
+                foreach my $contributor (@{$eprint_contribs{$key}})
+                {
+                    if( $contributor->{orcid} eq $users_orcid )
+                    {
+                        $contributor->{putcode} = undef;
+                    }
+                    push (@{$new_contributors{$key}}, $contributor);
+                }
+                $eprint->set_value( $key, $new_contributors{$key} );
+            }
+
+            $eprint->{orcid_update} = 1;
+            $eprint->commit;
+            $count_successful++;
+        } else {
+            $count_failed++;
+        }
+    }
+
+    # Prepare user messages
+    if( $count_successful > 0)
+    {
+        $db->save_user_message($current_user->get_value( "userid" ),
+                "message",
+                $self->html_phrase(
+                    "deleted_in_orcid",
+                    ("count_successful" => $repo->xml->create_text_node( $count_successful )),
+                    ("count_all" => $repo->xml->create_text_node( $count_all )),
+                ),
+        );
+    }
+
+    if( $count_failed > 0)
+    {
+        $db->save_user_message($current_user->get_value( "userid" ),
+    	        "error",
+                $self->html_phrase(
+            		"deleted_in_orcid_failed",
+            		("count_failed" => $repo->xml->create_text_node( $count_failed )),
+            		("count_all" => $repo->xml->create_text_node( $count_all )),
+            	),
+    	);
+    }
+
+	#finished so go home
 	$repo->redirect( $repo->config( 'userhome' ) );
 	exit;
 
@@ -411,6 +515,14 @@ sub render_orcid_export_intro
         ) );
         $button->appendChild( $xml->create_text_node( "Export" ) );
 
+    # deletion button
+    my $button_delete = $btn_div->appendChild( $xml->create_element( "button",
+        type => "submit",
+        name => "_action_delete",
+        class => "ep_form_action_button delete_button",
+    ) );
+    $button_delete->appendChild( $self->html_phrase( "delete" ) );
+
     # toggle switch
     my $toggle_button = $btn_div->appendChild( $xml->create_element( "button",
                     type => "button",
@@ -498,6 +610,14 @@ sub render_orcid_export_outro
 			class => "ep_form_action_button",
         ) );
         $button->appendChild( $xml->create_text_node( "Export" ) );
+
+    # deletion button
+    my $button_delete = $btn_div->appendChild( $xml->create_element( "button",
+            type => "submit",
+            name => "_action_delete",
+            class => "ep_form_action_button delete_button",
+    ) );
+    $button_delete->appendChild( $self->html_phrase( "delete" ) );
 
     # toggle switch
     my $toggle_button = $btn_div->appendChild( $xml->create_element( "button",

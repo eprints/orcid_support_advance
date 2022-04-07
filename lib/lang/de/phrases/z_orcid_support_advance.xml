@@ -45,6 +45,8 @@
 <epp:phrase id="Plugin/Screen/ExportToOrcid:exported_eprints"><epc:pin name="count_successful" />/<epc:pin name="count_all" /> Einträge erfolgreich nach orcid.org exportiert</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:updated_eprints"><epc:pin name="count_overwrite" />/<epc:pin name="count_all" /> Einträge erfolgreich bei orcid.org aktualisiert</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:failed_eprints">Entschuldigung! <epc:pin name="count_failed" />/<epc:pin name="count_all" /> Einträge konnten nicht exportiert oder aktualisiert werden! Bitte kontaktieren Sie Ihren Systemadministrator.</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:deleted_in_orcid"><epc:pin name="count_successful" />/<epc:pin name="count_all" /> Einträge erfolgreich in orcid.org gelöscht</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:deleted_in_orcid_failed"><epc:pin name="count_failed" />/<epc:pin name="count_all" /> Einträge konnten nicht in orcid.org gelöscht werden</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:review_permissions">ORCID PERMISSION DENIED<br />Bevor Sie Datensätze nach orcid.org exportieren können, müssen Sie dem Repositorium die Berechtigung zum Erstellen und Aktualisieren von Aktivitäten auf Ihrem ORCID-Datensatz geben. Bitte ändern Sie Ihre Berechtigungen unten.</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:user_permissions">ORCID Permission DENIED<br /><epc:pin name="user" /> hat dem Repositorium nicht die Berechtigung erteilt, Aktivitäten auf ihrem ORCID-Datensatz anzulegen und zu aktualisieren.</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:show_last_modified">Zeige nur Einträge, die bearbeitet wurden seit: </epp:phrase>
@@ -52,6 +54,7 @@
 <epp:phrase id="Plugin/Screen/ExportToOrcid:duplicates">Einträge, die bereits exportiert wurden, werden standardmäßig nicht angezeigt.</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:show_hide_duplicates">Zeige/verstecke Dubletten</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:select">Alle aus-/abwählen</epp:phrase>
+<epp:phrase id="Plugin/Screen/ExportToOrcid:delete">Aus orcid.org Profil löschen</epp:phrase>
 <epp:phrase id="Plugin/Screen/ExportToOrcid:no_items">Es gibt keine zu exportierenden Einträge.</epp:phrase>
 
 <!-- Manage ORCID -->

@@ -210,6 +210,25 @@ sub write_orcid_record
 	return $response;
 }
 
+sub delete_orcid_record
+{
+	my( $repo, $user, $method, $item ) = @_;
+
+	my $uri = $repo->config( "orcid_support_advance", "orcid_apiv2") . $user->value( "orcid" ) . $item;
+
+	my $req = HTTP::Request->new( $method, $uri );
+    my @headers = (
+        'Content-type' => 'application/vnd.orcid+json',
+        'Authorization' => 'Bearer ' . $user->value( "orcid_access_token" ),
+	);
+	$req->header( @headers );
+
+	my $lwp = LWP::UserAgent->new;
+	my $response = $lwp->request( $req );
+	return $response;
+}
+
+
 #attempts to convert single string name provided by orcid.org into a creators name
 sub get_name
 {

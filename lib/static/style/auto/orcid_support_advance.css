@@ -156,15 +156,19 @@ li.duplicate, li.filtered{
 }
 
 /*Export to ORCID*/
-table.export_orcid_records tr td{
+fieldset.export_orcid_records{
+    margin: 10px 0px;
+}
+
+.export_orcid_records .ep_table_row .ep_table_cell{
     padding: 5px 10px;
 }
 
-table.export_orcid_records > tbody > tr:nth-child(odd){
+.export_orcid_records .ep_table_row:nth-child(odd){
     background-color:#eee;
 }
 
-tr.filtered{
+.ep_table_row.filtered{
     opacity: 0.4;
 }
 

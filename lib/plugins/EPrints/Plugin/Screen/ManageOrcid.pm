@@ -219,7 +219,7 @@ sub render
 
     my $frag = $repo->xml->create_document_fragment();
     
-    my $user_title = $repo->xml->create_element( "h3", class => "orcid_subheading" );
+    my $user_title = $repo->xml->create_element( "h2", class => "orcid_subheading" );
     $user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
     $frag->appendChild( $user_title );	
 
@@ -338,6 +338,7 @@ sub render_local_permissions
             }
 
             my $input = $repo->xml->create_element( "input",
+                id => "ep_orcid_" . $permission->{"permission"},
                 class => "ep_form_input_checkbox",
                 name => $permission->{"permission"},
                 type => "checkbox",
@@ -355,7 +356,7 @@ sub render_local_permissions
             }
             
             $local_perms_div->appendChild( $input );
-            my $permission_title = $repo->xml->create_element( "span", "class" => "orcid_permission_title" );
+            my $permission_title = $repo->xml->create_element( "label", "class" => "orcid_permission_title", "for" => "ep_orcid_" . $permission->{"permission"} );
             $permission_title->appendChild( $self->html_phrase( $permission->{"permission"}."_select_text" ) );
             $local_perms_div->appendChild( $permission_title ); #$self->html_phrase($permission->{"permission"}."_select_text"));
             my $description = $repo->xml->create_element( "div", class => "permission_description" );
@@ -434,6 +435,7 @@ sub render_permission_sub_field
 
     # construct input
     my $input = $repo->xml->create_element( "input",
+        id => "ep_orcid_$sub_field",
         class => "ep_form_input_checkbox",
         name => $sub_field,
         type => "checkbox",
@@ -448,7 +450,7 @@ sub render_permission_sub_field
     $sub_field_div->appendChild( $input );
 
     # title and description of sub field
-    my $permission_title = $repo->xml->create_element( "span", "class" => "orcid_permission_title" );
+    my $permission_title = $repo->xml->create_element( "label", "class" => "orcid_permission_title", "for" => "ep_orcid_$sub_field" );
     $permission_title->appendChild( $self->html_phrase( $parent_permission."_".$sub_field."_select_text" ) );
     $sub_field_div->appendChild( $permission_title ); 
 

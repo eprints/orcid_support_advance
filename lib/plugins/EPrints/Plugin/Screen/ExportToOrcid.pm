@@ -299,7 +299,7 @@ sub render
 	$frag->appendChild( $self->render_toggle_function( $xml ) );
 
 	#display user's name
-	my $user_title = $xml->create_element( "h3", class => "orcid_subheading" );
+	my $user_title = $xml->create_element( "h2", class => "orcid_subheading" );
 	$user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
 	$frag->appendChild( $user_title );
 
@@ -435,7 +435,7 @@ sub render_filter_date_form
     }
 
     $filter_date_form->appendChild( $self->html_phrase( "show_last_modified" ) );
-    my $date_picker =  $xml->create_element( "input", type => "date", name => "filter_date");
+    my $date_picker =  $xml->create_element( "input", type => "date", name => "filter_date", "aria-label" => "Filter Date" );
     $filter_date_form->appendChild( $date_picker );
     $filter_date_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->phrase( "filter" ) ) );
     $filter_div->appendChild( $filter_date_form );
@@ -502,10 +502,6 @@ sub render_orcid_export_intro
 
 	my $intro_div = $xml->create_element( "div", class => "export_intro" );
 
-	#render help text
-	my $help_div = $xml->create_element( "div", class => "export_intro_help" );
-	$help_div->appendChild( $self->html_phrase( "export_help" ) );
-
 	#render export button
 	my $btn_div = $xml->create_element( "div", class => "export_intro_btn" );
 	my $button = $btn_div->appendChild( $xml->create_element( "button",
@@ -531,7 +527,6 @@ sub render_orcid_export_intro
     ) );
     $toggle_button->appendChild( $self->html_phrase( "select" ) );
 
-	$intro_div->appendChild( $help_div );
 	$intro_div->appendChild( $btn_div );
 
 	return $intro_div;
@@ -543,7 +538,11 @@ sub render_eprint_records
 
     my $repo = $self->{repository};
 
-	my $table = $xml->create_element( "table", class => "export_orcid_records" );
+	my $fieldset = $xml->create_element( "fieldset", class => "ep_table export_orcid_records" );
+    my $legend = $xml->create_element( "legend", id=>"orcid_export_legend", class=>"ep_field_legend" );
+    $legend->appendChild( $self->html_phrase( "export_help" ) );
+    $fieldset->appendChild( $legend );
+
 
 	$records->map(sub{
 		my( $session, $dataset, $eprint ) = @_;
@@ -560,13 +559,13 @@ sub render_eprint_records
     }
 		#show the eprint citation
 		my $tr = "";
-		my $td_citation = $session->make_element( "td", class => "export_orcid_citation" );
+		my $td_citation = $session->make_element( "div", class => "export_orcid_citation ep_table_cell" );
 		$td_citation->appendChild($eprint->render_citation_link );
 
 		if( $filter_date && $mod_date < $filter_date )
         {
             my $date_format = $repo->config( "orcid_support_advance", "filter_format" ) || "%d/%m/%Y";
-            $tr = $session->make_element( "tr", class => "filtered" );
+            $tr = $session->make_element( "div", class => "filtered ep_table_row" );
 
             # work date
             $mod_date = strftime $date_format, gmtime( $mod_date->epoch );
@@ -580,23 +579,24 @@ sub render_eprint_records
         }
         else
         {
-            $tr = $session->make_element( "tr" );
+            $tr = $session->make_element( "div", class => "ep_table_row" );
             $tr->appendChild( $td_citation );
             #show checkbox for this record
-            my $td_check = $session->make_element( "td", class => "export_orcid_check" );
+            my $td_check = $session->make_element( "div", class => "export_orcid_check ep_table_cell" );
             my $checkbox = $session->make_element( "input",
                 type => "checkbox",
                 name => "eprint",
                 value => $eprint->id,
+                "aria-label" => $eprint->value( "title" ),
             );
             $checkbox->setAttribute( "checked", "yes" );
             $td_check->appendChild( $checkbox );
             $tr->appendChild( $td_check );
         }
-		$table->appendChild( $tr );
+		$fieldset->appendChild( $tr );
 	});
 
-	return $table;
+	return $fieldset;
 }
 
 sub render_orcid_export_outro

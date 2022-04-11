@@ -57,9 +57,9 @@
           <datasetid>document</datasetid>
           <filename>lang/de/phrases/z_orcid_support_advance.xml</filename>
           <mime_type>application/xml</mime_type>
-          <hash>c0085fbc8981a15deb9d7630710eeddb</hash>
+          <hash>9cf283c725bf03994133e633f6b2e002</hash>
           <hash_type>MD5</hash_type>
-          <filesize>14446</filesize>
+          <filesize>14497</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -73,9 +73,9 @@
           <datasetid>document</datasetid>
           <filename>lang/en/phrases/z_orcid_support_advance.xml</filename>
           <mime_type>application/xml</mime_type>
-          <hash>abda60c87e76de5f48124fea8843e14b</hash>
+          <hash>06de2222d52588c7de87763a7faf8abe</hash>
           <hash_type>MD5</hash_type>
-          <filesize>17032</filesize>
+          <filesize>17117</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -145,25 +145,25 @@
           <datasetid>document</datasetid>
           <filename>plugins/EPrints/Plugin/Screen/ExportToOrcid.pm</filename>
           <mime_type>text/plain</mime_type>
-          <hash>b4116e069d5bcac9b8cbebefada5b0ba</hash>
+          <hash>249660b4831282052d23569479493583</hash>
           <hash_type>MD5</hash_type>
-          <filesize>21780</filesize>
+          <filesize>21971</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
           <filename>plugins/EPrints/Plugin/Screen/ImportFromOrcid.pm</filename>
           <mime_type>text/plain</mime_type>
-          <hash>3f7cadc34ce40717709a28139ae1bd17</hash>
+          <hash>85d5f1441b39f049ac474d0e53a89092</hash>
           <hash_type>MD5</hash_type>
-          <filesize>30989</filesize>
+          <filesize>31173</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
           <filename>plugins/EPrints/Plugin/Screen/ManageOrcid.pm</filename>
           <mime_type>text/plain</mime_type>
-          <hash>fd8fac01899b06edf8fe860adb880241</hash>
+          <hash>a58985d8ca1964ce9525306230ee9290</hash>
           <hash_type>MD5</hash_type>
-          <filesize>15811</filesize>
+          <filesize>15999</filesize>
         </file>
         <file>
           <datasetid>document</datasetid>
@@ -233,9 +233,9 @@
           <datasetid>document</datasetid>
           <filename>static/style/auto/orcid_support_advance.css</filename>
           <mime_type>text/x-asm</mime_type>
-          <hash>edbb98a40080bec67d6a467112d2b458</hash>
+          <hash>219b0eb7e1a1115666b4a9381f653e28</hash>
           <hash_type>MD5</hash_type>
-          <filesize>2844</filesize>
+          <filesize>3112</filesize>
         </file>
       </files>
       <mime_type>text/x-asm</mime_type>

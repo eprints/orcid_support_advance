@@ -81,13 +81,15 @@ input[value="orcid"] ~ input[value="Edit"] {
 }
 
 /*Import from ORCID*/
-ul.orcid_imports{
-	list-style: none;
-	font-size: 14px;
+fieldset.orcid_imports{
 	width: 60%;
+    margin: 10px 0px;
+    border: 0px;
 }
 
-li.orcid_item{
+.orcid_imports .orcid_item{
+	font-size: 14px;
+
 	display: block;
 	padding: 5px 5px 5px 5px;
 
@@ -98,21 +100,21 @@ li.orcid_item{
 	margin-bottom: 10px;
 }
 
-li.orcid_item .orcid_summary, li.orcid_item .orcid_import{
+.orcid_imports .orcid_item .orcid_summary, .orcid_imports .orcid_item .orcid_import{
 	display: inline-block;
 	width: 50%;
 }
 
-li.orcid_item .title{
+.orcid_imports .orcid_item .title{
 	font-size: 16px;
 	margin-bottom: 5px;
 }
 
-li.orcid_item .subtitle{
+.orcid_imports .orcid_item .subtitle{
 	margin-bottom: 5px;
 }
 
-li.orcid_item .date-type{
+.orcid_imports .orcid_item .date-type{
 	margin-bottom: 5px;
 }
 
@@ -122,18 +124,18 @@ ul.external_identifiers{
 	margin: 10px 0;
 }
 
-li.orcid_item .orcid_import input, li.orcid_item .orcid_import .import_label{
+.orcid_imports .orcid_item .orcid_import input, .orcid_imports .orcid_item .orcid_import .import_label{
 	float: right;
 }
 
 
-li.orcid_item .orcid_import.warning{
+.orcid_imports .orcid_item .orcid_import.warning{
 	color: red;
 	text-align: right;
 	vertical-align: top;
 }
 
-li.duplicate, li.filtered{
+.orcid_imports .duplicate, .orcid_imports .filtered{
     opacity: 0.4;
 }
 
@@ -158,6 +160,7 @@ li.duplicate, li.filtered{
 /*Export to ORCID*/
 fieldset.export_orcid_records{
     margin: 10px 0px;
+    border: 0px;
 }
 
 .export_orcid_records .ep_table_row .ep_table_cell{

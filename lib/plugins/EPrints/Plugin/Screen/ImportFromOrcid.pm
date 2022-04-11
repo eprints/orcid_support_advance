@@ -249,7 +249,7 @@ sub render
     $frag->appendChild( $self->render_toggle_function( $xml ) );
 
     # display user's name
-    my $user_title = $repo->xml->create_element( "h3", class => "orcid_subheading" );
+    my $user_title = $repo->xml->create_element( "h2", class => "orcid_subheading" );
     $user_title->appendChild( $self->html_phrase( "user_header", "user_name" => $user->render_value( "name" ) ) );
     $frag->appendChild( $user_title );
 
@@ -330,7 +330,7 @@ sub render_filter_date_form
  
     my $date_type = $repo->config( "orcid_support_advance", "filter_date" ) || "last-modified-date";
     $filter_date_form->appendChild( $self->html_phrase( "show_$date_type" ) );
-    my $date_picker =  $xml->create_element( "input", type => "date", name => "filter_date");
+    my $date_picker =  $xml->create_element( "input", type => "date", name => "filter_date", "aria-label" => "Filter Date" );
     $filter_date_form->appendChild( $date_picker );
     $filter_date_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->phrase( "filter" ) ) );
     $filter_div->appendChild( $filter_date_form );
@@ -395,10 +395,6 @@ sub render_orcid_import_intro
         my( $self, $xml ) = @_;
         my $intro_div = $xml->create_element( "div", class => "import_intro" );
 
-        #render help text
-        my $help_div = $xml->create_element( "div", class => "import_intro_help" );
-        $help_div->appendChild( $self->html_phrase( "import_help" ) );
-
         #render import button
         my $btn_div = $xml->create_element( "div", class => "import_intro_btn" );
         my $button = $btn_div->appendChild( $xml->create_element( "button",
@@ -417,8 +413,6 @@ sub render_orcid_import_intro
 #        $toggle_button->appendChild( $xml->create_text_node( $self->html_phrase( "select" ) ) );
         $toggle_button->appendChild( $self->html_phrase( "select" ) );
 
-
-        $intro_div->appendChild( $help_div );
         $intro_div->appendChild( $btn_div );
 
         return $intro_div;
@@ -454,22 +448,27 @@ sub render_orcid_records
 
 	my $xml = $repo->xml;
 	my $import_count = 0;
-	my $ul = $xml->create_element( "ul", class => "orcid_imports" );
-	foreach my $work ( @{$works} )
+	my $fieldset = $xml->create_element( "fieldset", class => "orcid_imports" );
+
+    my $legend = $xml->create_element( "legend", id=>"orcid_import_legend", class=>"ep_field_legend" );
+    $legend->appendChild( $self->html_phrase( "import_help" ) );
+    $fieldset->appendChild( $legend );
+
+    foreach my $work ( @{$works} )
 	{
-		$ul->appendChild( $self->render_orcid_item( $repo, $xml, $work ) );
+		$fieldset->appendChild( $self->render_orcid_item( $repo, $xml, $work ) );
         $import_count++;
 	}
     if( $import_count == 0 ) {
-        $ul->appendChild( $self->html_phrase( "no_items" ) );
+        $fieldset->appendChild( $self->html_phrase( "no_items" ) );
     }
-	return $ul;
+	return $fieldset;
 }
 
 sub render_orcid_item
 {
 	my( $self, $repo, $xml, $work ) = @_;
-	my $li = $xml->create_element( "li", class => "orcid_item" );
+	my $li = $xml->create_element( "div", class => "orcid_item" );
 
 	my $summary = $xml->create_element( "div", class => "orcid_summary" );
 	#render title
@@ -624,9 +623,13 @@ sub render_import_work
 
 	my $label = $self->html_phrase( "orcid_import_work" );
 
+    use Data::Dumper;
+    print STDERR Dumper( $work );
+
 	my $checkbox = $repo->make_element( "input",
                         type => "checkbox",
                         name => "put-code",
+                        "aria-label" => $work->{'title'}->{'title'}->{'value'},
         );
 
 	$checkbox->setAttribute( "checked", "yes" );

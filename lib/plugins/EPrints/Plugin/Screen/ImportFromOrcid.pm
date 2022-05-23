@@ -12,7 +12,7 @@ use EPrints::ORCID::AdvanceUtils;
 use JSON;
 use POSIX qw(strftime);
 use CGI;
-use Time::Piece;
+use Time::Local;
 use Data::Dumper;
 
 
@@ -522,7 +522,8 @@ sub render_orcid_item
     if( defined $cgi->param('filter_date'))
     {
         $filter_date = $cgi->param('filter_date');
-        $filter_date = Time::Piece->strptime( $filter_date, '%Y-%m-%d' );
+        my( $year, $month, $day ) = $filter_date =~ /^(\d{4})-(\d{2})-(\d{2})$/;
+        $filter_date = timegm( 0, 0, 0, $day, $month-1, $year-1900 );
     }
 	if( $existing_id )
 	{
@@ -607,7 +608,7 @@ sub render_filtered_record
     $div->appendChild( $xml->create_element( "br" ) );
  
     # filter date
-    $filter_date = strftime $date_format, gmtime( $filter_date->epoch );
+    $filter_date = strftime $date_format, gmtime( $filter_date );
     $div->appendChild( $xml->create_text_node( "Filter date: $filter_date" ) );
     $div->appendChild( $xml->create_element( "br" ) );
 	return $div;
@@ -622,9 +623,6 @@ sub render_import_work
 	my $div = $xml->create_element( "div", class => "orcid_import_work" );
 
 	my $label = $self->html_phrase( "orcid_import_work" );
-
-    use Data::Dumper;
-    print STDERR Dumper( $work );
 
 	my $checkbox = $repo->make_element( "input",
                         type => "checkbox",
@@ -936,20 +934,18 @@ sub get_work_date
     my( $self, $repo, $work ) = @_;
 
     my $date_type = $repo->config( "orcid_support_advance", "filter_date" ) || "last-modified-date";
-
     if( $date_type eq "last-modified-date" || $date_type eq "created-date" )
     {
         return $work->{$date_type}->{'value'} / 1000;
     }
     elsif( $date_type eq "publication-date" )
     {       
-        my $date_string = "";
-        $date_string = $work->{$date_type}->{year}->{value} if( defined $work->{$date_type}->{year}->{value} );
-        $date_string .= "-".$work->{$date_type}->{month}->{value} if( defined $work->{$date_type}->{month}->{value} );
-        $date_string .= "-".$work->{$date_type}->{day}->{value} if( defined $work->{$date_type}->{day}->{value} );
-        if( $date_string ne "" )
+        my $year = $work->{$date_type}->{year}->{value} if( defined $work->{$date_type}->{year}->{value} );
+        my $month = $work->{$date_type}->{month}->{value} if( defined $work->{$date_type}->{month}->{value} );
+        my $day = $work->{$date_type}->{day}->{value} if( defined $work->{$date_type}->{day}->{value} );
+        if( defined $year && defined $month && defined $day )
         {
-            return Time::Piece->strptime( $date_string, '%Y-%m-%d' )->epoch;
+            return timegm( 0, 0, 0, $day, $month-1, $year-1900 );
         }
     }
 

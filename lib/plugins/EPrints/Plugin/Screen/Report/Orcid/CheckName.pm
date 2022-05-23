@@ -79,14 +79,13 @@ sub items
     my( $self ) = @_;
 
     my $list = $self->SUPER::items();
-
     if( defined $list )
     {
         my @ids = ();
 
         $list->map(sub{
             my( $session, $dataset, $user ) = @_;
-
+		print SDTERR "user: " . $user->id . "\n";
             my @problems = $self->validate_dataobj( $user );
 
             if( ( scalar( @problems ) > 0 ) && ( $user->is_set( "orcid" ) ) )
@@ -145,12 +144,12 @@ sub validate_dataobj
 
     if( $name->{given} ne $orcid_name->{given} )
     {
-        push @problems, $repo->phrase( "given_name_mismatch", given => $repo->xml->create_text_node( $orcid_name->{given} ) );
+        push @problems, EPrints::XML::to_string( $repo->html_phrase( "given_name_mismatch", given => $repo->xml->create_text_node( $orcid_name->{given} ) ) );
     }
 
     if( $name->{family} ne $orcid_name->{family} )
     {
-        push @problems, $repo->phrase( "family_name_mismatch", family => $repo->xml->create_text_node( $orcid_name->{family} ) );
+        push @problems, EPrints::XML::to_string( $repo->html_phrase( "family_name_mismatch", family => $repo->xml->create_text_node( $orcid_name->{family} ) ) );
     }
 
     # if we have problems, add flag option to remove them
@@ -169,7 +168,7 @@ sub validate_dataobj
             name => "flag_name_mismatch",
             value => $user->value( "orcid_name_flag" ),
         ) );
-        push @problems, $frag;
+        push @problems, EPrints::XML::to_string( $frag );
     }
 
     return @problems;

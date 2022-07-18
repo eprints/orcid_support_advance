@@ -85,7 +85,7 @@ sub items
 
         $list->map(sub{
             my( $session, $dataset, $user ) = @_;
-		print SDTERR "user: " . $user->id . "\n";
+
             my @problems = $self->validate_dataobj( $user );
 
             if( ( scalar( @problems ) > 0 ) && ( $user->is_set( "orcid" ) ) )

@@ -330,7 +330,8 @@ sub render_filter_date_form
  
     my $date_type = $repo->config( "orcid_support_advance", "filter_date" ) || "last-modified-date";
     $filter_date_form->appendChild( $self->html_phrase( "show_$date_type" ) );
-    my $date_picker =  $xml->create_element( "input", type => "date", name => "filter_date", "aria-label" => "Filter Date" );
+    my $date_picker = $xml->create_element( "input", type => "date", name => "filter_date", "aria-label" => "Filter Date", value => $query->param('filter_date') );
+
     $filter_date_form->appendChild( $date_picker );
     $filter_date_form->appendChild( $xml->create_element( "input", type => "submit", class => "ep_form_action_button filter", value => $self->phrase( "filter" ) ) );
     $filter_div->appendChild( $filter_date_form );

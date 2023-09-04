@@ -196,14 +196,16 @@ sub write_orcid_record
 
 	my $uri = $repo->config( "orcid_support_advance", "orcid_apiv2") . $user->value( "orcid" ) . $item;
 
+	my $content_as_json = to_json( $content );
+
 	my $req = HTTP::Request->new( $method, $uri );
         my @headers = (
                 'Content-type' => 'application/vnd.orcid+json',
                 'Authorization' => 'Bearer ' . $user->value( "orcid_access_token" ),
-		'Content-Lengh' => length( encode_utf8(to_json( $content ) ) ),
+		'Content-Lengh' => length( $content_as_json ),
 	);
 	$req->header( @headers );
-	$req->content( encode_utf8(to_json( $content ) ) );
+	$req->content( $content_as_json );
 
 	my $lwp = LWP::UserAgent->new;
 	my $response = $lwp->request( $req );

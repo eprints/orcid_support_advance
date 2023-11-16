@@ -366,6 +366,9 @@ sub _eprint_to_orcid_work
     }
     $work->{"contributors"}->{"contributor"} = $contributors;
 
+    # Custom repo to orcid attribute mappings
+    $work = &{$repo->config( "orcid_support_advance", "eprint_to_work_custom" )}( $eprint, $work );
+
     return $work;
 }
 

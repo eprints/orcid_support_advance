@@ -834,7 +834,7 @@ sub import_via_orcid
 			if( defined( $contributor->{"contributor-orcid"} ) )
 			{
 				#search for user with orcid and add username to eprint contributor if found
-				$orcid = $contributor->{"contributor-orcid"}->{"path"};
+				$orcid = $contributor->{"contributor-orcid"}->{"path"} if $contributor->{"contributor-orcid"}->{"path"} ne "null";
 				$c_user = EPrints::ORCID::Utils::user_with_orcid( $repo, $orcid );
 
                 		# Save putcode if this contributor is the importing user
@@ -871,7 +871,7 @@ sub import_via_orcid
             		#putcode only or
 			$contributor->{"putcode"} = $putcode if defined $putcode;
 			#Add orcid if we have one
-			$contributor->{orcid} = $orcid if defined $orcid && $orcid ne "null";
+			$contributor->{orcid} = $orcid if defined $orcid;
 			#Add user email if we have linked a user
 			$contributor->{"id"} = $c_user->get_value( "email" ) if defined $c_user;
 

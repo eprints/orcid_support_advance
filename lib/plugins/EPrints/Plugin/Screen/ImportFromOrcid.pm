@@ -871,7 +871,7 @@ sub import_via_orcid
             		#putcode only or
 			$contributor->{"putcode"} = $putcode if defined $putcode;
 			#Add orcid if we have one
-			$contributor->{orcid} = $orcid if defined $orcid;
+			$contributor->{orcid} = $orcid if defined $orcid && $orcid ne "null";
 			#Add user email if we have linked a user
 			$contributor->{"id"} = $c_user->get_value( "email" ) if defined $c_user;
 

@@ -316,6 +316,26 @@ $c->{orcid_support_advance}->{"work_type_to_eprint"} = sub {
     return "other";
 };
 
+# Add custom field mappings here i.e. if you have bespoke eprints fields which need mapping to orcid metadata
+$c->{orcid_support_advance}->{"eprint_to_work_custom"} = sub {
+        my ( $eprint, $work ) = @_;
+
+       # EXAMPLE: Adding a doi as an external id, useful for Orcid.org detecting duplicates on profile
+       #if ( $eprint->exists_and_set( "id_number" ) && EPrints::DOI->parse($eprint->get_value( "id_number" )) )
+       #{
+       #        my $doi = $eprint->get_value( "id_number" );
+       #        push( @{$work->{"external-ids"}->{"external-id"}},
+       #                {
+       #                        "external-id-type" => "doi",
+       #                        "external-id-value" => $doi,
+       #                        "external-id-url" => "https://doi.org/$doi",
+       #                        "external-id-relationship" => "SELF",
+       #                }
+       #        );
+       #}
+
+        return $work;
+}
 
 # contributor types mapping from EPrints to ORCID - used in Screen::ExportToOrcid to add contributor details to orcid-works and when importing works to eprints
 $c->{orcid_support_advance}->{contributor_map} = {

@@ -44,7 +44,7 @@ sub check_name
         $orcid_family =~ s/^\s+|\s+$//g;
 
         my $name = $user->get_value( "orcid_name" );
-        if( $orcid_given ne $name->{given} || $orcid_family ne $name->{family} )
+        if( !defined $name->{given} || !defined $name->{family} || $orcid_given ne $name->{given} || $orcid_family ne $name->{family} )
         {
             $user->set_value( "orcid_name", {
                 family => $orcid_family,

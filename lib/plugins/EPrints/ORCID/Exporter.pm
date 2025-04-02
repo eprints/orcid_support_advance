@@ -366,9 +366,6 @@ sub _eprint_to_orcid_work
     }
     $work->{"contributors"}->{"contributor"} = $contributors;
 
-    # Custom repo to orcid attribute mappings
-    $work = &{$repo->config( "orcid_support_advance", "eprint_to_work_custom" )}( $eprint, $work );
-
     return $work;
 }
 
@@ -443,8 +440,10 @@ sub _display_results
     my $db = $repo->database;
     my $current_user = $repo->current_user();
 
+    return unless defined $current_user;
+
     # Prepare user messages
-    if( $results->{new} > 0)
+    if( defined $results->{new} && $results->{new} > 0 )
     {
         $db->save_user_message( $current_user->get_value( "userid" ),
             "message",
@@ -456,7 +455,7 @@ sub _display_results
         );
     }
 
-    if( $results->{update} > 0)
+    if( defined $results->{update} && $results->{update} > 0)
     {
         $db->save_user_message( $current_user->get_value( "userid" ),
             "message",
@@ -468,7 +467,7 @@ sub _display_results
         );
     }
 
-    if( $results->{fail} > 0)
+    if( defined $results->{fail} && $results->{fail} > 0)
     {
         $db->save_user_message( $current_user->get_value( "userid" ),
             "error",

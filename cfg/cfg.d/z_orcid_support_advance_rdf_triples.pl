@@ -92,8 +92,6 @@ $c->add_dataset_trigger( "eprint", EP_TRIGGER_RDF, sub {
 	{
 		my $e_given = $all_people->{$person_uri}->{name}->{given} || "";
 		my $e_family = $all_people->{$person_uri}->{name}->{family} || "";
-		my $e_orcid = "";
-                $e_orcid = "http://orcid.org/" . $all_people->{$person_uri}->{orcid} if defined $all_people->{$person_uri}->{orcid};
 
 		$o{"graph"}->add(
 			secondary_resource => $person_uri,
@@ -118,12 +116,16 @@ $c->add_dataset_trigger( "eprint", EP_TRIGGER_RDF, sub {
 		 	predicate => "foaf:name",
 		    	   object => "$e_given $e_family",
 			     type => "xsd:string" );
-		$o{"graph"}->add(
-			secondary_resource => $person_uri,
-			subject => $person_uri,
-			predicate => "owl:sameAs",
-			object => $e_orcid,
-			type => "foaf:Person" );
+
+  		if( EPrints::Utils::is_set( $all_people->{$person_uri}->{orcid} ) )
+    		{
+  			$o{"graph"}->add(
+				secondary_resource => $person_uri,
+				subject => $person_uri,
+				predicate => "owl:sameAs",
+				object => "https://orcid.org/" . $all_people->{$person_uri}->{orcid},
+				type => "foaf:Person" );
+    		}
 	}
 
 	# Corporate Creators

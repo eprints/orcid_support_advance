@@ -788,11 +788,11 @@ sub import_via_orcid
 			{
 				if( $repo->dataset( 'eprint' )->has_field( "doi" ) )
 				{
-					$eprint->set_value( "doi", $identifier->{"external-id-value"} );
+					$eprint->set_value( "doi", EPrints::DOI->parse( $identifier->{"external-id-value"} )->_uri_path );
 				}
 				else
 				{
-					$eprint->set_value( "id_number", "doi".$identifier->{"external-id-value"} );
+					$eprint->set_value( "id_number", "doi:" . EPrints::DOI->parse( $identifier->{"external-id-value"} )->_uri_path );
 				}
 			}
 		        elsif ( $identifier->{"external-id-type"} eq "urn" )

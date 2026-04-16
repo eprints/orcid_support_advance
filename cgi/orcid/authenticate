@@ -19,6 +19,18 @@ my $db = $repo->database;
 #get current user record
 my $current_user = $repo->current_user();
 
+unless ( defined $current_user )
+{
+	if ( $repo->param( 'redirected' ) )
+	{
+		EPrints::abort( "Cannot determine current user." );
+	}
+	my $url = $repo->config( 'orcid_support_advance', 'redirect_uri' ) . "?code=$authcode&state=$state&error=$error&error_description=$error_desc&redirected=1";
+	$repo->send_http_header( content_type=>"text/html" );
+	print '<html><head><meta http-equiv="refresh" content="0;url=' . $url . '"/></head><body></body></html>';
+	exit;
+}	
+
 if( defined( $error ) && $error eq "access_denied" )
 {
     $db->save_user_message($current_user->get_value( "userid" ),
@@ -45,8 +57,7 @@ if( defined( $authcode ) && defined( $state ) )
             $repo->html_phrase( "Plugin/Screen/AuthenticateOrcid:unexpected_state" )
         );
         
-        $repo->redirect( $repo->config( 'userhome' ) );
-        exit;
+        metarefresh_redirect( $repo, $repo->config( 'userhome' ) );
     }
 
     # get the log object, get any local permissions we might need... and then remove the log object
@@ -131,7 +142,7 @@ if( defined( $authcode ) && defined( $state ) )
         }
 
         # we have an authorized orcid - now manage permissions
-        $repo->redirect( $repo->config( 'userhome' )."?screen=ManageOrcid" );
+        metarefresh_redirect( $repo, $repo->config( 'userhome' )."?screen=ManageOrcid" );
     }
     else
     {
@@ -143,7 +154,13 @@ if( defined( $authcode ) && defined( $state ) )
         );
 
         # no orcid - go home
-        $repo->redirect( $repo->config( 'userhome' ) );
-        exit;
+        metarefresh_redirect( $repo, $repo->config( 'userhome' ) );
     }
+}
+
+sub metarefresh_redirect {
+    my ( $repo, $url ) = @_;	
+    $repo->send_http_header( content_type=>"text/html" );
+    print '<html><head><meta http-equiv="refresh" content="0;url=' . $url . '"/></head><body></body></html>';
+    exit;
 }

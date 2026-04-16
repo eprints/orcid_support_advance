@@ -176,9 +176,9 @@ fieldset.export_orcid_records{
 }
 
 /*Put Code Field*/
-th[epsection="creators_putcode"],
+.ep_form_input_grid div[id$="creators_putcode_label"],
 input.ep_eprint_creators_putcode,
-th[epsection="editors_putcode"],
+.ep_form_input_grid div[id="editors_putcode_label"],
 input.ep_eprint_editors_putcode {
 	display: none;
 }

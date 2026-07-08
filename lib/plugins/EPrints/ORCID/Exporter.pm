@@ -103,7 +103,12 @@ sub _export_eprint_to_orcid
     if( $result->is_error ) # first check orcid error code
     {
         # Identify response code by parsing XML with ORCID namespace
-        my $dom = XML::LibXML->load_xml( string => $result->content() );
+        my $dom;
+        eval {
+            $dom = XML::LibXML->load_xml( string => $result->content() );
+        };
+        if ( $dom )
+        {
         my $xpc = XML::LibXML::XPathContext->new( $dom );
         $xpc->registerNs( 'orcid_error', 'http://www.orcid.org/ns/error' );
         my($error_nodes) = $xpc->findnodes( '//orcid_error:error' );
@@ -205,7 +210,8 @@ sub _export_eprint_to_orcid
                     }
                 }
             } # end new putcode
-        } # end 90217 error - lost PUT Code       
+        } # end 90217 error - lost PUT Code
+        } # end $dom is set
     } # end initial result error
 
     if( $result->is_error ) # still getting an error or one we're not actively handling
